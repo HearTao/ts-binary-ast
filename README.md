@@ -1,4 +1,4 @@
-# ts-binary-ast
+# [WIP] ts-binary-ast
 
 ## Generate binary-ast from TypeScript Code
 
