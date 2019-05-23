@@ -1,0 +1,11 @@
+{
+  "name": "ts-binary-ast",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:HearTao/ts-binary-ast.git",
+  "author": "王文璐 <kingwenlu@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^12.0.2"
+  }
+}
