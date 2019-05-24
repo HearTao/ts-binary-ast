@@ -1,6 +1,7 @@
-import MultipartReader from "./src/io/reader"
 import * as fs from 'fs'
+import * as path from 'path'
+import Parser from "./src/io/parser";
 
-const buffer = fs.readFileSync('./1.binjs')
-const reader = new MultipartReader(new Uint8Array(buffer).buffer)
-reader.readHeader()
+const buffer = fs.readFileSync("./1.binjs")
+const parser = new Parser(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength))
+parser.parse()
