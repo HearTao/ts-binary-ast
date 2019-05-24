@@ -1271,7 +1271,6 @@ export interface ContinueStatement extends Node {
 
 export interface DebuggerStatement extends Node {
   type: NodeType.DebuggerStatement
-
 }
 
 export interface DoWhileStatement extends Node {
@@ -1280,8 +1279,9 @@ export interface DoWhileStatement extends Node {
   body: Statement
 }
 
-export interface EmptyStatement extends Node { }
-type: NodeType.EmptyStatement
+export interface EmptyStatement extends Node {
+  type: NodeType.EmptyStatement
+}
 
 export interface ExpressionStatement extends Node {
   type: NodeType.ExpressionStatement
@@ -1298,14 +1298,14 @@ export interface ForInStatement extends Node {
   type: NodeType.ForInStatement
   left: ForInOfBinding | AssignmentTarget
   right: Expression
-  bod: Statement
+  body: Statement
 }
 
 export interface ForOfStatement extends Node {
   type: NodeType.ForOfStatement
   left: ForInOfBinding | AssignmentTarget
   right: Expression
-  bod: Statement
+  body: Statement
 }
 
 export interface ForStatement extends Node {

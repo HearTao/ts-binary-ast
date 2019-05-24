@@ -8,17 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "program": "${workspaceFolder}/lib/index.js"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceFolder}/index.js",
-      "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": [
-        "${workspaceFolder}/lib/**/*.js"
-      ]
+      "program": "${workspaceFolder}\\lib\\tests\\index.js"
     }
   ]
 }

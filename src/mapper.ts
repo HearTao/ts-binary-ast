@@ -8,7 +8,6 @@ export function nameToNodeKindMapper (name: string) {
 }
 
 export function nameToVariantMapper (name: string) {
-  console.log(name === "var", name.split(','))
   if (name in VariantValueToTypeMap) {
     return Variant[VariantValueToTypeMap[name as keyof typeof VariantValueToTypeMap]]
   }

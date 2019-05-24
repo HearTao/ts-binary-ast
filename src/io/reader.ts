@@ -65,7 +65,7 @@ export default class MultipartReader {
   enterTaggedTuple () {
     const index = this.readVarnum()
     if (index >= this.context.grammarTable.length) {
-      throw new Error("Invalid index to grammar table")
+      throw new Error("Invalid index to grammar table: " + index + this.context.grammarTable.length)
     }
 
     return this.context.grammarTable[index]
@@ -103,7 +103,6 @@ export default class MultipartReader {
       return this.context.variantTable.get(index)!
     }
 
-    console.log(index, this.context.stringsTable[index])
     const name = this.context.stringsTable[index]
     const variant = nameToVariantMapper(name)
     if (!variant) {
@@ -169,7 +168,7 @@ export default class MultipartReader {
     const posBeforeStrings = this.curr
 
     if (this.curr + stringsByteLen > this.view.byteLength) {
-      throw new Error("Invalid byte length in strings table")
+      throw new Error("Invalid byte length in strings table1")
     }
 
     const stringsNumberOfEntries = this.readVarnum()
@@ -181,9 +180,10 @@ export default class MultipartReader {
     for (let i = 0 ; i< stringsNumberOfEntries; ++i) {
       const byteLength = this.readVarnum()
       if (this.curr + byteLength > this.view.byteLength) {
-        throw new Error("Invalid byte length in strings table")
+        throw new Error("Invalid byte length in strings table2: " + this.curr + " " + byteLength + " " +  this.view.byteLength)
       }
       if (byteLength === 2 && this.lookAhead(() => this.readByte() === 0xFF && this.readByte() === 0x00)) {
+        this.curr += 2
         stringsTable.push("")
       } else {
         stringsTable.push(this.readWString(byteLength))
