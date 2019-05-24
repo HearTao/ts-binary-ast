@@ -78,6 +78,7 @@ export default class MultipartReader {
       const name = this.readString(byteLength)
       const kind = nameToNodeKindMapper(name)
       if (kind === undefined) {
+        console.log(byteLength, name)
         throw new Error("Invalid entry in grammar table")
       }
 

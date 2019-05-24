@@ -109,37 +109,50 @@ export interface AssertedParameterName {
 export type AssertedMaybePositionalParameterName = AssertedPositionalParameterName | AssertedRestParameterName | AssertedParameterName
 
 export interface AssertedBoundName {
+  type: NodeType.AssertedBoundName
   name: IdentifierName
   isCaptured: boolean
 }
 
 export interface AssertedBlockScope {
+  type: NodeType.AssertedBlockScope
   declaredNames: FrozenArray<AssertedDeclaredName>
   hasDirectEval: boolean
 }
 
 export interface AssertedScriptGlobalScope {
+  type: NodeType.AssertedScriptGlobalScope
   declaredNames: FrozenArray<AssertedDeclaredName>
   hasDirectEval: boolean
 }
 
 export interface AssertedVarScope {
+  type: NodeType.AssertedVarScope
   declaredNames: FrozenArray<AssertedDeclaredName>
   hasDirectEval: boolean
 }
 
 export interface AssertedParameterScope {
+  type: NodeType.AssertedParameterScope
   paramNames: FrozenArray<AssertedMaybePositionalParameterName>
   hasDirectEval: boolean
   isSimpleParameterList: boolean
 }
 
 export interface AssertedBoundNamesScope {
+  type: NodeType.AssertedBoundNamesScope
   boundNames: FrozenArray<AssertedBoundName>
   hasDirectEval: boolean
 }
 
 export enum NodeType {
+  Null,
+  AssertedBoundName,
+  AssertedBlockScope,
+  AssertedScriptGlobalScope,
+  AssertedVarScope,
+  AssertedParameterScope,
+  AssertedBoundNamesScope,
   AssertedDeclaredName,
   AssertedPositionalParameterName,
   AssertedRestParameterName,
@@ -256,6 +269,13 @@ export enum NodeType {
 }
 
 export const NodeTypeToNameMap = {
+  [NodeType.Null]: "",
+  [NodeType.AssertedBoundName]: "AssertedBoundName",
+  [NodeType.AssertedBlockScope]: "AssertedBlockScope",
+  [NodeType.AssertedScriptGlobalScope]: "AssertedScriptGlobalScope",
+  [NodeType.AssertedVarScope]: "AssertedVarScope",
+  [NodeType.AssertedParameterScope]: "AssertedParameterScope",
+  [NodeType.AssertedBoundNamesScope]: "AssertedBoundNamesScope",
   [NodeType.AssertedDeclaredName]: "AssertedDeclaredName",
   [NodeType.AssertedPositionalParameterName]: "AssertedPositionalParameterName",
   [NodeType.AssertedRestParameterName]: "AssertedRestParameterName",
@@ -372,6 +392,13 @@ export const NodeTypeToNameMap = {
 } as const
 
 export const NodeTypeNameToTypeMap = {
+  [""]: NodeType.Null,
+  AssertedBoundName: NodeType.AssertedBoundName,
+  AssertedBlockScope: NodeType.AssertedBlockScope,
+  AssertedScriptGlobalScope: NodeType.AssertedScriptGlobalScope,
+  AssertedVarScope: NodeType.AssertedVarScope,
+  AssertedParameterScope: NodeType.AssertedParameterScope,
+  AssertedBoundNamesScope: NodeType.AssertedBoundNamesScope,
   AssertedDeclaredName: NodeType.AssertedDeclaredName,
   AssertedPositionalParameterName: NodeType.AssertedPositionalParameterName,
   AssertedRestParameterName: NodeType.AssertedRestParameterName,
