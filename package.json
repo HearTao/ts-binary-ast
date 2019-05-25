@@ -6,7 +6,9 @@
   "author": "Wenlu Wang <kingwenlu@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "prettier": "prettier --config ./prettier.json --write ./src/**/* ./index.ts"
+    "build": "tsc -b",
+    "prettier": "prettier --config ./prettier.json --write ./src/**/* ./index.ts",
+    "test": "ts-node ./tests/index.ts"
   },
   "dependencies": {
   },
