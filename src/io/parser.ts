@@ -39,12 +39,12 @@ export default class Parser {
     return this.reader.readAtom()
   }
 
-  lookAhead <T>(cb: () => T): T {
-    return this.reader.lookAhead(cb)
-  }
-
   enterTaggedTuple() {
     return this.reader.enterTaggedTuple()
+  }
+
+  lookAhead <T>(cb: () => T): T {
+    return this.reader.lookAhead(cb)
   }
 
   parse() {
@@ -59,6 +59,14 @@ export default class Parser {
       result.push(cb())
     }
     return result
+  }
+
+  parseOptional<T>(cb: () => T): T | undefined {
+    if (this.peekTaggedTuple() === NodeType.Null) {
+      this.reader.enterTaggedTuple()
+      return undefined
+    }
+    return cb()
   }
 
   peekTaggedTuple(): NodeType {
@@ -289,7 +297,7 @@ export default class Parser {
   parseBreakStatement(): BreakStatement {
     const type = this.parseKind(NodeType.BreakStatement)
 
-    const label = this.readAtom()
+    const label = this.parseOptional(() => this.readAtom())
     return {
       type,
       label
@@ -299,7 +307,7 @@ export default class Parser {
   parseContinueStatement(): ContinueStatement {
     const type = this.parseKind(NodeType.ContinueStatement)
 
-    const label = this.readAtom()
+    const label = this.parseOptional(() => this.readAtom())
     return {
       type,
       label
@@ -403,7 +411,7 @@ export default class Parser {
 
     const test = this.parseExpression()
     const consequent = this.parseStatement()
-    const alternate = this.parseStatement()
+    const alternate = this.parseOptional(() => this.parseStatement())
     return {
       type,
       test,
@@ -458,7 +466,7 @@ export default class Parser {
     const type = this.parseKind(NodeType.VariableDeclarator)
 
     const binding = this.parseBinding()
-    const init = this.parseExpression()
+    const init = this.parseOptional(() => this.parseExpression())
     return {
       type,
       binding,
@@ -508,9 +516,9 @@ export default class Parser {
   parseForStatement(): ForStatement {
     const type = this.parseKind(NodeType.ForStatement)
 
-    const init = this.parseVariableDeclarationOrExpression()
-    const test = this.parseExpression()
-    const update = this.parseExpression()
+    const init = this.parseOptional(() => this.parseVariableDeclarationOrExpression())
+    const test = this.parseOptional(() => this.parseExpression())
+    const update = this.parseOptional(() => this.parseExpression())
     const body = this.parseStatement()
     return {
       type,
@@ -572,7 +580,7 @@ export default class Parser {
   parseReturnStatement(): ReturnStatement {
     const type = this.parseKind(NodeType.ReturnStatement)
 
-    const expression = this.parseExpression()
+    const expression = this.parseOptional(() => this.parseExpression())
     return {
       type,
       expression
@@ -701,7 +709,7 @@ export default class Parser {
     const type = this.parseKind(NodeType.TryFinallyStatement)
 
     const body = this.parseBlock()
-    const catchClause = this.parseCatchClause()
+    const catchClause = this.parseOptional(() => this.parseCatchClause())
     const finalizer = this.parseBlock()
     return {
       type,
