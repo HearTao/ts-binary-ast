@@ -3,13 +3,19 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:HearTao/ts-binary-ast.git",
-  "author": "王文璐 <kingwenlu@gmail.com>",
+  "author": "Wenlu Wang <kingwenlu@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc -b",
+    "prettier": "prettier --config ./prettier.json --write ./src/**/* ./index.ts",
+    "test": "ts-node ./tests/index.ts"
+  },
   "dependencies": {
-    "@types/node": "^12.0.2",
-    "typescript": "^3.4.5"
   },
   "devDependencies": {
-    "ts-node": "^8.1.0"
+    "ts-node": "^8.1.0",
+    "@types/node": "^12.0.2",
+    "prettier": "^1.17.1",
+    "typescript": "^3.4.5"
   }
 }
