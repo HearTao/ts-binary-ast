@@ -15,26 +15,66 @@ export default class Parser {
     this.reader = new MultipartReader(this.context, buffer)
   }
 
+  readHeader () {
+    return this.reader.readHeader()
+  }
+
+  readVarnum () {
+    return this.reader.readVarnum()
+  }
+
+  readBoolean () {
+    return this.reader.readBoolean()
+  }
+
+  readIdentifierName() {
+    return this.reader.readIdentifierName()
+  }
+
+  readVariant() {
+    return this.reader.readVariant()
+  }
+
+  readAtom() {
+    return this.reader.readAtom()
+  }
+
+  enterTaggedTuple() {
+    return this.reader.enterTaggedTuple()
+  }
+
+  lookAhead <T>(cb: () => T): T {
+    return this.reader.lookAhead(cb)
+  }
+
   parse() {
-    this.reader.readHeader()
+    this.readHeader()
     return this.parseProgram()
   }
 
   parseList<T>(cb: () => T): FrozenArray<T> {
     const result: T[] = []
-    const length = this.reader.readVarnum()
+    const length = this.readVarnum()
     for (let i = 0; i < length; ++i) {
       result.push(cb())
     }
     return result
   }
 
+  parseOptional<T>(cb: () => T): T | undefined {
+    if (this.peekTaggedTuple() === NodeType.Null) {
+      this.reader.enterTaggedTuple()
+      return undefined
+    }
+    return cb()
+  }
+
   peekTaggedTuple(): NodeType {
-    return this.reader.lookAhead(() => this.reader.enterTaggedTuple())
+    return this.lookAhead(() => this.enterTaggedTuple())
   }
 
   parseKind<T extends NodeType>(expectedKind: T): T {
-    const kind = this.reader.enterTaggedTuple()
+    const kind = this.enterTaggedTuple()
     if (kind !== expectedKind) {
       throw new Error("Invalid Kind: " + expectedKind)
     }
@@ -53,14 +93,14 @@ export default class Parser {
   }
 
   parseScript(): Script {
-    this.parseKind(NodeType.Script)
+    const type = this.parseKind(NodeType.Script)
 
     const scope = this.parseAssertedScriptGlobalScope()
     const directives = this.parseDirectiveList()
     const statements = this.parseStatementList()
 
     return {
-      type: NodeType.Script,
+      type,
       scope,
       directives,
       statements
@@ -68,12 +108,12 @@ export default class Parser {
   }
 
   parseAssertedScriptGlobalScope(): AssertedScriptGlobalScope {
-    this.parseKind(NodeType.AssertedScriptGlobalScope)
+    const type = this.parseKind(NodeType.AssertedScriptGlobalScope)
 
     const declaredNames = this.parseAssertedDeclaredNameList()
-    const hasDirectEval = this.reader.readBoolean()
+    const hasDirectEval = this.readBoolean()
     return {
-      type: NodeType.AssertedScriptGlobalScope,
+      type,
       declaredNames,
       hasDirectEval
     }
@@ -84,17 +124,17 @@ export default class Parser {
   }
 
   parseAssertedDeclaredName(): AssertedDeclaredName {
-    this.parseKind(NodeType.AssertedDeclaredName)
+    const type = this.parseKind(NodeType.AssertedDeclaredName)
 
-    const name = this.reader.readIdentifierName()
+    const name = this.readIdentifierName()
     const kind = this.parseAssertedDeclaredKind()
     if (kind === AssertedDeclaredKind.ConstLexical || kind === AssertedDeclaredKind.NonConstLexical) {
       throw new Error("Let Or Const is not supported")
     }
 
-    const isCaptured = this.reader.readBoolean()
+    const isCaptured = this.readBoolean()
     return {
-      type: NodeType.AssertedDeclaredName,
+      type,
       name,
       kind,
       isCaptured
@@ -102,7 +142,7 @@ export default class Parser {
   }
 
   parseAssertedDeclaredKind(): AssertedDeclaredKind {
-    const kind = this.reader.readVariant()
+    const kind = this.readVariant()
     switch (kind) {
       case Variant.AssertedDeclaredKindOrVariableDeclarationKindVar:
         return AssertedDeclaredKind.Var
@@ -120,11 +160,11 @@ export default class Parser {
   }
 
   parseDirective(): Directive {
-    this.parseKind(NodeType.Directive)
+    const type = this.parseKind(NodeType.Directive)
 
-    const rawValue = this.reader.readAtom()
+    const rawValue = this.readAtom()
     return {
-      type: NodeType.Directive,
+      type,
       rawValue
     }
   }
@@ -230,58 +270,58 @@ export default class Parser {
   }
 
   parseBlock(): Block {
-    this.parseKind(NodeType.Block)
+    const type = this.parseKind(NodeType.Block)
 
     const scope = this.parseAssertedBlockScope()
     const statements = this.parseStatementList()
     return {
-      type: NodeType.Block,
+      type,
       scope,
       statements
     }
   }
 
   parseAssertedBlockScope(): AssertedBlockScope {
-    this.parseKind(NodeType.AssertedBlockScope)
+    const type = this.parseKind(NodeType.AssertedBlockScope)
 
     const declaredNames = this.parseAssertedDeclaredNameList()
-    const hasDirectEval = this.reader.readBoolean()
+    const hasDirectEval = this.readBoolean()
 
     return {
-      type: NodeType.AssertedBlockScope,
+      type,
       declaredNames,
       hasDirectEval
     }
   }
 
   parseBreakStatement(): BreakStatement {
-    this.parseKind(NodeType.BreakStatement)
+    const type = this.parseKind(NodeType.BreakStatement)
 
-    const label = this.reader.readAtom()
+    const label = this.parseOptional(() => this.readAtom())
     return {
-      type: NodeType.BreakStatement,
+      type,
       label
     }
   }
 
   parseContinueStatement(): ContinueStatement {
-    this.parseKind(NodeType.ContinueStatement)
+    const type = this.parseKind(NodeType.ContinueStatement)
 
-    const label = this.reader.readAtom()
+    const label = this.parseOptional(() => this.readAtom())
     return {
-      type: NodeType.ContinueStatement,
+      type,
       label
     }
   }
 
   parseClassDeclaration(): ClassDeclaration {
-    this.parseKind(NodeType.ClassDeclaration)
+    const type = this.parseKind(NodeType.ClassDeclaration)
 
     const name = this.parseBindingIdentifier()
     const superExpr = this.parseExpression()
     const elements = this.parseClassElementList()
     return {
-      type: NodeType.ClassDeclaration,
+      type,
       name,
       super: superExpr,
       elements
@@ -293,12 +333,12 @@ export default class Parser {
   }
 
   parseClassElement(): ClassElement {
-    this.parseKind(NodeType.ClassElement)
+    const type = this.parseKind(NodeType.ClassElement)
 
-    const isStatic = this.reader.readBoolean()
+    const isStatic = this.readBoolean()
     const method = this.parseMethodDefinition()
     return {
-      type: NodeType.ClassElement,
+      type,
       isStatic,
       method
     }
@@ -319,61 +359,61 @@ export default class Parser {
   }
 
   parseBindingIdentifier(): BindingIdentifier {
-    this.parseKind(NodeType.BindingIdentifier)
+    const type = this.parseKind(NodeType.BindingIdentifier)
 
-    const name = this.reader.readIdentifierName()
+    const name = this.readIdentifierName()
     return {
-      type: NodeType.BindingIdentifier,
+      type,
       name
     }
   }
 
   parseDebuggerStatement(): DebuggerStatement {
-    this.parseKind(NodeType.DebuggerStatement)
+    const type = this.parseKind(NodeType.DebuggerStatement)
 
     return {
-      type: NodeType.DebuggerStatement,
+      type
     }
   }
 
   parseEmptyStatement(): EmptyStatement {
-    this.parseKind(NodeType.EmptyStatement)
+    const type = this.parseKind(NodeType.EmptyStatement)
 
     return {
-      type: NodeType.EmptyStatement
+      type
     }
   }
 
   parseExpressionStatement(): ExpressionStatement {
-    this.parseKind(NodeType.ExpressionStatement)
+    const type = this.parseKind(NodeType.ExpressionStatement)
 
     const expression = this.parseExpression()
     return {
-      type: NodeType.ExpressionStatement,
+      type,
       expression
     }
   }
 
   parseEagerFunctionDeclaration(): EagerFunctionDeclaration {
-    this.parseKind(NodeType.EagerFunctionDeclaration)
+    const type = this.parseKind(NodeType.EagerFunctionDeclaration)
 
     throw new Error("Not implements EagerFunctionDeclaration")
   }
 
   parseLazyFunctionDeclaration(): LazyFunctionDeclaration {
-    this.parseKind(NodeType.LazyFunctionDeclaration)
+    const type = this.parseKind(NodeType.LazyFunctionDeclaration)
 
     throw new Error("Not implements LazyFunctionDeclaration")
   }
 
   parseIfStatement(): IfStatement {
-    this.parseKind(NodeType.IfStatement)
+    const type = this.parseKind(NodeType.IfStatement)
 
     const test = this.parseExpression()
     const consequent = this.parseStatement()
-    const alternate = this.parseStatement()
+    const alternate = this.parseOptional(() => this.parseStatement())
     return {
-      type: NodeType.IfStatement,
+      type,
       test,
       consequent,
       alternate
@@ -381,31 +421,31 @@ export default class Parser {
   }
 
   parseDoWhileStatement(): DoWhileStatement {
-    this.parseKind(NodeType.DoWhileStatement)
+    const type = this.parseKind(NodeType.DoWhileStatement)
 
     const test = this.parseExpression()
     const body = this.parseStatement()
     return {
-      type: NodeType.DoWhileStatement,
+      type,
       test,
       body
     }
   }
 
   parseVariableDeclaration(): VariableDeclaration {
-    this.parseKind(NodeType.VariableDeclaration)
+    const type = this.parseKind(NodeType.VariableDeclaration)
     
     const kind = this.parseVariableDeclarationKind()
     const declarators = this.parseVariableDeclaratorList()
     return {
-      type: NodeType.VariableDeclaration,
+      type,
       kind,
       declarators
     }
   }
 
   parseVariableDeclarationKind(): VariableDeclarationKind {
-    const variant = this.reader.readVariant()
+    const variant = this.readVariant()
     switch (variant) {
       case Variant.Let:
         return VariableDeclarationKind.Let
@@ -423,12 +463,12 @@ export default class Parser {
   }
 
   parseVariableDeclarator(): VariableDeclarator {
-    this.parseKind(NodeType.VariableDeclarator)
+    const type = this.parseKind(NodeType.VariableDeclarator)
 
     const binding = this.parseBinding()
-    const init = this.parseExpression()
+    const init = this.parseOptional(() => this.parseExpression())
     return {
-      type: NodeType.VariableDeclarator,
+      type,
       binding,
       init
     }
@@ -446,13 +486,13 @@ export default class Parser {
   }
 
   parseForInStatement(): ForInStatement {
-    this.parseKind(NodeType.ForInStatement)
+    const type = this.parseKind(NodeType.ForInStatement)
 
     const left = this.parseForInOfBindingOrAssignmentTarget()
     const right = this.parseExpression()
     const body = this.parseStatement()
     return {
-      type: NodeType.ForInStatement,
+      type,
       left,
       right,
       body
@@ -460,13 +500,13 @@ export default class Parser {
   }
 
   parseForOfStatement(): ForOfStatement {
-    this.parseKind(NodeType.ForOfStatement)
+    const type = this.parseKind(NodeType.ForOfStatement)
 
     const left = this.parseForInOfBindingOrAssignmentTarget()
     const right = this.parseExpression()
     const body = this.parseStatement()
     return {
-      type: NodeType.ForOfStatement,
+      type,
       left,
       right,
       body
@@ -474,14 +514,14 @@ export default class Parser {
   }
 
   parseForStatement(): ForStatement {
-    this.parseKind(NodeType.ForStatement)
+    const type = this.parseKind(NodeType.ForStatement)
 
-    const init = this.parseVariableDeclarationOrExpression()
-    const test = this.parseExpression()
-    const update = this.parseExpression()
+    const init = this.parseOptional(() => this.parseVariableDeclarationOrExpression())
+    const test = this.parseOptional(() => this.parseExpression())
+    const update = this.parseOptional(() => this.parseExpression())
     const body = this.parseStatement()
     return {
-      type: NodeType.ForStatement,
+      type,
       init,
       test,
       update,
@@ -514,24 +554,24 @@ export default class Parser {
   }
 
   parseWhileStatement(): WhileStatement {
-    this.parseKind(NodeType.WhileStatement)
+    const type = this.parseKind(NodeType.WhileStatement)
 
     const test = this.parseExpression()
     const body = this.parseStatement()
     return {
-      type: NodeType.WhileStatement,
+      type,
       test,
       body
     }
   }
 
   parseLabelledStatement(): LabelledStatement {
-    this.parseKind(NodeType.LabelledStatement)
+    const type = this.parseKind(NodeType.LabelledStatement)
 
-    const label = this.reader.readAtom()
+    const label = this.readAtom()
     const body = this.parseStatement()
     return {
-      type: NodeType.LabelledStatement,
+      type,
       label,
       body
     }
@@ -540,7 +580,7 @@ export default class Parser {
   parseReturnStatement(): ReturnStatement {
     const type = this.parseKind(NodeType.ReturnStatement)
 
-    const expression = this.parseExpression()
+    const expression = this.parseOptional(() => this.parseExpression())
     return {
       type,
       expression
@@ -641,7 +681,7 @@ export default class Parser {
     const type = this.parseKind(NodeType.AssertedBoundNamesScope)
 
     const boundNames = this.parseAssertedBoundNameList()
-    const hasDirectEval = this.reader.readBoolean()
+    const hasDirectEval = this.readBoolean()
     return {
       type,
       boundNames,
@@ -656,8 +696,8 @@ export default class Parser {
   parseAssertedBoundName(): AssertedBoundName {
     const type = this.parseKind(NodeType.AssertedBoundName)
 
-    const name = this.reader.readIdentifierName()
-    const isCaptured = this.reader.readBoolean()
+    const name = this.readIdentifierName()
+    const isCaptured = this.readBoolean()
     return {
       type,
       name,
@@ -669,7 +709,7 @@ export default class Parser {
     const type = this.parseKind(NodeType.TryFinallyStatement)
 
     const body = this.parseBlock()
-    const catchClause = this.parseCatchClause()
+    const catchClause = this.parseOptional(() => this.parseCatchClause())
     const finalizer = this.parseBlock()
     return {
       type,
