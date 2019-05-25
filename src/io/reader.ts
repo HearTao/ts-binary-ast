@@ -1,13 +1,7 @@
 import { NodeTypeLimit, NodeType, Variant } from "../types";
 import { nameToNodeKindMapper, nameToVariantMapper } from "../mapper";
 import { Context } from "./context";
-
-const MAGIC_HEADER = "BINJS"
-const MAGIC_VERSION = 1
-const SECTION_GRAMMAR = "[GRAMMAR]"
-const SECTION_STRING = "[STRINGS]"
-const SECTOPN_TREE = "[TREE]"
-const COMPRESSION_IDENTIFIER = "identity;"
+import { Magic, Section, Compression } from './constants'
 
 const MAX_STRING_COUNT = 0xffff
 
@@ -121,15 +115,15 @@ export default class MultipartReader {
   }
 
   readHeader () {
-    this.readConst(MAGIC_HEADER)
+    this.readConst(Magic.Header)
 
     const version = this.readVarnum()
-    if (version !== MAGIC_VERSION) {
+    if (version !== Magic.Version) {
       throw new Error("Unexpected version")
     }
 
-    this.readConst(SECTION_GRAMMAR)
-    this.readConst(COMPRESSION_IDENTIFIER)
+    this.readConst(Section.Grammar)
+    this.readConst(Compression.Identity)
 
     const grammarByteLen = this.readVarnum()
     const posBeforeGrammar = this.curr
@@ -162,8 +156,8 @@ export default class MultipartReader {
       throw new Error("The length of the grammar table didn't match its contents")
     }
 
-    this.readConst(SECTION_STRING)
-    this.readConst(COMPRESSION_IDENTIFIER)
+    this.readConst(Section.Strings)
+    this.readConst(Compression.Identity)
     const stringsByteLen = this.readVarnum()
     const posBeforeStrings = this.curr
 
@@ -193,8 +187,8 @@ export default class MultipartReader {
       throw new Error("The length of the strings table didn't match its contents")
     }
 
-    this.readConst(SECTOPN_TREE)
-    this.readConst(COMPRESSION_IDENTIFIER)
+    this.readConst(Section.Tree)
+    this.readConst(Compression.Identity)
     const posBeforeTree = this.curr
 
     const treeByteLen = this.readVarnum()
