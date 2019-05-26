@@ -6,7 +6,7 @@ export interface Context {
   variantTable: Map<number, Variant>
 }
 
-export interface WritterContext {
+export interface WriterContext {
   grammarTable: NodeType[]
   stringsTable: string[]
   stringsTableToIndex: Map<string, number>

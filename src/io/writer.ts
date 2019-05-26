@@ -1,14 +1,14 @@
-import { WritterContext } from "./context";
+import { WriterContext } from "./context";
 import { Variant } from "../types";
 import { variantToValueMapper, nodeKindToNameMapper } from "../mapper";
 import { Magic, Section, Compression } from "./constants";
 
-export default class MultipartReader {
+export default class MultipartWriter {
     private size: number = 0
     private buffer: ArrayBuffer = new ArrayBuffer(4096)
     private view: DataView = new DataView(this.buffer)
 
-    constructor (private context: WritterContext) {
+    constructor (private context: WriterContext) {
     }
 
     writeBuffer(buffer: ArrayBuffer) {
