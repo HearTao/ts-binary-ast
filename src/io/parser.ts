@@ -357,7 +357,7 @@ export default class Parser {
       case NodeType.LazySetter:
         return this.parseSetter()
       default:
-        throw new Error("Unexpected method definition")
+        throw new Error("Unexpected kind: " + kind)
     }
   }
 
@@ -694,13 +694,41 @@ export default class Parser {
   parseEagerFunctionDeclaration(): EagerFunctionDeclaration {
     const type = this.parseKind(NodeType.EagerFunctionDeclaration)
 
-    throw new Error("Not implements EagerFunctionDeclaration")
+    const isAsync = this.readBoolean()
+    const isGenerator = this.readBoolean()
+    const name = this.parseBindingIdentifier()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseFunctionOrMethodContents()
+    return {
+      type,
+      isAsync,
+      isGenerator,
+      name,
+      length,
+      directives,
+      contents
+    }
   }
 
   parseLazyFunctionDeclaration(): LazyFunctionDeclaration {
     const type = this.parseKind(NodeType.LazyFunctionDeclaration)
 
-    throw new Error("Not implements LazyFunctionDeclaration")
+    const isAsync = this.readBoolean()
+    const isGenerator = this.readBoolean()
+    const name = this.parseBindingIdentifier()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseFunctionOrMethodContents()
+    return {
+      type,
+      isAsync,
+      isGenerator,
+      name,
+      length,
+      directives,
+      contents
+    }
   }
 
   parseIfStatement(): IfStatement {
