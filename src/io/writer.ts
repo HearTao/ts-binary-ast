@@ -110,13 +110,20 @@ export default class MultipartWriter {
         if (this.context.variantTableToIndex.has(value)) {
             return this.writeByte(this.context.variantTableToIndex.get(value)!)
         } else {
-            const index = this.context.stringsTable.length
             const name = variantToValueMapper(value)
             if (!name) {
                 throw new Error("Invalid entry in variant table: " + name)
             }
-            this.context.stringsTable.push(name)
-            this.context.variantTableToIndex.set(value, index)
+
+            let index: number
+            if (this.context.stringsTableToIndex.has(name)) {
+                index = this.context.stringsTableToIndex.get(name)!
+            } else {
+                index = this.context.stringsTable.length
+                this.context.stringsTable.push(name)
+                this.context.stringsTableToIndex.set(name, index)
+                this.context.variantTableToIndex.set(value, index)
+            }
             return this.writeVarnum(index)
         }
     }
