@@ -1,6 +1,6 @@
 import MultipartWritter from "./writer";
 import { WriterContext } from "./context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, ObjectBinding, ArrayBinding, BindingPattern, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, PropertyName, ComputedPropertyName, LiteralPropertyName, ObjectAssignmentTarget, ArrayAssignmentTarget, AssignmentTargetIdentifier, ComputedMemberAssignmentTarget, StaticMemberAssignmentTarget, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetWithInitializer, Identifier, Super, LiteralBooleanExpression, LiteralInfinityExpression, LiteralNullExpression, LiteralNumericExpression, LiteralStringExpression, LiteralRegExpExpression, ArrayExpression, EagerArrowExpressionWithFunctionBody, LazyArrowExpressionWithFunctionBody, EagerArrowExpressionWithExpression, LazyArrowExpressionWithExpression, AssignmentExpression, BinaryExpression, CallExpression, CompoundAssignmentExpression, ComputedMemberExpression, ConditionalExpression, ClassExpression, EagerFunctionExpression, LazyFunctionExpression, IdentifierExpression, NewExpression, NewTargetExpression, ObjectExpression, UnaryExpression, StaticMemberExpression, TemplateExpression, ThisExpression, UpdateExpression, YieldExpression, YieldStarExpression, AwaitExpression, SpreadElement, BinaryOperator, Arguments, CompoundAssignmentOperator, ObjectProperty, DataProperty, ShorthandProperty, UnaryOperator, TemplateElement, UpdateOperator } from "../types";
+import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, ObjectBinding, ArrayBinding, BindingPattern, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, PropertyName, ComputedPropertyName, LiteralPropertyName, ObjectAssignmentTarget, ArrayAssignmentTarget, AssignmentTargetIdentifier, ComputedMemberAssignmentTarget, StaticMemberAssignmentTarget, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetWithInitializer, Identifier, Super, LiteralBooleanExpression, LiteralInfinityExpression, LiteralNullExpression, LiteralNumericExpression, LiteralStringExpression, LiteralRegExpExpression, ArrayExpression, EagerArrowExpressionWithFunctionBody, LazyArrowExpressionWithFunctionBody, EagerArrowExpressionWithExpression, LazyArrowExpressionWithExpression, AssignmentExpression, BinaryExpression, CallExpression, CompoundAssignmentExpression, ComputedMemberExpression, ConditionalExpression, ClassExpression, EagerFunctionExpression, LazyFunctionExpression, IdentifierExpression, NewExpression, NewTargetExpression, ObjectExpression, UnaryExpression, StaticMemberExpression, TemplateExpression, ThisExpression, UpdateExpression, YieldExpression, YieldStarExpression, AwaitExpression, SpreadElement, BinaryOperator, Arguments, CompoundAssignmentOperator, ObjectProperty, DataProperty, ShorthandProperty, UnaryOperator, TemplateElement, UpdateOperator, Method, Setter, Getter, EagerMethod, LazyMethod, FunctionOrMethodContents, FunctionBody, AssertedParameterScope, FormalParameters, AssertedVarScope, AssertedMaybePositionalParameterName, AssertedPositionalParameterName, AssertedParameterName, AssertedRestParameterName, Parameter, EagerGetter, LazyGetter, GetterContents, LazySetter, EagerSetter, SetterContents, ArrowExpressionContentsWithFunctionBody, ArrowExpressionContentsWithExpression, FunctionExpressionContents } from "../types";
 import { Section, Compression } from "./constants";
 
 export default class Emitter {
@@ -128,8 +128,6 @@ export default class Emitter {
                 return this.writeVariant(Variant.ConstLexical)
             case AssertedDeclaredKind.NonConstLexical:
                 return this.writeVariant(Variant.NonConstLexical)
-            default:
-                throw new Error("Unexpected AssertedDeclaredKind: " + kind)
         }
     }
 
@@ -200,8 +198,6 @@ export default class Emitter {
                 return this.emitVariableDeclaration(node)
             case NodeType.WithStatement:
                 return this.emitWithStatement(node)
-            default:
-                throw new Error("Unexpected Statement" + node)
         }
     }
     emitBlock(node: Block) {
@@ -246,13 +242,185 @@ export default class Emitter {
         switch (node.type) {
             case NodeType.EagerMethod:
             case NodeType.LazyMethod:
+                return this.emitMethod(node)
             case NodeType.EagerGetter:
             case NodeType.LazyGetter:
+                return this.emitGetter(node)
             case NodeType.EagerSetter:
             case NodeType.LazySetter:
-            default:
-                throw new Error("Unexpected method definition")
+                return this.emitSetter(node)
         }
+    }
+
+    emitMethod(node: Method) {
+        switch (node.type) {
+            case NodeType.EagerMethod:
+                return this.emitEagerMethod(node)
+            case NodeType.LazyMethod:
+                return this.emitLazyMethod(node)
+        }
+    }
+
+    emitEagerMethod(node: EagerMethod) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeBoolean(node.isGenerator)
+        this.emitPropertyName(node.name)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitFunctionOrMethodContents(node.contents)
+    }
+
+    emitLazyMethod(node: LazyMethod) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeBoolean(node.isGenerator)
+        this.emitPropertyName(node.name)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitFunctionOrMethodContents(node.contents)
+    }
+
+    emitFunctionOrMethodContents(node: FunctionOrMethodContents) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.isThisCaptured)
+        this.emitAssertedParameterScope(node.parameterScope)
+        this.emitFormalParameters(node.params)
+        this.emitAssertedVarScope(node.bodyScope)
+        this.emitFunctionBody(node.body)
+    }
+
+    emitAssertedParameterScope(node: AssertedParameterScope) {
+        this.writeKind(node.type)
+        this.emitAssertedMaybePositionalParameterNameList(node.paramNames)
+        this.writeBoolean(node.hasDirectEval)
+        this.writeBoolean(node.isSimpleParameterList)
+    }
+
+    emitAssertedMaybePositionalParameterNameList(nodes: FrozenArray<AssertedMaybePositionalParameterName>) {
+        this.emitList(nodes, this.emitAssertedMaybePositionalParameterName.bind(this))
+    }
+
+    emitAssertedMaybePositionalParameterName(node: AssertedMaybePositionalParameterName) {
+        switch (node.type) {
+            case NodeType.AssertedPositionalParameterName:
+                return this.emitAssertedPositionalParameterName(node)
+            case NodeType.AssertedRestParameterName:
+                return this.emitAssertedRestParameterName(node)
+            case NodeType.AssertedParameterName:
+                return this.emitAssertedParameterName(node)
+        }
+    }
+
+    emitAssertedPositionalParameterName(node: AssertedPositionalParameterName) {
+        this.writeKind(node.type)
+        this.writeVarnum(node.index)
+        this.writeIdentifierName(node.name)
+        this.writeBoolean(node.isCaptured)
+    }
+
+    emitAssertedRestParameterName(node: AssertedRestParameterName) {
+        this.writeKind(node.type)
+        this.writeIdentifierName(node.name)
+        this.writeBoolean(node.isCaptured)
+    }
+
+    emitAssertedParameterName(node: AssertedParameterName) {
+        this.writeKind(node.type)
+        this.writeIdentifierName(node.name)
+        this.writeBoolean(node.isCaptured)
+    }
+
+    emitFormalParameters(node: FormalParameters) {
+        this.writeKind(node.type)
+        this.emitParameterList(node.items)
+        this.emitOptional(node.rest, this.emitBinding.bind(this))
+    }
+
+    emitParameterList(nodes: FrozenArray<Parameter>) {
+        this.emitList(nodes, this.emitParameter.bind(this))
+    }
+
+    emitParameter(node: Parameter) {
+        switch (node.type) {
+            case NodeType.BindingWithInitializer:
+                return this.emitBindingWithInitializer(node)
+            default:
+                return this.emitBinding(node)
+        }
+    }
+
+    emitAssertedVarScope(node: AssertedVarScope) {
+        this.writeKind(node.type)
+        this.emitAssertedDeclaredNameList(node.declaredNames)
+        this.writeBoolean(node.hasDirectEval)
+    }
+
+    emitFunctionBody(node: FunctionBody) {
+        this.emitStatementList(node)
+    }
+
+    emitGetter(node: Getter) {
+        switch (node.type) {
+            case NodeType.EagerGetter:
+                return this.emitEagerGetter(node)
+            case NodeType.LazyGetter:
+        }
+    }
+
+    emitEagerGetter(node: EagerGetter) {
+        this.writeKind(node.type)
+        this.emitPropertyName(node.name)
+        this.emitDirectiveList(node.directives)
+        this.emitGetterContents(node.contents)
+    }
+
+    emitLazyGetter(node: LazyGetter) {
+        this.writeKind(node.type)
+        this.emitPropertyName(node.name)
+        this.emitDirectiveList(node.directives)
+        this.emitGetterContents(node.contents)
+    }
+
+    emitGetterContents(node: GetterContents) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.isThisCaptured)
+        this.emitAssertedVarScope(node.bodyScope)
+        this.emitFunctionBody(node.body)
+    }
+
+    emitSetter(node: Setter) {
+        switch (node.type) {
+            case NodeType.EagerSetter:
+                return this.emitEagerSetter(node)
+            case NodeType.LazySetter:
+                return this.emitLazySetter(node)
+        }
+    }
+
+    emitEagerSetter(node: EagerSetter) {
+        this.writeKind(node.type)
+        this.emitPropertyName(node.name)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitSetterContents(node.contents)
+    }
+
+    emitLazySetter(node: LazySetter) {
+        this.writeKind(node.type)
+        this.emitPropertyName(node.name)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitSetterContents(node.contents)
+    }
+
+    emitSetterContents(node: SetterContents) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.isThisCaptured)
+        this.emitAssertedParameterScope(node.parameterScope)
+        this.emitParameter(node.param)
+        this.emitAssertedVarScope(node.bodyScope)
+        this.emitFunctionBody(node.body)
     }
 
     emitBindingIdentifier(node: BindingIdentifier) {
@@ -274,11 +442,23 @@ export default class Emitter {
     }
 
     emitEagerFunctionDeclaration(node: EagerFunctionDeclaration) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeBoolean(node.isGenerator)
+        this.emitBindingIdentifier(node.name)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitFunctionOrMethodContents(node.contents)
     }
 
     emitLazyFunctionDeclaration(node: LazyFunctionDeclaration) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeBoolean(node.isGenerator)
+        this.emitBindingIdentifier(node.name)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitFunctionOrMethodContents(node.contents)
     }
 
     emitIfStatement(node: IfStatement) {
@@ -606,8 +786,11 @@ export default class Emitter {
 
     emitLiteralPropertyName(node: LiteralPropertyName) {
         this.writeKind(node.type)
+        this.writeAtom(node.value)
+    }
 
-        throw new Error("Method not implemented.");
+    emitBindingOrBindingWithInitializerList(nodes: FrozenArray<Binding | BindingWithInitializer>) {
+        this.emitList(nodes, this.emitBindingOrBindingWithInitializer.bind(this))
     }
 
     emitBindingOrBindingWithInitializer(node: Binding | BindingWithInitializer) {
@@ -627,6 +810,8 @@ export default class Emitter {
 
     emitArrayBinding(node: ArrayBinding) {
         this.writeKind(node.type)
+        this.emitBindingOrBindingWithInitializerList(node.elements)
+        this.emitOptional(node.rest, this.emitBinding.bind(this))
     }
 
     emitTryFinallyStatement(node: TryFinallyStatement) {
@@ -735,8 +920,6 @@ export default class Emitter {
                 return this.emitYieldStarExpression(node)
             case NodeType.AwaitExpression:
                 return this.emitAwaitExpression(node)
-            default:
-                throw new Error("Unexpected Expression: " + node)
         }
     }
 
@@ -793,16 +976,49 @@ export default class Emitter {
     }
 
     emitEagerArrowExpressionWithFunctionBody(node: EagerArrowExpressionWithFunctionBody) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitArrowExpressionContentsWithFunctionBody(node.contents)
     }
+
     emitLazyArrowExpressionWithFunctionBody(node: LazyArrowExpressionWithFunctionBody) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitArrowExpressionContentsWithFunctionBody(node.contents)
     }
+
+    emitArrowExpressionContentsWithFunctionBody(node: ArrowExpressionContentsWithFunctionBody) {
+        this.writeKind(node.type)
+        this.emitAssertedParameterScope(node.parameterScope)
+        this.emitFormalParameters(node.params)
+        this.emitAssertedVarScope(node.bodyScope)
+        this.emitFunctionBody(node.body)
+    }
+
     emitEagerArrowExpressionWithExpression(node: EagerArrowExpressionWithExpression) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeVarnum(node.length)
+        this.emitArrowExpressionContentsWithExpression(node.contents)
     }
+
     emitLazyArrowExpressionWithExpression(node: LazyArrowExpressionWithExpression) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeVarnum(node.length)
+        this.emitArrowExpressionContentsWithExpression(node.contents)
+    }
+
+    emitArrowExpressionContentsWithExpression(node: ArrowExpressionContentsWithExpression) {
+        this.writeKind(node.type)
+        this.emitAssertedParameterScope(node.parameterScope)
+        this.emitFormalParameters(node.params)
+        this.emitAssertedVarScope(node.bodyScope)
+        this.emitExpression(node.body)
     }
 
     emitAssignmentExpression(node: AssignmentExpression) {
@@ -933,13 +1149,40 @@ export default class Emitter {
     }
 
     emitClassExpression(node: ClassExpression) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.emitOptional(node.name, this.emitBindingIdentifier.bind(this))
+        this.emitOptional(node.super, this.emitExpression.bind(this))
+        this.emitClassElementList(node.elements)
     }
+
     emitEagerFunctionExpression(node: EagerFunctionExpression) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeBoolean(node.isGenerator)
+        this.emitOptional(node.name, this.emitBindingIdentifier.bind(this))
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitFunctionExpressionContents(node.contents)
     }
+
     emitLazyFunctionExpression(node: LazyFunctionExpression) {
-        throw new Error("Method not implemented.");
+        this.writeKind(node.type)
+        this.writeBoolean(node.isAsync)
+        this.writeBoolean(node.isGenerator)
+        this.emitOptional(node.name, this.emitBindingIdentifier.bind(this))
+        this.writeVarnum(node.length)
+        this.emitDirectiveList(node.directives)
+        this.emitFunctionExpressionContents(node.contents)
+    }
+
+    emitFunctionExpressionContents(node: FunctionExpressionContents) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.isFunctionNameCaptured)
+        this.writeBoolean(node.isThisCaptured)
+        this.emitAssertedParameterScope(node.parameterScope)
+        this.emitFormalParameters(node.params)
+        this.emitAssertedVarScope(node.bodyScope)
+        this.emitFunctionBody(node.body)
     }
 
     emitIdentifierExpression(node: IdentifierExpression) {
