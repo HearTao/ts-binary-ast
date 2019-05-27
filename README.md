@@ -3,6 +3,6 @@
 ## Generate binary-ast from TypeScript Code
 
 - [x] Types
-- [ ] Encoder
+- [x] Encoder
 - [x] Decoder
 - [ ] TypeScript Emitter
