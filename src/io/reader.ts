@@ -14,7 +14,6 @@ export default class MultipartReader {
   private curr: number = 0
 
   constructor(private context: Context, private buffer: ArrayBufferLike) {
-    this.buffer = buffer
     this.view = new DataView(buffer)
   }
 
@@ -32,7 +31,7 @@ export default class MultipartReader {
     return this.view.getUint8(this.curr++)
   }
 
-  readString (length: number): string {
+  readGrammar (length: number): string {
     const result: string[] = []
     for (let i = 0; i < length; ++i) {
       result.push(String.fromCharCode(this.readByte()))
@@ -40,7 +39,7 @@ export default class MultipartReader {
     return result.join('')
   }
 
-  readWString (length: number) {
+  readString (length: number) {
     const dec = new TextDecoder("utf-8")
     const result = new Uint8Array(this.buffer.slice(this.curr, this.curr + length))
     this.curr += length
@@ -48,8 +47,7 @@ export default class MultipartReader {
   }
 
   readConst (str: string): boolean {
-    const a = this.lookAhead(() => this.readString(10))
-    if(str.split('').every(c => c === String.fromCharCode(this.readByte()))) {
+    if (this.readGrammar(str.length) === str) {
       return true
     }
 
@@ -144,7 +142,7 @@ export default class MultipartReader {
         throw new Error("Invalid byte length in grammar table")
       }
 
-      const name = this.readString(byteLength)
+      const name = this.readGrammar(byteLength)
       const kind = nameToNodeKindMapper(name)
       if (kind === undefined) {
         throw new Error("Invalid entry in grammar table")
@@ -180,7 +178,7 @@ export default class MultipartReader {
         this.curr += 2
         stringsTable.push("")
       } else {
-        stringsTable.push(this.readWString(byteLength))
+        stringsTable.push(this.readString(byteLength))
       }
     }
     if (this.curr !== posBeforeStrings + stringsByteLen) {

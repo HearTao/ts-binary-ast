@@ -5,3 +5,10 @@ export interface Context {
   stringsTable: string[]
   variantTable: Map<number, Variant>
 }
+
+export interface WriterContext {
+  grammarTable: NodeType[]
+  stringsTable: string[]
+  stringsTableToIndex: Map<string, number>
+  variantTableToIndex: Map<Variant, number>
+}
