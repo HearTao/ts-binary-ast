@@ -39,6 +39,10 @@ export default class Parser {
     return this.reader.readAtom()
   }
 
+  readDouble() {
+    return this.reader.readDouble()
+  }
+
   enterTaggedTuple() {
     return this.reader.enterTaggedTuple()
   }
@@ -302,7 +306,13 @@ export default class Parser {
   }
 
   parseLiteralBooleanExpression(): LiteralBooleanExpression {
-    throw new Error("Method not implemented.");
+    const type = this.parseKind(NodeType.LiteralBooleanExpression)
+
+    const value = this.readBoolean()
+    return {
+      type,
+      value
+    }
   }
 
   parseLiteralInfinityExpression(): LiteralInfinityExpression {
@@ -310,23 +320,53 @@ export default class Parser {
   }
 
   parseLiteralNullExpression(): LiteralNullExpression {
-    throw new Error("Method not implemented.");
+    const type = this.parseKind(NodeType.LiteralNullExpression)
+
+    return {
+      type
+    }
   }
 
   parseLiteralNumericExpression(): LiteralNumericExpression {
-    throw new Error("Method not implemented.");
+    const type = this.parseKind(NodeType.LiteralNumericExpression)
+
+    const value = this.readDouble()
+    return {
+      type,
+      value
+    }
   }
 
   parseLiteralStringExpression(): LiteralStringExpression {
-    throw new Error("Method not implemented.");
+    const type = this.parseKind(NodeType.LiteralStringExpression)
+
+    const value = this.readAtom()
+    return {
+      type,
+      value
+    }
   }
 
   parseLiteralRegExpExpression(): LiteralRegExpExpression {
-    throw new Error("Method not implemented.");
+    const type = this.parseKind(NodeType.LiteralRegExpExpression)
+
+    const pattern = this.readAtom()
+    const flags = this.readAtom()
+    return {
+      type,
+      pattern,
+      flags
+    }
   }
 
   parseArrayExpression(): ArrayExpression {
-    throw new Error("Method not implemented.");
+    const type = this.parseKind(NodeType.ArrayExpression)
+
+    const elements = this.parseSpreadOrExpressionList()
+    return {
+      type,
+      elements
+    }
   }
 
   parseEagerArrowExpressionWithFunctionBody(): EagerArrowExpressionWithFunctionBody {
@@ -634,10 +674,10 @@ export default class Parser {
   }
 
   parseArguments(): Arguments {
-    return this.parseSpreadOrExpressopmList()
+    return this.parseSpreadOrExpressionList()
   }
 
-  parseSpreadOrExpressopmList(): FrozenArray<SpreadElement | Expression> {
+  parseSpreadOrExpressionList(): FrozenArray<SpreadElement | Expression> {
     return this.parseList(() => this.parseSpreadOrExpressopm())
   }
 

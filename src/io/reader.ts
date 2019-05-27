@@ -31,6 +31,12 @@ export default class MultipartReader {
     return this.view.getUint8(this.curr++)
   }
 
+  readDouble(): number {
+    const result = this.view.getFloat64(this.curr, true)
+    this.curr += 8
+    return result
+  }
+
   readGrammar (length: number): string {
     const result: string[] = []
     for (let i = 0; i < length; ++i) {

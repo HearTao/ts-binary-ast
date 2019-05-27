@@ -43,6 +43,12 @@ export default class MultipartWriter {
         return 1
     }
 
+    writeDouble(value: number) {
+        this.view.setFloat64(this.size, value, true)
+        this.size += 8
+        return 8
+    }
+
     writeGrammar (value: string) {
         let result = this.writeVarnum(value.length)
         for (let i = 0; i < value.length; ++i) {
@@ -90,10 +96,6 @@ export default class MultipartWriter {
             default:
                 throw new Error("Invalid boolean value")
         }
-    }
-
-    writeDouble(value: number) {
-        this.writeBuffer(new Uint16Array([value]).buffer)
     }
 
     writeVariant (value: Variant) {

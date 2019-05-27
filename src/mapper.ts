@@ -121,7 +121,7 @@ const NodeTypeToNameMap = {
   [NodeType.SwitchDefault]: "SwitchDefault",
   [NodeType.TemplateElement]: "TemplateElement",
   [NodeType.VariableDeclaration]: "VariableDeclaration",
-  [NodeType.VariableDeclarator]: "VariableDeclarator"
+  [NodeType.VariableDeclarator]: "VariableDeclarator",
 } as const
 
 const NodeTypeNameToTypeMap = {
