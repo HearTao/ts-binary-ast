@@ -1,5 +1,5 @@
-import { NodeTypeLimit, NodeType, Variant } from "../types";
-import { nameToNodeKindMapper, nameToVariantMapper } from "../mapper";
+import { NodeType, Variant } from "../types";
+import { nameToNodeKindMapper, nameToVariantMapper, NodeTypeLimit } from "../mapper";
 import { Context } from "./context";
 import { Magic, Section, Compression } from './constants'
 
