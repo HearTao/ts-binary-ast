@@ -1,6 +1,6 @@
 import MultipartReader from "./reader";
 import { Context } from "./context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement } from "../types";
+import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget } from "../types";
 
 export default class Parser {
   context: Context
@@ -15,15 +15,15 @@ export default class Parser {
     this.reader = new MultipartReader(this.context, buffer)
   }
 
-  readHeader () {
+  readHeader() {
     return this.reader.readHeader()
   }
 
-  readVarnum () {
+  readVarnum() {
     return this.reader.readVarnum()
   }
 
-  readBoolean () {
+  readBoolean() {
     return this.reader.readBoolean()
   }
 
@@ -43,7 +43,7 @@ export default class Parser {
     return this.reader.enterTaggedTuple()
   }
 
-  lookAhead <T>(cb: () => T): T {
+  lookAhead<T>(cb: () => T): T {
     return this.reader.lookAhead(cb)
   }
 
@@ -265,7 +265,7 @@ export default class Parser {
       case NodeType.YieldStarExpression:
       case NodeType.AwaitExpression:
       default:
-          throw new Error("Unexpected Expression: " + kind)
+        throw new Error("Unexpected Expression: " + kind)
     }
   }
 
@@ -434,7 +434,7 @@ export default class Parser {
 
   parseVariableDeclaration(): VariableDeclaration {
     const type = this.parseKind(NodeType.VariableDeclaration)
-    
+
     const kind = this.parseVariableDeclarationKind()
     const declarators = this.parseVariableDeclaratorList()
     return {
@@ -452,9 +452,9 @@ export default class Parser {
       case Variant.Const:
         return VariableDeclarationKind.Const
       case Variant.AssertedDeclaredKindOrVariableDeclarationKindVar:
-          return VariableDeclarationKind.Var
+        return VariableDeclarationKind.Var
       default:
-        throw new Error("Invalid Variant: " + variant)
+        throw new Error("Unexpected Variant: " + variant)
     }
   }
 
@@ -479,9 +479,145 @@ export default class Parser {
     switch (kind) {
       case NodeType.ObjectBinding:
       case NodeType.ArrayBinding:
+        return this.parseBindingPattern()
       case NodeType.BindingIdentifier:
+        return this.parseBindingIdentifier()
       default:
-        throw new Error("Not implements Binding")
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseBindingPattern(): BindingPattern {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.ObjectBinding:
+        return this.parseObjectBinding()
+      case NodeType.ArrayBinding:
+        return this.parseArrayBinding()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseObjectBinding(): ObjectBinding {
+    const type = this.parseKind(NodeType.ObjectBinding)
+
+    const properties = this.parseBindingPropertyList()
+    return {
+      type,
+      properties
+    }
+  }
+
+  parseBindingPropertyList(): FrozenArray<BindingProperty> {
+    return this.parseList(() => this.parseBindingProperty())
+  }
+
+  parseBindingProperty(): BindingProperty {
+    const kind = this.peekTaggedTuple()
+
+    switch (kind) {
+      case NodeType.BindingPropertyIdentifier:
+        return this.parseBindingPropertyIdentifier()
+      case NodeType.BindingPropertyProperty:
+        return this.parseBindingPropertyProperty()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseBindingPropertyIdentifier(): BindingPropertyIdentifier {
+    const type = this.parseKind(NodeType.BindingPropertyIdentifier)
+
+    const binding = this.parseBindingIdentifier()
+    const init = this.parseOptional(() => this.parseExpression())
+    return {
+      type,
+      binding,
+      init
+    }
+  }
+
+  parseBindingPropertyProperty(): BindingPropertyProperty {
+    const type = this.parseKind(NodeType.BindingPropertyProperty)
+
+    const name = this.parsePropertyName()
+    const binding = this.parseBindingOrBindingWithInitializer()
+    return {
+      type,
+      name,
+      binding
+    }
+  }
+
+  parsePropertyName(): PropertyName {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.ComputedPropertyName:
+        return this.parseComputedPropertyName()
+      case NodeType.LiteralPropertyName:
+        return this.parseLiteralPropertyName()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseComputedPropertyName(): ComputedPropertyName {
+    const type = this.parseKind(NodeType.ComputedPropertyName)
+
+    const expression = this.parseExpression()
+    return {
+      type,
+      expression
+    }
+  }
+
+  parseLiteralPropertyName(): LiteralPropertyName {
+    const type = this.parseKind(NodeType.LiteralPropertyName)
+
+    const value = this.readAtom()
+    return {
+      type,
+      value
+    }
+  }
+
+  parseBindingOrBindingWithInitializerList(): FrozenArray<Binding | BindingWithInitializer> {
+    return this.parseList(() => this.parseBindingOrBindingWithInitializer())
+  }
+
+  parseBindingOrBindingWithInitializer(): Binding | BindingWithInitializer {
+    const kind = this.peekTaggedTuple()
+
+    switch (kind) {
+      case NodeType.BindingWithInitializer:
+        return this.parseBindingWithInitializer()
+      default:
+        return this.parseBinding()
+    }
+  }
+
+  parseBindingWithInitializer(): BindingWithInitializer {
+    const type = this.parseKind(NodeType.BindingWithInitializer)
+    const binding = this.parseBinding()
+    const init = this.parseExpression()
+
+    return {
+      type,
+      binding,
+      init
+    }
+  }
+
+  parseArrayBinding(): ArrayBinding {
+    const type = this.parseKind(NodeType.ArrayBinding)
+
+    const elements = this.parseBindingOrBindingWithInitializerList()
+    const rest = this.parseOptional(() => this.parseBinding())
+    return {
+      type,
+      elements,
+      rest
     }
   }
 
@@ -535,7 +671,7 @@ export default class Parser {
       case NodeType.VariableDeclaration:
         return this.parseVariableDeclaration()
       default:
-        throw new Error("Not implements parseVariableDeclarationOrExpression")
+        return this.parseExpression()
     }
   }
 
@@ -543,13 +679,164 @@ export default class Parser {
     const kind = this.peekTaggedTuple()
     switch (kind) {
       case NodeType.ForInOfBinding:
+        return this.parseForInOfBinding()
       case NodeType.ObjectAssignmentTarget:
       case NodeType.ArrayAssignmentTarget:
       case NodeType.AssignmentTargetIdentifier:
       case NodeType.ComputedMemberAssignmentTarget:
       case NodeType.StaticMemberAssignmentTarget:
+        return this.parseAssignmentTarget()
       default:
-          throw new Error("Not implements parseForInOfBindingOrAssignmentTarget")
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseAssignmentTarget(): AssignmentTarget {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.ObjectAssignmentTarget:
+      case NodeType.ArrayAssignmentTarget:
+        return this.parseAssignmentTargetPattern()
+      case NodeType.AssignmentTargetIdentifier:
+      case NodeType.ComputedMemberAssignmentTarget:
+      case NodeType.StaticMemberAssignmentTarget:
+        return this.parseSimpleAssignmentTarget()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseAssignmentTargetPattern(): AssignmentTargetPattern {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.ObjectAssignmentTarget:
+        return this.parseObjectAssignmentTarget()
+      case NodeType.ArrayAssignmentTarget:
+        return this.parseArrayAssignmentTarget()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseObjectAssignmentTarget(): ObjectAssignmentTarget {
+    const type = this.parseKind(NodeType.ObjectAssignmentTarget)
+
+    const properties = this.parseAssignmentTargetPropertyList()
+    return {
+      type,
+      properties
+    }
+  }
+
+  parseAssignmentTargetPropertyList(): FrozenArray<AssignmentTargetProperty> {
+    return this.parseList(() => this.parseAssignmentTargetProperty())
+  }
+
+  parseAssignmentTargetProperty(): AssignmentTargetProperty {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.AssignmentTargetPropertyIdentifier:
+        return this.parseAssignmentTargetPropertyIdentifier()
+      case NodeType.AssignmentTargetPropertyProperty:
+        return this.parseAssignmentTargetPropertyProperty()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseAssignmentTargetPropertyIdentifier(): AssignmentTargetPropertyIdentifier {
+    const type = this.parseKind(NodeType.AssignmentTargetPropertyIdentifier)
+
+    const binding = this.parseAssignmentTargetIdentifier()
+    const init = this.parseOptional(() => this.parseExpression())
+    return {
+      type,
+      binding,
+      init
+    }
+  }
+
+  parseAssignmentTargetIdentifier(): AssignmentTargetIdentifier {
+    const type = this.parseKind(NodeType.AssignmentTargetIdentifier)
+
+    const name = this.readIdentifierName()
+    return {
+      type,
+      name
+    }
+  }
+
+  parseAssignmentTargetOrAssignmentTargetWithInitializerList(): FrozenArray<AssignmentTarget | AssignmentTargetWithInitializer> {
+    return this.parseList(() => this.parseAssignmentTargetOrAssignmentTargetWithInitializer())
+  }
+
+  parseAssignmentTargetOrAssignmentTargetWithInitializer(): AssignmentTarget | AssignmentTargetWithInitializer {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.AssignmentTargetWithInitializer:
+        return this.parseAssignmentTargetWithInitializer()
+      default:
+        return this.parseAssignmentTarget()
+    }
+  }
+
+  parseAssignmentTargetWithInitializer(): AssignmentTargetWithInitializer {
+    const type = this.parseKind(NodeType.AssignmentTargetWithInitializer)
+
+    const binding = this.parseAssignmentTarget()
+    const init = this.parseExpression()
+    return {
+      type,
+      binding,
+      init
+    }
+  }
+
+  parseAssignmentTargetPropertyProperty(): AssignmentTargetPropertyProperty {
+    const type = this.parseKind(NodeType.AssignmentTargetPropertyProperty)
+
+    const name = this.parsePropertyName()
+    const binding = this.parseAssignmentTargetOrAssignmentTargetWithInitializer()
+    return {
+      type,
+      name,
+      binding
+    }
+  }
+
+  parseArrayAssignmentTarget(): ArrayAssignmentTarget {
+    const type = this.parseKind(NodeType.ArrayAssignmentTarget)
+
+    const elements = this.parseAssignmentTargetOrAssignmentTargetWithInitializerList()
+    const rest = this.parseOptional(() => this.parseAssignmentTarget())
+    return {
+      type,
+      elements,
+      rest
+    }
+  }
+
+  parseSimpleAssignmentTarget(): SimpleAssignmentTarget {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.AssignmentTargetIdentifier:
+      case NodeType.ComputedMemberAssignmentTarget:
+      case NodeType.StaticMemberAssignmentTarget:
+        return this.parseSimpleAssignmentTarget()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseForInOfBinding(): ForInOfBinding {
+    const type = this.parseKind(NodeType.ForInOfBinding)
+
+    const kind = this.parseVariableDeclarationKind()
+    const binding = this.parseBinding()
+    return {
+      type,
+      kind,
+      binding
     }
   }
 
