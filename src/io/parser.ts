@@ -39,6 +39,11 @@ export default class Parser {
     return this.reader.readAtom()
   }
 
+  readMaybeAtom () {
+    const result = this.reader.readAtom()
+    return result ? result : undefined
+  }
+
   readDouble() {
     return this.reader.readDouble()
   }
@@ -933,7 +938,7 @@ export default class Parser {
   parseBreakStatement(): BreakStatement {
     const type = this.parseKind(NodeType.BreakStatement)
 
-    const label = this.parseOptional(() => this.readAtom())
+    const label = this.readMaybeAtom()
     return {
       type,
       label
@@ -943,7 +948,7 @@ export default class Parser {
   parseContinueStatement(): ContinueStatement {
     const type = this.parseKind(NodeType.ContinueStatement)
 
-    const label = this.parseOptional(() => this.readAtom())
+    const label = this.readMaybeAtom()
     return {
       type,
       label

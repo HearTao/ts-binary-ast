@@ -108,7 +108,7 @@ export default class MultipartWriter {
 
     writeVariant (value: Variant) {
         if (this.context.variantTableToIndex.has(value)) {
-            return this.writeByte(this.context.variantTableToIndex.get(value)!)
+            return this.writeVarnum(this.context.variantTableToIndex.get(value)!)
         } else {
             const name = variantToValueMapper(value)
             if (!name) {
