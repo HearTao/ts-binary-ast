@@ -92,6 +92,10 @@ export default class MultipartWriter {
         }
     }
 
+    writeDouble(value: number) {
+        this.writeBuffer(new Uint16Array([value]).buffer)
+    }
+
     writeVariant (value: Variant) {
         if (this.context.variantTableToIndex.has(value)) {
             return this.writeByte(this.context.variantTableToIndex.get(value)!)

@@ -1,6 +1,6 @@
 import MultipartWritter from "./writer";
 import { WriterContext } from "./context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, ObjectBinding, ArrayBinding, BindingPattern, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, PropertyName, ComputedPropertyName, LiteralPropertyName, ObjectAssignmentTarget, ArrayAssignmentTarget, AssignmentTargetIdentifier, ComputedMemberAssignmentTarget, StaticMemberAssignmentTarget, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetWithInitializer, Identifier, Super } from "../types";
+import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, ObjectBinding, ArrayBinding, BindingPattern, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, PropertyName, ComputedPropertyName, LiteralPropertyName, ObjectAssignmentTarget, ArrayAssignmentTarget, AssignmentTargetIdentifier, ComputedMemberAssignmentTarget, StaticMemberAssignmentTarget, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetWithInitializer, Identifier, Super, LiteralBooleanExpression, LiteralInfinityExpression, LiteralNullExpression, LiteralNumericExpression, LiteralStringExpression, LiteralRegExpExpression, ArrayExpression, EagerArrowExpressionWithFunctionBody, LazyArrowExpressionWithFunctionBody, EagerArrowExpressionWithExpression, LazyArrowExpressionWithExpression, AssignmentExpression, BinaryExpression, CallExpression, CompoundAssignmentExpression, ComputedMemberExpression, ConditionalExpression, ClassExpression, EagerFunctionExpression, LazyFunctionExpression, IdentifierExpression, NewExpression, NewTargetExpression, ObjectExpression, UnaryExpression, StaticMemberExpression, TemplateExpression, ThisExpression, UpdateExpression, YieldExpression, YieldStarExpression, AwaitExpression, SpreadElement, BinaryOperator, Arguments, CompoundAssignmentOperator, ObjectProperty, DataProperty, ShorthandProperty, UnaryOperator, TemplateElement, UpdateOperator } from "../types";
 import { Section, Compression } from "./constants";
 
 export default class Emitter {
@@ -31,6 +31,10 @@ export default class Emitter {
 
     writeBoolean(value: boolean) {
         return this.writer.writeBoolean(value)
+    }
+
+    writeDouble(value: number) {
+        return this.writer.writeDouble(value)
     }
 
     writeIdentifierName(value: string) {
@@ -143,7 +147,7 @@ export default class Emitter {
     }
 
     emitIdentifier(node: Identifier) {
-        this.writeAtom(node)
+        this.writeIdentifierName(node)
     }
 
     emitStatement(node: Statement) {
@@ -668,39 +672,413 @@ export default class Emitter {
     emitExpression(node: Expression) {
         switch (node.type) {
             case NodeType.LiteralBooleanExpression:
+                return this.emitLiteralBooleanExpression(node)
             case NodeType.LiteralInfinityExpression:
+                return this.emitLiteralInfinityExpression(node)
             case NodeType.LiteralNullExpression:
+                return this.emitLiteralNullExpression(node)
             case NodeType.LiteralNumericExpression:
+                return this.emitLiteralNumericExpression(node)
             case NodeType.LiteralStringExpression:
+                return this.emitLiteralStringExpression(node)
             case NodeType.LiteralRegExpExpression:
+                return this.emitLiteralRegExpExpression(node)
             case NodeType.ArrayExpression:
+                return this.emitArrayExpression(node)
             case NodeType.EagerArrowExpressionWithFunctionBody:
+                return this.emitEagerArrowExpressionWithFunctionBody(node)
             case NodeType.LazyArrowExpressionWithFunctionBody:
+                return this.emitLazyArrowExpressionWithFunctionBody(node)
             case NodeType.EagerArrowExpressionWithExpression:
+                return this.emitEagerArrowExpressionWithExpression(node)
             case NodeType.LazyArrowExpressionWithExpression:
+                return this.emitLazyArrowExpressionWithExpression(node)
             case NodeType.AssignmentExpression:
+                return this.emitAssignmentExpression(node)
             case NodeType.BinaryExpression:
+                return this.emitBinaryExpression(node)
             case NodeType.CallExpression:
+                return this.emitCallExpression(node)
             case NodeType.CompoundAssignmentExpression:
+                return this.emitCompoundAssignmentExpression(node)
             case NodeType.ComputedMemberExpression:
+                return this.emitComputedMemberExpression(node)
             case NodeType.ConditionalExpression:
+                return this.emitConditionalExpression(node)
             case NodeType.ClassExpression:
+                return this.emitClassExpression(node)
             case NodeType.EagerFunctionExpression:
+                return this.emitEagerFunctionExpression(node)
             case NodeType.LazyFunctionExpression:
+                return this.emitLazyFunctionExpression(node)
             case NodeType.IdentifierExpression:
+                return this.emitIdentifierExpression(node)
             case NodeType.NewExpression:
+                return this.emitNewExpression(node)
             case NodeType.NewTargetExpression:
+                return this.emitNewTargetExpression(node)
             case NodeType.ObjectExpression:
+                return this.emitObjectExpression(node)
             case NodeType.UnaryExpression:
+                return this.emitUnaryExpression(node)
             case NodeType.StaticMemberExpression:
+                return this.emitStaticMemberExpression(node)
             case NodeType.TemplateExpression:
+                return this.emitTemplateExpression(node)
             case NodeType.ThisExpression:
+                return this.emitThisExpression(node)
             case NodeType.UpdateExpression:
+                return this.emitUpdateExpression(node)
             case NodeType.YieldExpression:
+                return this.emitYieldExpression(node)
             case NodeType.YieldStarExpression:
+                return this.emitYieldStarExpression(node)
             case NodeType.AwaitExpression:
+                return this.emitAwaitExpression(node)
             default:
-                throw new Error("Unexpected Expression: " + node.type)
+                throw new Error("Unexpected Expression: " + node)
         }
+    }
+
+    emitLiteralBooleanExpression(node: LiteralBooleanExpression) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.value)
+    }
+
+    emitLiteralInfinityExpression(node: LiteralInfinityExpression) {
+        throw new Error("Method not implemented.");
+    }
+
+    emitLiteralNullExpression(node: LiteralNullExpression) {
+        this.writeKind(node.type)
+    }
+
+    emitLiteralNumericExpression(node: LiteralNumericExpression) {
+        this.writeKind(node.type)
+        this.writeDouble(node.value)
+    }
+
+    emitLiteralStringExpression(node: LiteralStringExpression) {
+        this.writeKind(node.type)
+        this.writeAtom(node.value)
+    }
+
+    emitLiteralRegExpExpression(node: LiteralRegExpExpression) {
+        this.writeKind(node.type)
+        this.writeAtom(node.pattern)
+        this.writeAtom(node.flags)
+    }
+
+    emitArrayExpression(node: ArrayExpression) {
+        this.writeKind(node.type)
+        this.emitSpreadElementOrExpressionList(node.elements)
+    }
+
+    emitSpreadElementOrExpressionList(nodes: FrozenArray<SpreadElement | Expression>) {
+        this.emitList(nodes, this.emitSpreadElementOrExpression.bind(this))
+    }
+
+    emitSpreadElementOrExpression(node: SpreadElement | Expression) {
+        switch (node.type) {
+            case NodeType.SpreadElement:
+                return this.emitSpreadElement(node)
+            default:
+                return this.emitExpression(node)
+        }
+    }
+
+    emitSpreadElement(node: SpreadElement) {
+        this.writeKind(node.type)
+        this.emitExpression(node.expression)
+    }
+
+    emitEagerArrowExpressionWithFunctionBody(node: EagerArrowExpressionWithFunctionBody) {
+        throw new Error("Method not implemented.");
+    }
+    emitLazyArrowExpressionWithFunctionBody(node: LazyArrowExpressionWithFunctionBody) {
+        throw new Error("Method not implemented.");
+    }
+    emitEagerArrowExpressionWithExpression(node: EagerArrowExpressionWithExpression) {
+        throw new Error("Method not implemented.");
+    }
+    emitLazyArrowExpressionWithExpression(node: LazyArrowExpressionWithExpression) {
+        throw new Error("Method not implemented.");
+    }
+
+    emitAssignmentExpression(node: AssignmentExpression) {
+        this.writeKind(node.type)
+        this.emitAssignmentTarget(node.binding)
+        this.emitExpression(node.expression)
+    }
+
+    emitBinaryExpression(node: BinaryExpression) {
+        this.writeKind(node.type)
+        this.emitBinaryOperator(node.operator)
+        this.emitExpression(node.left)
+        this.emitExpression(node.right)
+    }
+
+    emitBinaryOperator(variant: BinaryOperator) {
+        switch (variant) {
+            case BinaryOperator.Comma:
+                return this.writeVariant(Variant.Comma)
+            case BinaryOperator.Or:
+                return this.writeVariant(Variant.Or)
+            case BinaryOperator.And:
+                return this.writeVariant(Variant.And)
+            case BinaryOperator.LogicOr:
+                return this.writeVariant(Variant.LogicOr)
+            case BinaryOperator.LogicXor:
+                return this.writeVariant(Variant.LogicXor)
+            case BinaryOperator.LogicAnd:
+                return this.writeVariant(Variant.LogicAnd)
+            case BinaryOperator.EqualEqual:
+                return this.writeVariant(Variant.EqualEqual)
+            case BinaryOperator.NotEqual:
+                return this.writeVariant(Variant.NotEqual)
+            case BinaryOperator.EqualEqualEqual:
+                return this.writeVariant(Variant.EqualEqualEqual)
+            case BinaryOperator.NotEqualEqual:
+                return this.writeVariant(Variant.NotEqualEqual)
+            case BinaryOperator.LessThan:
+                return this.writeVariant(Variant.LessThan)
+            case BinaryOperator.LessThanEqual:
+                return this.writeVariant(Variant.LessThanEqual)
+            case BinaryOperator.GreaterThan:
+                return this.writeVariant(Variant.GreaterThan)
+            case BinaryOperator.GreaterThanEqual:
+                return this.writeVariant(Variant.GreaterThanEqual)
+            case BinaryOperator.In:
+                return this.writeVariant(Variant.In)
+            case BinaryOperator.InstanceOf:
+                return this.writeVariant(Variant.InstanceOf)
+            case BinaryOperator.LessThanLessThan:
+                return this.writeVariant(Variant.LessThanLessThan)
+            case BinaryOperator.GreaterThanGreaterThan:
+                return this.writeVariant(Variant.GreaterThanGreaterThan)
+            case BinaryOperator.GreaterThanGreaterThanGreaterThan:
+                return this.writeVariant(Variant.GreaterThanGreaterThanGreaterThan)
+            case BinaryOperator.Plus:
+                return this.writeVariant(Variant.BinaryOperatorOrUnaryOperatorPlus)
+            case BinaryOperator.Minus:
+                return this.writeVariant(Variant.BinaryOperatorOrUnaryOperatorMinus)
+            case BinaryOperator.Star:
+                return this.writeVariant(Variant.Star)
+            case BinaryOperator.Div:
+                return this.writeVariant(Variant.Div)
+            case BinaryOperator.Mod:
+                return this.writeVariant(Variant.Mod)
+            case BinaryOperator.StarStar:
+                return this.writeVariant(Variant.StarStar)
+        }
+    }
+
+    emitCallExpression(node: CallExpression) {
+        this.writeKind(node.type)
+        this.emitExpressionOrSuper(node.callee)
+        this.emitArguments(node.arguments)
+    }
+
+    emitArguments(node: Arguments) {
+        this.emitSpreadElementOrExpressionList(node)
+    }
+
+    emitCompoundAssignmentExpression(node: CompoundAssignmentExpression) {
+        this.writeKind(node.type)
+        this.emitCompoundAssignmentOperator(node.operator)
+        this.emitSimpleAssignmentTarget(node.binding)
+        this.emitExpression(node.expression)
+    }
+
+    emitCompoundAssignmentOperator(node: CompoundAssignmentOperator) {
+        switch (node) {
+            case CompoundAssignmentOperator.PlusEqual:
+                return this.writeVariant(Variant.PlusEqual)
+            case CompoundAssignmentOperator.MinusEqual:
+                return this.writeVariant(Variant.MinusEqual)
+            case CompoundAssignmentOperator.StarEqual:
+                return this.writeVariant(Variant.StarEqual)
+            case CompoundAssignmentOperator.DivEuqal:
+                return this.writeVariant(Variant.DivEuqal)
+            case CompoundAssignmentOperator.ModEqual:
+                return this.writeVariant(Variant.ModEqual)
+            case CompoundAssignmentOperator.StarStarEqual:
+                return this.writeVariant(Variant.StarStarEqual)
+            case CompoundAssignmentOperator.LessThanLessThanEqual:
+                return this.writeVariant(Variant.LessThanLessThanEqual)
+            case CompoundAssignmentOperator.GreaterThanGreaterThanEequal:
+                return this.writeVariant(Variant.GreaterThanGreaterThanEequal)
+            case CompoundAssignmentOperator.GreaterThanGreaterThanGreaterThanEequal:
+                return this.writeVariant(Variant.GreaterThanGreaterThanGreaterThanEequal)
+            case CompoundAssignmentOperator.LoginOrEqual:
+                return this.writeVariant(Variant.LoginOrEqual)
+            case CompoundAssignmentOperator.LogicAndEuqal:
+                return this.writeVariant(Variant.LogicAndEuqal)
+            case CompoundAssignmentOperator.LogicXorEqual:
+                return this.writeVariant(Variant.LogicXorEqual)
+        }
+    }
+
+    emitComputedMemberExpression(node: ComputedMemberExpression) {
+        this.writeKind(node.type)
+        this.emitExpressionOrSuper(node._object)
+        this.emitExpression(node.expression)
+    }
+
+    emitConditionalExpression(node: ConditionalExpression) {
+        this.writeKind(node.type)
+        this.emitExpression(node.test)
+        this.emitExpression(node.consequent)
+        this.emitExpression(node.alternate)
+    }
+
+    emitClassExpression(node: ClassExpression) {
+        throw new Error("Method not implemented.");
+    }
+    emitEagerFunctionExpression(node: EagerFunctionExpression) {
+        throw new Error("Method not implemented.");
+    }
+    emitLazyFunctionExpression(node: LazyFunctionExpression) {
+        throw new Error("Method not implemented.");
+    }
+
+    emitIdentifierExpression(node: IdentifierExpression) {
+        this.writeKind(node.type)
+        this.writeIdentifierName(node.name)
+    }
+
+    emitNewExpression(node: NewExpression) {
+        this.writeKind(node.type)
+        this.emitExpression(node.callee)
+        this.emitArguments(node.arguments)
+    }
+
+    emitNewTargetExpression(node: NewTargetExpression) {
+        this.writeKind(node.type)
+    }
+
+    emitObjectExpression(node: ObjectExpression) {
+        this.writeKind(node.type)
+        this.emitObjectPropertyList(node.properties)
+    }
+
+    emitObjectPropertyList(nodes: FrozenArray<ObjectProperty>) {
+        this.emitList(nodes, this.emitObjectProperty.bind(this))
+    }
+
+    emitObjectProperty(node: ObjectProperty) {
+        switch (node.type) {
+            case NodeType.EagerMethod:
+            case NodeType.LazyMethod:
+            case NodeType.EagerGetter:
+            case NodeType.LazyGetter:
+            case NodeType.EagerSetter:
+            case NodeType.LazySetter:
+                return this.emitMethodDefinition(node)
+            case NodeType.DataProperty:
+                return this.emitDataProperty(node)
+            case NodeType.ShorthandProperty:
+                return this.emitShorthandProperty(node)
+        }
+    }
+
+    emitDataProperty(node: DataProperty) {
+        this.writeKind(node.type)
+        this.emitPropertyName(node.name)
+        this.emitExpression(node.expression)
+    }
+
+    emitShorthandProperty(node: ShorthandProperty) {
+        this.writeKind(node.type)
+        this.emitIdentifierExpression(node.name)
+    }
+
+    emitUnaryExpression(node: UnaryExpression) {
+        this.writeKind(node.type)
+        this.emitUnaryOperator(node.operator)
+        this.emitExpression(node.operand)
+    }
+
+    emitUnaryOperator(node: UnaryOperator) {
+        switch (node) {
+            case UnaryOperator.Plus:
+                return this.writeVariant(Variant.BinaryOperatorOrUnaryOperatorPlus)
+            case UnaryOperator.Minus:
+                return this.writeVariant(Variant.BinaryOperatorOrUnaryOperatorMinus)
+            case UnaryOperator.Not:
+                return this.writeVariant(Variant.Not)
+            case UnaryOperator.LogicNot:
+                return this.writeVariant(Variant.LogicNot)
+            case UnaryOperator.TypeOf:
+                return this.writeVariant(Variant.TypeOf)
+            case UnaryOperator.Void:
+                return this.writeVariant(Variant.Void)
+            case UnaryOperator.Delete:
+                return this.writeVariant(Variant.Delete)
+        }
+    }
+
+    emitStaticMemberExpression(node: StaticMemberExpression) {
+        this.writeKind(node.type)
+        this.emitExpressionOrSuper(node._object)
+        this.writeIdentifierName(node.property)
+    }
+
+    emitTemplateExpression(node: TemplateExpression) {
+        this.writeKind(node.type)
+        this.emitOptional(node.tag, this.emitExpression.bind(this))
+        this.emitExpressionOrTemplateElement
+    }
+
+    emitExpressionOrTemplateElementList(nodes: FrozenArray<Expression | TemplateElement>) {
+        return this.emitList(nodes, this.emitExpressionOrTemplateElement.bind(this))
+    }
+
+    emitExpressionOrTemplateElement(node: Expression | TemplateElement) {
+        switch (node.type) {
+            case NodeType.TemplateElement:
+                return this.emitTemplateElement(node)
+            default:
+                return this.emitExpression(node)
+        }
+    }
+
+    emitTemplateElement(node: TemplateElement) {
+        throw new Error("Method not implemented.");
+    }
+
+    emitThisExpression(node: ThisExpression) {
+        this.writeKind(node.type)
+    }
+
+    emitUpdateExpression(node: UpdateExpression) {
+        this.writeKind(node.type)
+        this.writeBoolean(node.isPrefix)
+        this.emitUpdateOperator(node.operator)
+        this.emitSimpleAssignmentTarget(node.operand)
+    }
+
+    emitUpdateOperator(node: UpdateOperator) {
+        switch (node) {
+            case UpdateOperator.PlusPlus:
+                return this.writeVariant(Variant.PlusPlus)
+            case UpdateOperator.MinusMinus:
+                return this.writeVariant(Variant.MinusMinus)
+        }
+    }
+
+    emitYieldExpression(node: YieldExpression) {
+        this.writeKind(node.type)
+        this.emitOptional(node.expression, this.emitExpression.bind(this))
+    }
+
+    emitYieldStarExpression(node: YieldStarExpression) {
+        this.writeKind(node.type)
+        this.emitExpression(node.expression)
+    }
+
+    emitAwaitExpression(node: AwaitExpression) {
+        this.writeKind(node.type)
+        this.emitExpression(node.expression)
     }
 }

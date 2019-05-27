@@ -1204,7 +1204,6 @@ export interface NewExpression extends Node {
 
 export interface NewTargetExpression extends Node {
   type: NodeType.NewTargetExpression
-
 }
 
 export interface ObjectExpression extends Node {
@@ -1232,7 +1231,6 @@ export interface TemplateExpression extends Node {
 
 export interface ThisExpression extends Node {
   type: NodeType.ThisExpression
-
 }
 
 export interface UpdateExpression extends Node {
