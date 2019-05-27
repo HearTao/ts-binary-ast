@@ -1,6 +1,6 @@
 import MultipartReader from "./reader";
 import { Context } from "./context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super } from "../types";
+import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super, Getter, Setter, Method, EagerMethod, LazyMethod, EagerGetter, LazyGetter, GetterContents, AssertedVarScope, FunctionBody, EagerSetter, LazySetter, SetterContents, AssertedParameterScope, AssertedMaybePositionalParameterName, Parameter, FunctionOrMethodContents, FormalParameters, AssertedPositionalParameterName, AssertedRestParameterName, AssertedParameterName } from "../types";
 
 export default class Parser {
   context: Context
@@ -349,13 +349,310 @@ export default class Parser {
     switch (kind) {
       case NodeType.EagerMethod:
       case NodeType.LazyMethod:
+        return this.parseMethod()
       case NodeType.EagerGetter:
       case NodeType.LazyGetter:
+        return this.parseGetter()
       case NodeType.EagerSetter:
       case NodeType.LazySetter:
+        return this.parseSetter()
       default:
         throw new Error("Unexpected method definition")
     }
+  }
+
+  parseMethod(): Method {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.EagerMethod:
+        return this.parseEagerMethod()
+      case NodeType.LazyMethod:
+        return this.parseLazyMethod()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseEagerMethod(): EagerMethod {
+    const type = this.parseKind(NodeType.EagerMethod)
+
+    const isAsync = this.readBoolean()
+    const isGenerator = this.readBoolean()
+    const name = this.parsePropertyName()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseFunctionOrMethodContents()
+    return {
+      type,
+      isAsync,
+      isGenerator,
+      name,
+      length,
+      directives,
+      contents
+    }
+  }
+
+  parseLazyMethod(): LazyMethod {
+    const type = this.parseKind(NodeType.LazyMethod)
+
+    const isAsync = this.readBoolean()
+    const isGenerator = this.readBoolean()
+    const name = this.parsePropertyName()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseFunctionOrMethodContents()
+    return {
+      type,
+      isAsync,
+      isGenerator,
+      name,
+      length,
+      directives,
+      contents
+    }
+  }
+
+  parseFunctionOrMethodContents(): FunctionOrMethodContents {
+    const type = this.parseKind(NodeType.FunctionOrMethodContents)
+
+    const isThisCaptured = this.readBoolean()
+    const parameterScope = this.parseAssertedParameterScope()
+    const params = this.parseFormalParameters()
+    const bodyScope = this.parseAssertedVarScope()
+    const body = this.parseFunctionBody()
+    return {
+      type,
+      isThisCaptured,
+      parameterScope,
+      params,
+      bodyScope,
+      body
+    }
+  }
+
+  parseFormalParameters(): FormalParameters {
+    const type = this.parseKind(NodeType.FormalParameters)
+
+    const items = this.parseParameterList()
+    const rest = this.parseOptional(() => this.parseBinding())
+    return {
+      type,
+      items,
+      rest
+    }
+  }
+
+  parseGetter(): Getter {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.EagerGetter:
+        return this.parseEagerGetter()
+      case NodeType.LazyGetter:
+        return this.parseLazyGetter()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseEagerGetter(): EagerGetter {
+    const type = this.parseKind(NodeType.EagerGetter)
+
+    const name = this.parsePropertyName()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseGetterContents()
+    return {
+      type,
+      name,
+      directives,
+      contents
+    }
+  }
+
+  parseLazyGetter(): LazyGetter {
+    const type = this.parseKind(NodeType.LazyGetter)
+
+    const name = this.parsePropertyName()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseGetterContents()
+    return {
+      type,
+      name,
+      directives,
+      contents
+    }
+  }
+
+  parseGetterContents(): GetterContents {
+    const type = this.parseKind(NodeType.GetterContents)
+
+    const isThisCaptured = this.readBoolean()
+    const bodyScope = this.parseAssertedVarScope()
+    const body = this.parseFunctionBody()
+    return {
+      type,
+      isThisCaptured,
+      bodyScope,
+      body
+    }
+  }
+
+  parseAssertedVarScope(): AssertedVarScope {
+    const type = this.parseKind(NodeType.AssertedVarScope)
+
+    const declaredNames = this.parseAssertedDeclaredNameList()
+    const hasDirectEval = this.readBoolean()
+    return {
+      type,
+      declaredNames,
+      hasDirectEval
+    }
+  }
+
+  parseFunctionBody(): FunctionBody {
+    return this.parseStatementList()
+  }
+
+  parseSetter(): Setter {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.EagerSetter:
+        return this.parseEagerSetter()
+      case NodeType.LazySetter:
+        return this.parseLazySetter()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseEagerSetter(): EagerSetter {
+    const type = this.parseKind(NodeType.EagerSetter)
+
+    const name = this.parsePropertyName()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseSetterContents()
+
+    return {
+      type,
+      name,
+      length,
+      directives,
+      contents
+    }
+  }
+
+  parseLazySetter(): LazySetter {
+    const type = this.parseKind(NodeType.LazySetter)
+
+    const name = this.parsePropertyName()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseSetterContents()
+
+    return {
+      type,
+      name,
+      length,
+      directives,
+      contents
+    }
+  }
+
+  parseSetterContents(): SetterContents {
+    const type = this.parseKind(NodeType.SetterContents)
+    
+    const isThisCaptured = this.readBoolean()
+    const parameterScope = this.parseAssertedParameterScope()
+    const param = this.parseParameter()
+    const bodyScope = this.parseAssertedVarScope()
+    const body = this.parseFunctionBody()
+    return {
+      type,
+      isThisCaptured,
+      parameterScope,
+      param,
+      bodyScope,
+      body
+    }
+  }
+
+  parseAssertedParameterScope(): AssertedParameterScope {
+    const type = this.parseKind(NodeType.AssertedParameterScope)
+
+    const paramNames = this.parseAssertedMaybePositionalParameterNameList()
+    const hasDirectEval = this.readBoolean()
+    const isSimpleParameterList = this.readBoolean()
+    return {
+      type,
+      paramNames,
+      hasDirectEval,
+      isSimpleParameterList
+    }
+  }
+
+  parseAssertedMaybePositionalParameterNameList(): FrozenArray<AssertedMaybePositionalParameterName> {
+    return this.parseList(() => this.parseAssertedMaybePositionalParameterName())
+  }
+
+  parseAssertedMaybePositionalParameterName(): AssertedMaybePositionalParameterName {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.AssertedPositionalParameterName:
+        return this.parseAssertedPositionalParameterName()
+      case NodeType.AssertedRestParameterName:
+        return this.parseAssertedRestParameterName()
+      case NodeType.AssertedParameterName:
+        return this.parseAssertedParameterName()
+      default:
+        throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseAssertedPositionalParameterName(): AssertedPositionalParameterName {
+    const type = this.parseKind(NodeType.AssertedPositionalParameterName)
+
+    const index = this.readVarnum()
+    const name = this.readIdentifierName()
+    const isCaptured = this.readBoolean()
+    return {
+      type,
+      index,
+      name,
+      isCaptured
+    }
+  }
+
+  parseAssertedRestParameterName(): AssertedRestParameterName {
+    const type = this.parseKind(NodeType.AssertedRestParameterName)
+
+    const name = this.readIdentifierName()
+    const isCaptured = this.readBoolean()
+    return {
+      type,
+      name,
+      isCaptured
+    }
+  }
+
+  parseAssertedParameterName(): AssertedParameterName {
+    const type = this.parseKind(NodeType.AssertedParameterName)
+
+    const name = this.readIdentifierName()
+    const isCaptured = this.readBoolean()
+    return {
+      type,
+      name,
+      isCaptured
+    }
+  }
+
+  parseParameterList(): FrozenArray<Parameter> {
+    return this.parseList(() => this.parseParameter())
+  }
+
+  parseParameter(): Parameter {
+    return this.parseBindingOrBindingWithInitializer()
   }
 
   parseBindingIdentifier(): BindingIdentifier {

@@ -172,7 +172,7 @@ export default class MultipartReader {
     for (let i = 0 ; i< stringsNumberOfEntries; ++i) {
       const byteLength = this.readVarnum()
       if (this.curr + byteLength > this.view.byteLength) {
-        throw new Error("Invalid byte length in strings table2: " + this.curr + " " + byteLength + " " +  this.view.byteLength)
+        throw new Error("Invalid byte length in strings table2")
       }
       if (byteLength === 2 && this.lookAhead(() => this.readByte() === 0xFF && this.readByte() === 0x00)) {
         this.curr += 2

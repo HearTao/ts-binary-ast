@@ -242,6 +242,7 @@ export enum NodeType {
   EagerGetter,
   LazyGetter,
   GetterContents,
+  LazySetterEagerSetter,
   EagerSetter,
   LazySetter,
   SetterContents,
