@@ -1,6 +1,6 @@
 import MultipartReader from "./reader";
 import { Context } from "./context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super, Getter, Setter, Method, EagerMethod, LazyMethod, EagerGetter, LazyGetter, GetterContents, AssertedVarScope, FunctionBody, EagerSetter, LazySetter, SetterContents, AssertedParameterScope, AssertedMaybePositionalParameterName, Parameter, FunctionOrMethodContents, FormalParameters, AssertedPositionalParameterName, AssertedRestParameterName, AssertedParameterName } from "../types";
+import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super, Getter, Setter, Method, EagerMethod, LazyMethod, EagerGetter, LazyGetter, GetterContents, AssertedVarScope, FunctionBody, EagerSetter, LazySetter, SetterContents, AssertedParameterScope, AssertedMaybePositionalParameterName, Parameter, FunctionOrMethodContents, FormalParameters, AssertedPositionalParameterName, AssertedRestParameterName, AssertedParameterName, LiteralBooleanExpression, LiteralInfinityExpression, LiteralNullExpression, LiteralNumericExpression, LiteralStringExpression, LiteralRegExpExpression, ArrayExpression, EagerArrowExpressionWithFunctionBody, LazyArrowExpressionWithFunctionBody, EagerArrowExpressionWithExpression, LazyArrowExpressionWithExpression, AssignmentExpression, BinaryExpression, CallExpression, CompoundAssignmentExpression, ComputedMemberExpression, ConditionalExpression, ClassExpression, EagerFunctionExpression, LazyFunctionExpression, IdentifierExpression, NewExpression, NewTargetExpression, ObjectExpression, UnaryExpression, StaticMemberExpression, TemplateExpression, ThisExpression, UpdateExpression, YieldExpression, YieldStarExpression, AwaitExpression, UpdateOperator, TemplateElement, UnaryOperator, ObjectProperty, ShorthandProperty, DataProperty, Arguments, SpreadElement, CompoundAssignmentOperator, BinaryOperator, ArrowExpressionContentsWithExpression, ArrowExpressionContentsWithFunctionBody } from "../types";
 
 export default class Parser {
   context: Context
@@ -233,39 +233,635 @@ export default class Parser {
     const kind = this.peekTaggedTuple()
     switch (kind) {
       case NodeType.LiteralBooleanExpression:
+        return this.parseLiteralBooleanExpression()
       case NodeType.LiteralInfinityExpression:
+        return this.parseLiteralInfinityExpression()
       case NodeType.LiteralNullExpression:
+        return this.parseLiteralNullExpression()
       case NodeType.LiteralNumericExpression:
+        return this.parseLiteralNumericExpression()
       case NodeType.LiteralStringExpression:
+        return this.parseLiteralStringExpression()
       case NodeType.LiteralRegExpExpression:
+        return this.parseLiteralRegExpExpression()
       case NodeType.ArrayExpression:
+        return this.parseArrayExpression()
       case NodeType.EagerArrowExpressionWithFunctionBody:
+        return this.parseEagerArrowExpressionWithFunctionBody()
       case NodeType.LazyArrowExpressionWithFunctionBody:
+        return this.parseLazyArrowExpressionWithFunctionBody()
       case NodeType.EagerArrowExpressionWithExpression:
+        return this.parseEagerArrowExpressionWithExpression()
       case NodeType.LazyArrowExpressionWithExpression:
+        return this.parseLazyArrowExpressionWithExpression()
       case NodeType.AssignmentExpression:
+        return this.parseAssignmentExpression()
       case NodeType.BinaryExpression:
+        return this.parseBinaryExpression()
       case NodeType.CallExpression:
+        return this.parseCallExpression()
       case NodeType.CompoundAssignmentExpression:
+        return this.parseCompoundAssignmentExpression()
       case NodeType.ComputedMemberExpression:
+        return this.parseComputedMemberExpression()
       case NodeType.ConditionalExpression:
+        return this.parseConditionalExpression()
       case NodeType.ClassExpression:
+        return this.parseClassExpression()
       case NodeType.EagerFunctionExpression:
+        return this.parseEagerFunctionExpression()
       case NodeType.LazyFunctionExpression:
+        return this.parseLazyFunctionExpression()
       case NodeType.IdentifierExpression:
+        return this.parseIdentifierExpression()
       case NodeType.NewExpression:
+        return this.parseNewExpression()
       case NodeType.NewTargetExpression:
+        return this.parseNewTargetExpression()
       case NodeType.ObjectExpression:
+        return this.parseObjectExpression()
       case NodeType.UnaryExpression:
+        return this.parseUnaryExpression()
       case NodeType.StaticMemberExpression:
+        return this.parseStaticMemberExpression()
       case NodeType.TemplateExpression:
+        return this.parseTemplateExpression()
       case NodeType.ThisExpression:
+        return this.parseThisExpression()
       case NodeType.UpdateExpression:
+        return this.parseUpdateExpression()
       case NodeType.YieldExpression:
+        return this.parseYieldExpression()
       case NodeType.YieldStarExpression:
+        return this.parseYieldStarExpression()
       case NodeType.AwaitExpression:
+        return this.parseAwaitExpression()
       default:
         throw new Error("Unexpected Expression: " + kind)
+    }
+  }
+
+  parseLiteralBooleanExpression(): LiteralBooleanExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseLiteralInfinityExpression(): LiteralInfinityExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseLiteralNullExpression(): LiteralNullExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseLiteralNumericExpression(): LiteralNumericExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseLiteralStringExpression(): LiteralStringExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseLiteralRegExpExpression(): LiteralRegExpExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseArrayExpression(): ArrayExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseEagerArrowExpressionWithFunctionBody(): EagerArrowExpressionWithFunctionBody {
+    const type = this.parseKind(NodeType.EagerArrowExpressionWithFunctionBody)
+
+    const isAsync = this.readBoolean()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseArrowExpressionContentsWithFunctionBody()
+    return {
+      type,
+      isAsync,
+      length,
+      directives,
+      contents
+    }
+  }
+
+  parseLazyArrowExpressionWithFunctionBody(): LazyArrowExpressionWithFunctionBody {
+    const type = this.parseKind(NodeType.LazyArrowExpressionWithFunctionBody)
+
+    const isAsync = this.readBoolean()
+    const length = this.readVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseArrowExpressionContentsWithFunctionBody()
+    return {
+      type,
+      isAsync,
+      length,
+      directives,
+      contents
+    }
+  }
+
+  parseArrowExpressionContentsWithFunctionBody(): ArrowExpressionContentsWithFunctionBody {
+    const type = this.parseKind(NodeType.ArrowExpressionContentsWithFunctionBody)
+
+    const parameterScope = this.parseAssertedParameterScope()
+    const params = this.parseFormalParameters()
+    const bodyScope = this.parseAssertedVarScope()
+    const body = this.parseFunctionBody()
+    return {
+      type,
+      parameterScope,
+      params,
+      bodyScope,
+      body
+    }
+  }
+
+  parseEagerArrowExpressionWithExpression(): EagerArrowExpressionWithExpression {
+    const type = this.parseKind(NodeType.EagerArrowExpressionWithExpression)
+
+    const isAsync = this.readBoolean()
+    const length = this.readVarnum()
+    const contents = this.parseArrowExpressionContentsWithExpression()
+    return {
+      type,
+      isAsync,
+      length,
+      contents
+    }
+  }
+
+  parseLazyArrowExpressionWithExpression(): LazyArrowExpressionWithExpression {
+    const type = this.parseKind(NodeType.LazyArrowExpressionWithExpression)
+
+    const isAsync = this.readBoolean()
+    const length = this.readVarnum()
+    const contents = this.parseArrowExpressionContentsWithExpression()
+    return {
+      type,
+      isAsync,
+      length,
+      contents
+    }
+  }
+
+  parseArrowExpressionContentsWithExpression(): ArrowExpressionContentsWithExpression {
+    const type = this.parseKind(NodeType.ArrowExpressionContentsWithExpression)
+
+    const parameterScope = this.parseAssertedParameterScope()
+    const params = this.parseFormalParameters()
+    const bodyScope = this.parseAssertedVarScope()
+    const body = this.parseExpression()
+    return {
+      type,
+      parameterScope,
+      params,
+      bodyScope,
+      body
+    }
+  }
+
+  parseAssignmentExpression(): AssignmentExpression {
+    const type = this.parseKind(NodeType.AssignmentExpression)
+
+    const binding = this.parseAssignmentTarget()
+    const expression = this.parseExpression()
+    return {
+      type,
+      binding,
+      expression
+    }
+  }
+
+  parseBinaryExpression(): BinaryExpression {
+    const type = this.parseKind(NodeType.BinaryExpression)
+
+    const operator = this.parseBinaryOperator()
+    const left = this.parseExpression()
+    const right = this.parseExpression()
+    return {
+      type,
+      operator,
+      left,
+      right
+    }
+  }
+
+  parseBinaryOperator(): BinaryOperator {
+    const variant = this.readVariant()
+    switch (variant) {
+      case Variant.Comma:
+        return BinaryOperator.Comma
+      case Variant.Or:
+        return BinaryOperator.Or
+      case Variant.And:
+        return BinaryOperator.And
+      case Variant.LogicOr:
+        return BinaryOperator.LogicOr
+      case Variant.LogicXor:
+        return BinaryOperator.LogicXor
+      case Variant.LogicAnd:
+        return BinaryOperator.LogicAnd
+      case Variant.EqualEqual:
+        return BinaryOperator.EqualEqual
+      case Variant.NotEqual:
+        return BinaryOperator.NotEqual
+      case Variant.EqualEqualEqual:
+        return BinaryOperator.EqualEqualEqual
+      case Variant.NotEqualEqual:
+        return BinaryOperator.NotEqualEqual
+      case Variant.LessThan:
+        return BinaryOperator.LessThan
+      case Variant.LessThanEqual:
+        return BinaryOperator.LessThanEqual
+      case Variant.GreaterThan:
+        return BinaryOperator.GreaterThan
+      case Variant.GreaterThanEqual:
+        return BinaryOperator.GreaterThanEqual
+      case Variant.In:
+        return BinaryOperator.In
+      case Variant.InstanceOf:
+        return BinaryOperator.InstanceOf
+      case Variant.LessThanLessThan:
+        return BinaryOperator.LessThanLessThan
+      case Variant.GreaterThanGreaterThan:
+        return BinaryOperator.GreaterThanGreaterThan
+      case Variant.GreaterThanGreaterThanGreaterThan:
+        return BinaryOperator.GreaterThanGreaterThanGreaterThan
+      case Variant.BinaryOperatorOrUnaryOperatorPlus:
+        return BinaryOperator.Plus
+      case Variant.BinaryOperatorOrUnaryOperatorMinus:
+        return BinaryOperator.Minus
+      case Variant.Star:
+        return BinaryOperator.Star
+      case Variant.Div:
+        return BinaryOperator.Div
+      case Variant.Mod:
+        return BinaryOperator.Mod
+      case Variant.StarStar:
+        return BinaryOperator.StarStar
+      default:
+        throw new Error('Unexpected variant')
+    }
+  }
+
+  parseCallExpression(): CallExpression {
+    const type = this.parseKind(NodeType.CallExpression)
+
+    const callee = this.parseExpressionOrSuper()
+    const argumentsList = this.parseArguments()
+    return {
+      type,
+      callee,
+      arguments: argumentsList
+    }
+  }
+
+  parseCompoundAssignmentExpression(): CompoundAssignmentExpression {
+    const type = this.parseKind(NodeType.CompoundAssignmentExpression)
+
+    const operator = this.parseCompoundAssignmentOperator()
+    const binding = this.parseSimpleAssignmentTarget()
+    const expression = this.parseExpression()
+    return {
+      type,
+      operator,
+      binding,
+      expression
+    }
+  }
+
+  parseCompoundAssignmentOperator(): CompoundAssignmentOperator {
+    const variant = this.readVariant()
+    switch (variant) {
+      case Variant.PlusEqual:
+        return CompoundAssignmentOperator.PlusEqual
+      case Variant.MinusEqual:
+        return CompoundAssignmentOperator.MinusEqual
+      case Variant.StarEqual:
+        return CompoundAssignmentOperator.StarEqual
+      case Variant.DivEuqal:
+        return CompoundAssignmentOperator.DivEuqal
+      case Variant.ModEqual:
+        return CompoundAssignmentOperator.ModEqual
+      case Variant.StarStarEqual:
+        return CompoundAssignmentOperator.StarStarEqual
+      case Variant.LessThanLessThanEqual:
+        return CompoundAssignmentOperator.LessThanLessThanEqual
+      case Variant.GreaterThanGreaterThanEequal:
+        return CompoundAssignmentOperator.GreaterThanGreaterThanEequal
+      case Variant.GreaterThanGreaterThanGreaterThanEequal:
+        return CompoundAssignmentOperator.GreaterThanGreaterThanGreaterThanEequal
+      case Variant.LoginOrEqual:
+        return CompoundAssignmentOperator.LoginOrEqual
+      case Variant.LogicAndEuqal:
+        return CompoundAssignmentOperator.LogicAndEuqal
+      case Variant.LogicXorEqual:
+        return CompoundAssignmentOperator.LogicXorEqual
+      default:
+        throw new Error("Unexpected variant: " + variant)
+    }
+  }
+
+  parseComputedMemberExpression(): ComputedMemberExpression {
+    const type = this.parseKind(NodeType.ComputedMemberExpression)
+
+    const _object = this.parseExpressionOrSuper()
+    const expression = this.parseExpression()
+    return {
+      type,
+      _object,
+      expression
+    }
+  }
+
+  parseConditionalExpression(): ConditionalExpression {
+    const type = this.parseKind(NodeType.ConditionalExpression)
+
+    const test = this.parseExpression()
+    const consequent = this.parseExpression()
+    const alternate = this.parseExpression()
+    return {
+      type,
+      test,
+      consequent,
+      alternate
+    }
+  }
+
+  parseClassExpression(): ClassExpression {
+    const type = this.parseKind(NodeType.ClassExpression)
+
+    const name = this.parseOptional(() => this.parseBindingIdentifier())
+    const superExpr = this.parseOptional(() => this.parseExpression())
+    const elements = this.parseClassElementList()
+    return {
+      type,
+      name,
+      super: superExpr,
+      elements
+    }
+  }
+
+  parseEagerFunctionExpression(): EagerFunctionExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseLazyFunctionExpression(): LazyFunctionExpression {
+    throw new Error("Method not implemented.");
+  }
+
+  parseIdentifierExpression(): IdentifierExpression {
+    const type = this.parseKind(NodeType.IdentifierExpression)
+
+    const name = this.readIdentifierName()
+    return {
+      type,
+      name
+    }
+  }
+
+  parseNewExpression(): NewExpression {
+    const type = this.parseKind(NodeType.NewExpression)
+
+    const callee = this.parseExpression()
+    const argumentsList = this.parseArguments()
+    return {
+      type,
+      callee,
+      arguments: argumentsList
+    }
+  }
+
+  parseArguments(): Arguments {
+    return this.parseSpreadOrExpressopmList()
+  }
+
+  parseSpreadOrExpressopmList(): FrozenArray<SpreadElement | Expression> {
+    return this.parseList(() => this.parseSpreadOrExpressopm())
+  }
+
+  parseSpreadOrExpressopm(): SpreadElement | Expression {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.SpreadElement:
+        return this.parseSpreadElement()
+      default:
+        return this.parseExpression()
+    }
+  }
+
+  parseSpreadElement(): SpreadElement {
+    const type = this.parseKind(NodeType.SpreadElement)
+
+    const expression = this.parseExpression()
+    return {
+      type,
+      expression
+    }
+  }
+
+  parseNewTargetExpression(): NewTargetExpression {
+    const type = this.parseKind(NodeType.NewTargetExpression)
+
+    return {
+      type
+    }
+  }
+
+  parseObjectExpression(): ObjectExpression {
+    const type = this.parseKind(NodeType.ObjectExpression)
+
+    const properties = this.parseObjectPropertyList()
+    return {
+      type,
+      properties
+    }
+  }
+
+  parseObjectPropertyList(): FrozenArray<ObjectProperty> {
+    return this.parseList(() => this.parseObjectProperty())
+  }
+
+  parseObjectProperty(): ObjectProperty {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.DataProperty:
+        return this.parseDataProperty()
+      case NodeType.ShorthandProperty:
+        return this.parseShorthandProperty()
+      case NodeType.EagerMethod:
+      case NodeType.LazyMethod:
+      case NodeType.EagerGetter:
+      case NodeType.LazyGetter:
+      case NodeType.EagerSetter:
+      case NodeType.LazySetter:
+        return this.parseMethodDefinition()
+      default:
+        throw new Error('Unexpected kind: ' + kind)
+    }
+  }
+
+  parseDataProperty(): DataProperty {
+    const type = this.parseKind(NodeType.DataProperty)
+
+    const name = this.parsePropertyName()
+    const expression = this.parseExpression()
+    return {
+      type,
+      name,
+      expression
+    }
+  }
+
+  parseShorthandProperty(): ShorthandProperty {
+    const type = this.parseKind(NodeType.ShorthandProperty)
+
+    const name = this.parseIdentifierExpression()
+    return {
+      type,
+      name
+    }
+  }
+
+  parseUnaryExpression(): UnaryExpression {
+    const type = this.parseKind(NodeType.UnaryExpression)
+
+    const operator = this.parseUnaryOperator()
+    const operand = this.parseExpression()
+    return {
+      type,
+      operator,
+      operand
+    }
+  }
+
+  parseUnaryOperator(): UnaryOperator {
+    const variant = this.readVariant()
+    switch (variant) {
+      case Variant.BinaryOperatorOrUnaryOperatorPlus:
+        return UnaryOperator.Plus
+      case Variant.BinaryOperatorOrUnaryOperatorMinus:
+        return UnaryOperator.Minus
+      case Variant.Not:
+        return UnaryOperator.Not
+      case Variant.LogicNot:
+        return UnaryOperator.LogicNot
+      case Variant.TypeOf:
+        return UnaryOperator.TypeOf
+      case Variant.Void:
+        return UnaryOperator.Void
+      case Variant.Delete:
+        return UnaryOperator.Delete
+      default:
+        throw new Error('Unexpected variant: ' + variant)
+    }
+  }
+
+  parseStaticMemberExpression(): StaticMemberExpression {
+    const type = this.parseKind(NodeType.StaticMemberExpression)
+
+    const _object = this.parseExpressionOrSuper()
+    const property = this.readIdentifierName()
+    return {
+      type,
+      _object,
+      property
+    }
+  }
+
+  parseTemplateExpression(): TemplateExpression {
+    const type = this.parseKind(NodeType.TemplateExpression)
+
+    const tag = this.parseOptional(() => this.parseExpression())
+    const elements = this.parseExpressionOrTemplateElementList()
+    return {
+      type,
+      tag,
+      elements
+    }
+  }
+
+  parseExpressionOrTemplateElementList(): FrozenArray<Expression | TemplateElement> {
+    return this.parseList(() => this.parseExpressionOrTemplateElement())
+  }
+
+  parseExpressionOrTemplateElement(): Expression | TemplateElement {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.TemplateElement:
+        return this.parseTemplateElement()
+      default:
+        return this.parseExpression()
+    }
+  }
+
+  parseTemplateElement(): TemplateElement {
+    const type = this.parseKind(NodeType.TemplateElement)
+    throw new Error("Method not implemented.");
+  }
+
+  parseThisExpression(): ThisExpression {
+    const type = this.parseKind(NodeType.ThisExpression)
+
+    return {
+      type
+    }
+  }
+
+  parseUpdateExpression(): UpdateExpression {
+    const type = this.parseKind(NodeType.UpdateExpression)
+
+    const isPrefix = this.readBoolean()
+    const operator = this.parseUpdateOperator()
+    const operand = this.parseSimpleAssignmentTarget()
+    return {
+      type,
+      isPrefix,
+      operator,
+      operand
+    }
+  }
+
+  parseUpdateOperator(): UpdateOperator {
+    const variant = this.readVariant()
+    switch (variant) {
+      case Variant.PlusPlus:
+        return UpdateOperator.PlusPlus
+      case Variant.MinusMinus:
+        return UpdateOperator.MinusMinus
+      default:
+        throw new Error('Unexpected variant: ' + variant)
+    }
+  }
+
+  parseYieldExpression(): YieldExpression {
+    const type = this.parseKind(NodeType.YieldExpression)
+
+    const expression = this.parseOptional(() => this.parseExpression())
+    return {
+      type,
+      expression
+    }
+  }
+
+  parseYieldStarExpression(): YieldStarExpression {
+    const type = this.parseKind(NodeType.YieldStarExpression)
+
+    const expression = this.parseExpression()
+    return {
+      type,
+      expression
+    }
+  }
+
+  parseAwaitExpression(): AwaitExpression {
+    const type = this.parseKind(NodeType.AwaitExpression)
+
+    const expression = this.parseExpression()
+    return {
+      type,
+      expression
     }
   }
 
@@ -561,7 +1157,7 @@ export default class Parser {
 
   parseSetterContents(): SetterContents {
     const type = this.parseKind(NodeType.SetterContents)
-    
+
     const isThisCaptured = this.readBoolean()
     const parameterScope = this.parseAssertedParameterScope()
     const param = this.parseParameter()
