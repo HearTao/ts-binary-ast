@@ -1449,7 +1449,6 @@ export interface Super extends Node {
   type: NodeType.Super
 }
 
-
 export interface SwitchCase extends Node {
   type: NodeType.SwitchCase
   test: Expression

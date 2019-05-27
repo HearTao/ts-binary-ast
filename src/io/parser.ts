@@ -1,6 +1,6 @@
 import MultipartReader from "./reader";
 import { Context } from "./context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget } from "../types";
+import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super } from "../types";
 
 export default class Parser {
   context: Context
@@ -820,11 +820,55 @@ export default class Parser {
     const kind = this.peekTaggedTuple()
     switch (kind) {
       case NodeType.AssignmentTargetIdentifier:
+        return this.parseAssignmentTargetIdentifier()
       case NodeType.ComputedMemberAssignmentTarget:
+        return this.parseComputedMemberAssignmentTarget()
       case NodeType.StaticMemberAssignmentTarget:
-        return this.parseSimpleAssignmentTarget()
+        return this.parseStaticMemberAssignmentTarget()
       default:
         throw new Error("Unexpected kind: " + kind)
+    }
+  }
+
+  parseComputedMemberAssignmentTarget(): ComputedMemberAssignmentTarget {
+    const type = this.parseKind(NodeType.ComputedMemberAssignmentTarget)
+
+    const _object = this.parseExpressionOrSuper()
+    const expression = this.parseExpression()
+    return {
+      type,
+      _object,
+      expression
+    }
+  }
+
+  parseStaticMemberAssignmentTarget(): StaticMemberAssignmentTarget {
+    const type = this.parseKind(NodeType.StaticMemberAssignmentTarget)
+
+    const _object = this.parseExpressionOrSuper()
+    const property = this.readIdentifierName()
+    return {
+      type,
+      _object,
+      property
+    }
+  }
+
+  parseExpressionOrSuper(): Expression | Super {
+    const kind = this.peekTaggedTuple()
+    switch (kind) {
+      case NodeType.Super:
+        return this.parseSuper()
+      default:
+        return this.parseExpression()
+    }
+  }
+
+  parseSuper(): Super {
+    const type = this.parseKind(NodeType.Super)
+
+    return {
+      type
     }
   }
 
