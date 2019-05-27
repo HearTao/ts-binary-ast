@@ -4,5 +4,5 @@
 
 - [x] Types
 - [ ] Encoder
-- [ ] Decoder
+- [x] Decoder
 - [ ] TypeScript Emitter
