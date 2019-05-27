@@ -1,5 +1,5 @@
 import { WriterContext } from "./context";
-import { Variant } from "../types";
+import { Variant, NodeType } from "../types";
 import { variantToValueMapper, nodeKindToNameMapper } from "../mapper";
 import { Magic, Section, Compression } from "./constants";
 
@@ -11,11 +11,15 @@ export default class MultipartWriter {
     constructor (private context: WriterContext) {
     }
 
+    public getBuffer () {
+        return this.buffer.slice(0, this.size)
+    }
+
     writeBuffer(buffer: ArrayBuffer) {
         if (this.size + buffer.byteLength >= this.buffer.byteLength) {
             const oldBuffer = new Uint8Array(this.buffer)
             const targetBuffer = new Uint8Array(buffer)
-            const newBuffer = new Uint8Array(new ArrayBuffer(Math.ceil(this.size + buffer.byteLength)))
+            const newBuffer = new Uint8Array(new ArrayBuffer(Math.ceil(this.buffer.byteLength + buffer.byteLength)))
             newBuffer.set(oldBuffer)
             newBuffer.set(targetBuffer, oldBuffer.length)
             this.buffer = newBuffer.buffer
@@ -23,7 +27,7 @@ export default class MultipartWriter {
         } else {
             const oldBuffer = new Uint8Array(this.buffer)
             const targetBuffer = new Uint8Array(buffer)
-            oldBuffer.set(targetBuffer, oldBuffer.length)
+            oldBuffer.set(targetBuffer, this.size)
             this.buffer = oldBuffer.buffer
             this.view = new DataView(this.buffer)
         }
@@ -73,7 +77,11 @@ export default class MultipartWriter {
     }
 
     writeConst (value: string) {
-        return this.writeGrammar(value)
+        let result = 0
+        for (let i = 0; i < value.length; ++i) {
+            result += this.writeByte(value.charCodeAt(i))
+        }
+        return result
     }
 
     writeAtom (value: string) {
@@ -134,14 +142,25 @@ export default class MultipartWriter {
         return bytes.length
     }
 
-    writeInContext <T>(cb: () => T): [T, ArrayBuffer, number] {
+    writeKind(value: NodeType) {
+        if (this.context.grammarTableToIndex.has(value)) {
+            return this.writeVarnum(this.context.grammarTableToIndex.get(value)!)
+        } else {
+            const index = this.context.grammarTable.length
+            this.context.grammarTable.push(value)
+            this.context.grammarTableToIndex.set(value, index)
+            return this.writeVarnum(index)
+        }
+    }
+
+    writeInContext <T>(cb: () => T): [T, ArrayBuffer] {
         const savedBuffer = this.buffer
         const savedSize = this.size
         const savedView = this.view
         this.buffer = new ArrayBuffer(4096)
         this.view = new DataView(this.buffer)
         this.size = 0
-        const result = [cb(), this.buffer, this.size] as [T, ArrayBuffer, number]
+        const result = [cb(), this.buffer.slice(0, this.size)] as [T, ArrayBuffer]
         this.buffer = savedBuffer
         this.size = savedSize
         this.view = savedView
@@ -155,24 +174,24 @@ export default class MultipartWriter {
         this.writeConst(Section.Grammar)
         this.writeConst(Compression.Identity)
 
-        const [, grammarBuffer, grammarByteLen ] = this.writeInContext(() => {
+        const [, grammarBuffer ] = this.writeInContext(() => {
             this.writeVarnum(this.context.grammarTable.length)
             this.context.grammarTable.forEach(kind => {
                 const name = nodeKindToNameMapper(kind)
-                if (!name) {
+                if (name === undefined || name === null) {
                     throw new Error("Invalid entry in grammar table")
                 }
                 this.writeGrammar(name)
             })
         })
 
-        this.writeVarnum(grammarByteLen)
+        this.writeVarnum(grammarBuffer.byteLength)
         this.writeBuffer(grammarBuffer)
 
         this.writeConst(Section.Strings)
         this.writeConst(Compression.Identity)
 
-        const [, stringsBuffer, stringsByteLen ] = this.writeInContext(() => {
+        const [, stringsBuffer ] = this.writeInContext(() => {
             this.writeVarnum(this.context.stringsTable.length)
             this.context.stringsTable.forEach(str => {
                 if (!str) {
@@ -182,7 +201,7 @@ export default class MultipartWriter {
                 }
             })
         })
-        this.writeVarnum(stringsByteLen)
+        this.writeVarnum(stringsBuffer.byteLength)
         this.writeBuffer(stringsBuffer)
     }
 }

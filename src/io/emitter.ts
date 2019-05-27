@@ -12,7 +12,8 @@ export default class Emitter {
             stringsTable: [],
             grammarTable: [],
             variantTableToIndex: new Map(),
-            stringsTableToIndex: new Map()
+            stringsTableToIndex: new Map(),
+            grammarTableToIndex: new Map()
         }
         this.writer = new MultipartWritter(this.context)
     }
@@ -53,16 +54,16 @@ export default class Emitter {
         return this.writer.writeBuffer(buffer)
     }
 
-    writeInContext<T>(cb: () => T): [T, ArrayBuffer, number] {
+    writeInContext<T>(cb: () => T): [T, ArrayBuffer] {
         return this.writer.writeInContext(cb)
     }
 
     writeKind(kind: NodeType) {
-        return this.writer.writeVarnum(kind)
+        return this.writer.writeKind(kind)
     }
 
     emit(value: Program) {
-        const [, treeBuffer, treeByteLength] = this.writeInContext(() => {
+        const [, treeBuffer] = this.writeInContext(() => {
             this.emitProgram(value)
         })
         this.writeHeader()
@@ -70,8 +71,10 @@ export default class Emitter {
         this.writeConst(Section.Tree)
         this.writeConst(Compression.Identity)
 
-        this.writeVarnum(treeByteLength)
+        this.writeVarnum(treeBuffer.byteLength)
         this.writeBuffer(treeBuffer)
+
+        return this.writer.getBuffer()
     }
 
     emitList<T>(list: FrozenArray<T>, cb: (v: T) => void) {

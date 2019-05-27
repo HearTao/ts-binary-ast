@@ -8,6 +8,7 @@ export interface Context {
 
 export interface WriterContext {
   grammarTable: NodeType[]
+  grammarTableToIndex: Map<NodeType, number>
   stringsTable: string[]
   stringsTableToIndex: Map<string, number>
   variantTableToIndex: Map<Variant, number>
