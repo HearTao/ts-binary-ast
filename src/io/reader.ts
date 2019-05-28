@@ -1,5 +1,5 @@
 import { NodeType, Variant } from "../types";
-import { nameToNodeKindMapper, nameToVariantMapper, NodeTypeLimit } from "../mapper";
+import { nameToNodeTypeMapper, nameToVariantMapper, NodeTypeLimit } from "../mapper";
 import { Context } from "./context";
 import { Magic, Section, Compression } from './constants'
 
@@ -149,12 +149,12 @@ export default class MultipartReader {
       }
 
       const name = this.readGrammar(byteLength)
-      const kind = nameToNodeKindMapper(name)
-      if (kind === undefined) {
+      const type = nameToNodeTypeMapper(name)
+      if (type === undefined) {
         throw new Error("Invalid entry in grammar table")
       }
 
-      grammarTable.push(kind)
+      grammarTable.push(type)
     }
     if (this.curr !== posBeforeGrammar + grammarByteLen) {
       throw new Error("The length of the grammar table didn't match its contents")

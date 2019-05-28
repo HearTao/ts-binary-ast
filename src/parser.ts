@@ -1,6 +1,6 @@
-import MultipartReader from "./reader";
-import { Context } from "./context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super, Getter, Setter, Method, EagerMethod, LazyMethod, EagerGetter, LazyGetter, GetterContents, AssertedVarScope, FunctionBody, EagerSetter, LazySetter, SetterContents, AssertedParameterScope, AssertedMaybePositionalParameterName, Parameter, FunctionOrMethodContents, FormalParameters, AssertedPositionalParameterName, AssertedRestParameterName, AssertedParameterName, LiteralBooleanExpression, LiteralInfinityExpression, LiteralNullExpression, LiteralNumericExpression, LiteralStringExpression, LiteralRegExpExpression, ArrayExpression, EagerArrowExpressionWithFunctionBody, LazyArrowExpressionWithFunctionBody, EagerArrowExpressionWithExpression, LazyArrowExpressionWithExpression, AssignmentExpression, BinaryExpression, CallExpression, CompoundAssignmentExpression, ComputedMemberExpression, ConditionalExpression, ClassExpression, EagerFunctionExpression, LazyFunctionExpression, IdentifierExpression, NewExpression, NewTargetExpression, ObjectExpression, UnaryExpression, StaticMemberExpression, TemplateExpression, ThisExpression, UpdateExpression, YieldExpression, YieldStarExpression, AwaitExpression, UpdateOperator, TemplateElement, UnaryOperator, ObjectProperty, ShorthandProperty, DataProperty, Arguments, SpreadElement, CompoundAssignmentOperator, BinaryOperator, ArrowExpressionContentsWithExpression, ArrowExpressionContentsWithFunctionBody } from "../types";
+import MultipartReader from "./io/reader";
+import { Context } from "./io/context";
+import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super, Getter, Setter, Method, EagerMethod, LazyMethod, EagerGetter, LazyGetter, GetterContents, AssertedVarScope, FunctionBody, EagerSetter, LazySetter, SetterContents, AssertedParameterScope, AssertedMaybePositionalParameterName, Parameter, FunctionOrMethodContents, FormalParameters, AssertedPositionalParameterName, AssertedRestParameterName, AssertedParameterName, LiteralBooleanExpression, LiteralInfinityExpression, LiteralNullExpression, LiteralNumericExpression, LiteralStringExpression, LiteralRegExpExpression, ArrayExpression, EagerArrowExpressionWithFunctionBody, LazyArrowExpressionWithFunctionBody, EagerArrowExpressionWithExpression, LazyArrowExpressionWithExpression, AssignmentExpression, BinaryExpression, CallExpression, CompoundAssignmentExpression, ComputedMemberExpression, ConditionalExpression, ClassExpression, EagerFunctionExpression, LazyFunctionExpression, IdentifierExpression, NewExpression, NewTargetExpression, ObjectExpression, UnaryExpression, StaticMemberExpression, TemplateExpression, ThisExpression, UpdateExpression, YieldExpression, YieldStarExpression, AwaitExpression, UpdateOperator, TemplateElement, UnaryOperator, ObjectProperty, ShorthandProperty, DataProperty, Arguments, SpreadElement, CompoundAssignmentOperator, BinaryOperator, ArrowExpressionContentsWithExpression, ArrowExpressionContentsWithFunctionBody } from "./types";
 
 export default class Parser {
   context: Context
@@ -15,36 +15,36 @@ export default class Parser {
     this.reader = new MultipartReader(this.context, buffer)
   }
 
-  readHeader() {
+  parseHeader() {
     return this.reader.readHeader()
   }
 
-  readVarnum() {
+  parseVarnum() {
     return this.reader.readVarnum()
   }
 
-  readBoolean() {
+  parseBoolean() {
     return this.reader.readBoolean()
   }
 
-  readIdentifierName() {
+  parseIdentifierName() {
     return this.reader.readIdentifierName()
   }
 
-  readVariant() {
+  parseVariant() {
     return this.reader.readVariant()
   }
 
-  readAtom() {
+  parseAtom() {
     return this.reader.readAtom()
   }
 
-  readMaybeAtom () {
+  parseMaybeAtom () {
     const result = this.reader.readAtom()
     return result ? result : undefined
   }
 
-  readDouble() {
+  parseDouble() {
     return this.reader.readDouble()
   }
 
@@ -57,13 +57,13 @@ export default class Parser {
   }
 
   parse() {
-    this.readHeader()
+    this.parseHeader()
     return this.parseProgram()
   }
 
   parseList<T>(cb: () => T): FrozenArray<T> {
     const result: T[] = []
-    const length = this.readVarnum()
+    const length = this.parseVarnum()
     for (let i = 0; i < length; ++i) {
       result.push(cb())
     }
@@ -82,27 +82,27 @@ export default class Parser {
     return this.lookAhead(() => this.enterTaggedTuple())
   }
 
-  parseKind<T extends NodeType>(expectedKind: T): T {
-    const kind = this.enterTaggedTuple()
-    if (kind !== expectedKind) {
-      throw new Error("Invalid Kind: " + expectedKind)
+  parseType<T extends NodeType>(expectedType: T): T {
+    const type = this.enterTaggedTuple()
+    if (type !== expectedType) {
+      throw new Error("Invalid Kind: " + expectedType)
     }
-    return expectedKind
+    return expectedType
   }
 
   parseProgram(): Program {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.Script:
         return this.parseScript()
       case NodeType.Module:
       default:
-        throw new Error("Invalid Kind: " + kind)
+        throw new Error("Invalid Kind: " + type)
     }
   }
 
   parseScript(): Script {
-    const type = this.parseKind(NodeType.Script)
+    const type = this.parseType(NodeType.Script)
 
     const scope = this.parseAssertedScriptGlobalScope()
     const directives = this.parseDirectiveList()
@@ -117,10 +117,10 @@ export default class Parser {
   }
 
   parseAssertedScriptGlobalScope(): AssertedScriptGlobalScope {
-    const type = this.parseKind(NodeType.AssertedScriptGlobalScope)
+    const type = this.parseType(NodeType.AssertedScriptGlobalScope)
 
     const declaredNames = this.parseAssertedDeclaredNameList()
-    const hasDirectEval = this.readBoolean()
+    const hasDirectEval = this.parseBoolean()
     return {
       type,
       declaredNames,
@@ -133,15 +133,15 @@ export default class Parser {
   }
 
   parseAssertedDeclaredName(): AssertedDeclaredName {
-    const type = this.parseKind(NodeType.AssertedDeclaredName)
+    const type = this.parseType(NodeType.AssertedDeclaredName)
 
-    const name = this.readIdentifierName()
+    const name = this.parseIdentifierName()
     const kind = this.parseAssertedDeclaredKind()
     if (kind === AssertedDeclaredKind.ConstLexical || kind === AssertedDeclaredKind.NonConstLexical) {
       throw new Error("Let Or Const is not supported")
     }
 
-    const isCaptured = this.readBoolean()
+    const isCaptured = this.parseBoolean()
     return {
       type,
       name,
@@ -151,8 +151,8 @@ export default class Parser {
   }
 
   parseAssertedDeclaredKind(): AssertedDeclaredKind {
-    const kind = this.readVariant()
-    switch (kind) {
+    const variant = this.parseVariant()
+    switch (variant) {
       case Variant.AssertedDeclaredKindOrVariableDeclarationKindVar:
         return AssertedDeclaredKind.Var
       case Variant.ConstLexical:
@@ -160,7 +160,7 @@ export default class Parser {
       case Variant.NonConstLexical:
         return AssertedDeclaredKind.NonConstLexical
       default:
-        throw new Error('Invalid AssertedDeclaredKind Variant: ' + kind)
+        throw new Error('Invalid AssertedDeclaredKind Variant: ' + variant)
     }
   }
 
@@ -169,9 +169,9 @@ export default class Parser {
   }
 
   parseDirective(): Directive {
-    const type = this.parseKind(NodeType.Directive)
+    const type = this.parseType(NodeType.Directive)
 
-    const rawValue = this.readAtom()
+    const rawValue = this.parseAtom()
     return {
       type,
       rawValue
@@ -183,8 +183,8 @@ export default class Parser {
   }
 
   parseStatement(): Statement {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.Block:
         return this.parseBlock()
       case NodeType.BreakStatement:
@@ -234,13 +234,13 @@ export default class Parser {
       case NodeType.WithStatement:
         return this.parseWithStatement()
       default:
-        throw new Error("Unexpected Statement" + kind)
+        throw new Error("Unexpected Statement" + type)
     }
   }
 
   parseExpression(): Expression {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.LiteralBooleanExpression:
         return this.parseLiteralBooleanExpression()
       case NodeType.LiteralInfinityExpression:
@@ -306,14 +306,14 @@ export default class Parser {
       case NodeType.AwaitExpression:
         return this.parseAwaitExpression()
       default:
-        throw new Error("Unexpected Expression: " + kind)
+        throw new Error("Unexpected Expression: " + type)
     }
   }
 
   parseLiteralBooleanExpression(): LiteralBooleanExpression {
-    const type = this.parseKind(NodeType.LiteralBooleanExpression)
+    const type = this.parseType(NodeType.LiteralBooleanExpression)
 
-    const value = this.readBoolean()
+    const value = this.parseBoolean()
     return {
       type,
       value
@@ -325,7 +325,7 @@ export default class Parser {
   }
 
   parseLiteralNullExpression(): LiteralNullExpression {
-    const type = this.parseKind(NodeType.LiteralNullExpression)
+    const type = this.parseType(NodeType.LiteralNullExpression)
 
     return {
       type
@@ -333,9 +333,9 @@ export default class Parser {
   }
 
   parseLiteralNumericExpression(): LiteralNumericExpression {
-    const type = this.parseKind(NodeType.LiteralNumericExpression)
+    const type = this.parseType(NodeType.LiteralNumericExpression)
 
-    const value = this.readDouble()
+    const value = this.parseDouble()
     return {
       type,
       value
@@ -343,9 +343,9 @@ export default class Parser {
   }
 
   parseLiteralStringExpression(): LiteralStringExpression {
-    const type = this.parseKind(NodeType.LiteralStringExpression)
+    const type = this.parseType(NodeType.LiteralStringExpression)
 
-    const value = this.readAtom()
+    const value = this.parseAtom()
     return {
       type,
       value
@@ -353,10 +353,10 @@ export default class Parser {
   }
 
   parseLiteralRegExpExpression(): LiteralRegExpExpression {
-    const type = this.parseKind(NodeType.LiteralRegExpExpression)
+    const type = this.parseType(NodeType.LiteralRegExpExpression)
 
-    const pattern = this.readAtom()
-    const flags = this.readAtom()
+    const pattern = this.parseAtom()
+    const flags = this.parseAtom()
     return {
       type,
       pattern,
@@ -365,7 +365,7 @@ export default class Parser {
   }
 
   parseArrayExpression(): ArrayExpression {
-    const type = this.parseKind(NodeType.ArrayExpression)
+    const type = this.parseType(NodeType.ArrayExpression)
 
     const elements = this.parseSpreadOrExpressionList()
     return {
@@ -375,10 +375,10 @@ export default class Parser {
   }
 
   parseEagerArrowExpressionWithFunctionBody(): EagerArrowExpressionWithFunctionBody {
-    const type = this.parseKind(NodeType.EagerArrowExpressionWithFunctionBody)
+    const type = this.parseType(NodeType.EagerArrowExpressionWithFunctionBody)
 
-    const isAsync = this.readBoolean()
-    const length = this.readVarnum()
+    const isAsync = this.parseBoolean()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseArrowExpressionContentsWithFunctionBody()
     return {
@@ -391,10 +391,10 @@ export default class Parser {
   }
 
   parseLazyArrowExpressionWithFunctionBody(): LazyArrowExpressionWithFunctionBody {
-    const type = this.parseKind(NodeType.LazyArrowExpressionWithFunctionBody)
+    const type = this.parseType(NodeType.LazyArrowExpressionWithFunctionBody)
 
-    const isAsync = this.readBoolean()
-    const length = this.readVarnum()
+    const isAsync = this.parseBoolean()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseArrowExpressionContentsWithFunctionBody()
     return {
@@ -407,7 +407,7 @@ export default class Parser {
   }
 
   parseArrowExpressionContentsWithFunctionBody(): ArrowExpressionContentsWithFunctionBody {
-    const type = this.parseKind(NodeType.ArrowExpressionContentsWithFunctionBody)
+    const type = this.parseType(NodeType.ArrowExpressionContentsWithFunctionBody)
 
     const parameterScope = this.parseAssertedParameterScope()
     const params = this.parseFormalParameters()
@@ -423,10 +423,10 @@ export default class Parser {
   }
 
   parseEagerArrowExpressionWithExpression(): EagerArrowExpressionWithExpression {
-    const type = this.parseKind(NodeType.EagerArrowExpressionWithExpression)
+    const type = this.parseType(NodeType.EagerArrowExpressionWithExpression)
 
-    const isAsync = this.readBoolean()
-    const length = this.readVarnum()
+    const isAsync = this.parseBoolean()
+    const length = this.parseVarnum()
     const contents = this.parseArrowExpressionContentsWithExpression()
     return {
       type,
@@ -437,10 +437,10 @@ export default class Parser {
   }
 
   parseLazyArrowExpressionWithExpression(): LazyArrowExpressionWithExpression {
-    const type = this.parseKind(NodeType.LazyArrowExpressionWithExpression)
+    const type = this.parseType(NodeType.LazyArrowExpressionWithExpression)
 
-    const isAsync = this.readBoolean()
-    const length = this.readVarnum()
+    const isAsync = this.parseBoolean()
+    const length = this.parseVarnum()
     const contents = this.parseArrowExpressionContentsWithExpression()
     return {
       type,
@@ -451,7 +451,7 @@ export default class Parser {
   }
 
   parseArrowExpressionContentsWithExpression(): ArrowExpressionContentsWithExpression {
-    const type = this.parseKind(NodeType.ArrowExpressionContentsWithExpression)
+    const type = this.parseType(NodeType.ArrowExpressionContentsWithExpression)
 
     const parameterScope = this.parseAssertedParameterScope()
     const params = this.parseFormalParameters()
@@ -467,7 +467,7 @@ export default class Parser {
   }
 
   parseAssignmentExpression(): AssignmentExpression {
-    const type = this.parseKind(NodeType.AssignmentExpression)
+    const type = this.parseType(NodeType.AssignmentExpression)
 
     const binding = this.parseAssignmentTarget()
     const expression = this.parseExpression()
@@ -479,7 +479,7 @@ export default class Parser {
   }
 
   parseBinaryExpression(): BinaryExpression {
-    const type = this.parseKind(NodeType.BinaryExpression)
+    const type = this.parseType(NodeType.BinaryExpression)
 
     const operator = this.parseBinaryOperator()
     const left = this.parseExpression()
@@ -493,7 +493,7 @@ export default class Parser {
   }
 
   parseBinaryOperator(): BinaryOperator {
-    const variant = this.readVariant()
+    const variant = this.parseVariant()
     switch (variant) {
       case Variant.Comma:
         return BinaryOperator.Comma
@@ -551,7 +551,7 @@ export default class Parser {
   }
 
   parseCallExpression(): CallExpression {
-    const type = this.parseKind(NodeType.CallExpression)
+    const type = this.parseType(NodeType.CallExpression)
 
     const callee = this.parseExpressionOrSuper()
     const argumentsList = this.parseArguments()
@@ -563,7 +563,7 @@ export default class Parser {
   }
 
   parseCompoundAssignmentExpression(): CompoundAssignmentExpression {
-    const type = this.parseKind(NodeType.CompoundAssignmentExpression)
+    const type = this.parseType(NodeType.CompoundAssignmentExpression)
 
     const operator = this.parseCompoundAssignmentOperator()
     const binding = this.parseSimpleAssignmentTarget()
@@ -577,7 +577,7 @@ export default class Parser {
   }
 
   parseCompoundAssignmentOperator(): CompoundAssignmentOperator {
-    const variant = this.readVariant()
+    const variant = this.parseVariant()
     switch (variant) {
       case Variant.PlusEqual:
         return CompoundAssignmentOperator.PlusEqual
@@ -609,7 +609,7 @@ export default class Parser {
   }
 
   parseComputedMemberExpression(): ComputedMemberExpression {
-    const type = this.parseKind(NodeType.ComputedMemberExpression)
+    const type = this.parseType(NodeType.ComputedMemberExpression)
 
     const _object = this.parseExpressionOrSuper()
     const expression = this.parseExpression()
@@ -621,7 +621,7 @@ export default class Parser {
   }
 
   parseConditionalExpression(): ConditionalExpression {
-    const type = this.parseKind(NodeType.ConditionalExpression)
+    const type = this.parseType(NodeType.ConditionalExpression)
 
     const test = this.parseExpression()
     const consequent = this.parseExpression()
@@ -635,7 +635,7 @@ export default class Parser {
   }
 
   parseClassExpression(): ClassExpression {
-    const type = this.parseKind(NodeType.ClassExpression)
+    const type = this.parseType(NodeType.ClassExpression)
 
     const name = this.parseOptional(() => this.parseBindingIdentifier())
     const superExpr = this.parseOptional(() => this.parseExpression())
@@ -657,9 +657,9 @@ export default class Parser {
   }
 
   parseIdentifierExpression(): IdentifierExpression {
-    const type = this.parseKind(NodeType.IdentifierExpression)
+    const type = this.parseType(NodeType.IdentifierExpression)
 
-    const name = this.readIdentifierName()
+    const name = this.parseIdentifierName()
     return {
       type,
       name
@@ -667,7 +667,7 @@ export default class Parser {
   }
 
   parseNewExpression(): NewExpression {
-    const type = this.parseKind(NodeType.NewExpression)
+    const type = this.parseType(NodeType.NewExpression)
 
     const callee = this.parseExpression()
     const argumentsList = this.parseArguments()
@@ -687,8 +687,8 @@ export default class Parser {
   }
 
   parseSpreadOrExpressopm(): SpreadElement | Expression {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.SpreadElement:
         return this.parseSpreadElement()
       default:
@@ -697,7 +697,7 @@ export default class Parser {
   }
 
   parseSpreadElement(): SpreadElement {
-    const type = this.parseKind(NodeType.SpreadElement)
+    const type = this.parseType(NodeType.SpreadElement)
 
     const expression = this.parseExpression()
     return {
@@ -707,7 +707,7 @@ export default class Parser {
   }
 
   parseNewTargetExpression(): NewTargetExpression {
-    const type = this.parseKind(NodeType.NewTargetExpression)
+    const type = this.parseType(NodeType.NewTargetExpression)
 
     return {
       type
@@ -715,7 +715,7 @@ export default class Parser {
   }
 
   parseObjectExpression(): ObjectExpression {
-    const type = this.parseKind(NodeType.ObjectExpression)
+    const type = this.parseType(NodeType.ObjectExpression)
 
     const properties = this.parseObjectPropertyList()
     return {
@@ -729,8 +729,8 @@ export default class Parser {
   }
 
   parseObjectProperty(): ObjectProperty {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.DataProperty:
         return this.parseDataProperty()
       case NodeType.ShorthandProperty:
@@ -743,12 +743,12 @@ export default class Parser {
       case NodeType.LazySetter:
         return this.parseMethodDefinition()
       default:
-        throw new Error('Unexpected kind: ' + kind)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
   parseDataProperty(): DataProperty {
-    const type = this.parseKind(NodeType.DataProperty)
+    const type = this.parseType(NodeType.DataProperty)
 
     const name = this.parsePropertyName()
     const expression = this.parseExpression()
@@ -760,7 +760,7 @@ export default class Parser {
   }
 
   parseShorthandProperty(): ShorthandProperty {
-    const type = this.parseKind(NodeType.ShorthandProperty)
+    const type = this.parseType(NodeType.ShorthandProperty)
 
     const name = this.parseIdentifierExpression()
     return {
@@ -770,7 +770,7 @@ export default class Parser {
   }
 
   parseUnaryExpression(): UnaryExpression {
-    const type = this.parseKind(NodeType.UnaryExpression)
+    const type = this.parseType(NodeType.UnaryExpression)
 
     const operator = this.parseUnaryOperator()
     const operand = this.parseExpression()
@@ -782,7 +782,7 @@ export default class Parser {
   }
 
   parseUnaryOperator(): UnaryOperator {
-    const variant = this.readVariant()
+    const variant = this.parseVariant()
     switch (variant) {
       case Variant.BinaryOperatorOrUnaryOperatorPlus:
         return UnaryOperator.Plus
@@ -804,10 +804,10 @@ export default class Parser {
   }
 
   parseStaticMemberExpression(): StaticMemberExpression {
-    const type = this.parseKind(NodeType.StaticMemberExpression)
+    const type = this.parseType(NodeType.StaticMemberExpression)
 
     const _object = this.parseExpressionOrSuper()
-    const property = this.readIdentifierName()
+    const property = this.parseIdentifierName()
     return {
       type,
       _object,
@@ -816,7 +816,7 @@ export default class Parser {
   }
 
   parseTemplateExpression(): TemplateExpression {
-    const type = this.parseKind(NodeType.TemplateExpression)
+    const type = this.parseType(NodeType.TemplateExpression)
 
     const tag = this.parseOptional(() => this.parseExpression())
     const elements = this.parseExpressionOrTemplateElementList()
@@ -832,8 +832,8 @@ export default class Parser {
   }
 
   parseExpressionOrTemplateElement(): Expression | TemplateElement {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.TemplateElement:
         return this.parseTemplateElement()
       default:
@@ -842,12 +842,12 @@ export default class Parser {
   }
 
   parseTemplateElement(): TemplateElement {
-    const type = this.parseKind(NodeType.TemplateElement)
+    const type = this.parseType(NodeType.TemplateElement)
     throw new Error("Method not implemented.");
   }
 
   parseThisExpression(): ThisExpression {
-    const type = this.parseKind(NodeType.ThisExpression)
+    const type = this.parseType(NodeType.ThisExpression)
 
     return {
       type
@@ -855,9 +855,9 @@ export default class Parser {
   }
 
   parseUpdateExpression(): UpdateExpression {
-    const type = this.parseKind(NodeType.UpdateExpression)
+    const type = this.parseType(NodeType.UpdateExpression)
 
-    const isPrefix = this.readBoolean()
+    const isPrefix = this.parseBoolean()
     const operator = this.parseUpdateOperator()
     const operand = this.parseSimpleAssignmentTarget()
     return {
@@ -869,7 +869,7 @@ export default class Parser {
   }
 
   parseUpdateOperator(): UpdateOperator {
-    const variant = this.readVariant()
+    const variant = this.parseVariant()
     switch (variant) {
       case Variant.PlusPlus:
         return UpdateOperator.PlusPlus
@@ -881,7 +881,7 @@ export default class Parser {
   }
 
   parseYieldExpression(): YieldExpression {
-    const type = this.parseKind(NodeType.YieldExpression)
+    const type = this.parseType(NodeType.YieldExpression)
 
     const expression = this.parseOptional(() => this.parseExpression())
     return {
@@ -891,7 +891,7 @@ export default class Parser {
   }
 
   parseYieldStarExpression(): YieldStarExpression {
-    const type = this.parseKind(NodeType.YieldStarExpression)
+    const type = this.parseType(NodeType.YieldStarExpression)
 
     const expression = this.parseExpression()
     return {
@@ -901,7 +901,7 @@ export default class Parser {
   }
 
   parseAwaitExpression(): AwaitExpression {
-    const type = this.parseKind(NodeType.AwaitExpression)
+    const type = this.parseType(NodeType.AwaitExpression)
 
     const expression = this.parseExpression()
     return {
@@ -911,7 +911,7 @@ export default class Parser {
   }
 
   parseBlock(): Block {
-    const type = this.parseKind(NodeType.Block)
+    const type = this.parseType(NodeType.Block)
 
     const scope = this.parseAssertedBlockScope()
     const statements = this.parseStatementList()
@@ -923,10 +923,10 @@ export default class Parser {
   }
 
   parseAssertedBlockScope(): AssertedBlockScope {
-    const type = this.parseKind(NodeType.AssertedBlockScope)
+    const type = this.parseType(NodeType.AssertedBlockScope)
 
     const declaredNames = this.parseAssertedDeclaredNameList()
-    const hasDirectEval = this.readBoolean()
+    const hasDirectEval = this.parseBoolean()
 
     return {
       type,
@@ -936,9 +936,9 @@ export default class Parser {
   }
 
   parseBreakStatement(): BreakStatement {
-    const type = this.parseKind(NodeType.BreakStatement)
+    const type = this.parseType(NodeType.BreakStatement)
 
-    const label = this.readMaybeAtom()
+    const label = this.parseMaybeAtom()
     return {
       type,
       label
@@ -946,9 +946,9 @@ export default class Parser {
   }
 
   parseContinueStatement(): ContinueStatement {
-    const type = this.parseKind(NodeType.ContinueStatement)
+    const type = this.parseType(NodeType.ContinueStatement)
 
-    const label = this.readMaybeAtom()
+    const label = this.parseMaybeAtom()
     return {
       type,
       label
@@ -956,7 +956,7 @@ export default class Parser {
   }
 
   parseClassDeclaration(): ClassDeclaration {
-    const type = this.parseKind(NodeType.ClassDeclaration)
+    const type = this.parseType(NodeType.ClassDeclaration)
 
     const name = this.parseBindingIdentifier()
     const superExpr = this.parseExpression()
@@ -974,9 +974,9 @@ export default class Parser {
   }
 
   parseClassElement(): ClassElement {
-    const type = this.parseKind(NodeType.ClassElement)
+    const type = this.parseType(NodeType.ClassElement)
 
-    const isStatic = this.readBoolean()
+    const isStatic = this.parseBoolean()
     const method = this.parseMethodDefinition()
     return {
       type,
@@ -986,8 +986,8 @@ export default class Parser {
   }
 
   parseMethodDefinition(): MethodDefinition {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.EagerMethod:
       case NodeType.LazyMethod:
         return this.parseMethod()
@@ -998,29 +998,29 @@ export default class Parser {
       case NodeType.LazySetter:
         return this.parseSetter()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseMethod(): Method {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.EagerMethod:
         return this.parseEagerMethod()
       case NodeType.LazyMethod:
         return this.parseLazyMethod()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseEagerMethod(): EagerMethod {
-    const type = this.parseKind(NodeType.EagerMethod)
+    const type = this.parseType(NodeType.EagerMethod)
 
-    const isAsync = this.readBoolean()
-    const isGenerator = this.readBoolean()
+    const isAsync = this.parseBoolean()
+    const isGenerator = this.parseBoolean()
     const name = this.parsePropertyName()
-    const length = this.readVarnum()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseFunctionOrMethodContents()
     return {
@@ -1035,12 +1035,12 @@ export default class Parser {
   }
 
   parseLazyMethod(): LazyMethod {
-    const type = this.parseKind(NodeType.LazyMethod)
+    const type = this.parseType(NodeType.LazyMethod)
 
-    const isAsync = this.readBoolean()
-    const isGenerator = this.readBoolean()
+    const isAsync = this.parseBoolean()
+    const isGenerator = this.parseBoolean()
     const name = this.parsePropertyName()
-    const length = this.readVarnum()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseFunctionOrMethodContents()
     return {
@@ -1055,9 +1055,9 @@ export default class Parser {
   }
 
   parseFunctionOrMethodContents(): FunctionOrMethodContents {
-    const type = this.parseKind(NodeType.FunctionOrMethodContents)
+    const type = this.parseType(NodeType.FunctionOrMethodContents)
 
-    const isThisCaptured = this.readBoolean()
+    const isThisCaptured = this.parseBoolean()
     const parameterScope = this.parseAssertedParameterScope()
     const params = this.parseFormalParameters()
     const bodyScope = this.parseAssertedVarScope()
@@ -1073,7 +1073,7 @@ export default class Parser {
   }
 
   parseFormalParameters(): FormalParameters {
-    const type = this.parseKind(NodeType.FormalParameters)
+    const type = this.parseType(NodeType.FormalParameters)
 
     const items = this.parseParameterList()
     const rest = this.parseOptional(() => this.parseBinding())
@@ -1085,19 +1085,19 @@ export default class Parser {
   }
 
   parseGetter(): Getter {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.EagerGetter:
         return this.parseEagerGetter()
       case NodeType.LazyGetter:
         return this.parseLazyGetter()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseEagerGetter(): EagerGetter {
-    const type = this.parseKind(NodeType.EagerGetter)
+    const type = this.parseType(NodeType.EagerGetter)
 
     const name = this.parsePropertyName()
     const directives = this.parseDirectiveList()
@@ -1111,7 +1111,7 @@ export default class Parser {
   }
 
   parseLazyGetter(): LazyGetter {
-    const type = this.parseKind(NodeType.LazyGetter)
+    const type = this.parseType(NodeType.LazyGetter)
 
     const name = this.parsePropertyName()
     const directives = this.parseDirectiveList()
@@ -1125,9 +1125,9 @@ export default class Parser {
   }
 
   parseGetterContents(): GetterContents {
-    const type = this.parseKind(NodeType.GetterContents)
+    const type = this.parseType(NodeType.GetterContents)
 
-    const isThisCaptured = this.readBoolean()
+    const isThisCaptured = this.parseBoolean()
     const bodyScope = this.parseAssertedVarScope()
     const body = this.parseFunctionBody()
     return {
@@ -1139,10 +1139,10 @@ export default class Parser {
   }
 
   parseAssertedVarScope(): AssertedVarScope {
-    const type = this.parseKind(NodeType.AssertedVarScope)
+    const type = this.parseType(NodeType.AssertedVarScope)
 
     const declaredNames = this.parseAssertedDeclaredNameList()
-    const hasDirectEval = this.readBoolean()
+    const hasDirectEval = this.parseBoolean()
     return {
       type,
       declaredNames,
@@ -1155,22 +1155,22 @@ export default class Parser {
   }
 
   parseSetter(): Setter {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.EagerSetter:
         return this.parseEagerSetter()
       case NodeType.LazySetter:
         return this.parseLazySetter()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseEagerSetter(): EagerSetter {
-    const type = this.parseKind(NodeType.EagerSetter)
+    const type = this.parseType(NodeType.EagerSetter)
 
     const name = this.parsePropertyName()
-    const length = this.readVarnum()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseSetterContents()
 
@@ -1184,10 +1184,10 @@ export default class Parser {
   }
 
   parseLazySetter(): LazySetter {
-    const type = this.parseKind(NodeType.LazySetter)
+    const type = this.parseType(NodeType.LazySetter)
 
     const name = this.parsePropertyName()
-    const length = this.readVarnum()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseSetterContents()
 
@@ -1201,9 +1201,9 @@ export default class Parser {
   }
 
   parseSetterContents(): SetterContents {
-    const type = this.parseKind(NodeType.SetterContents)
+    const type = this.parseType(NodeType.SetterContents)
 
-    const isThisCaptured = this.readBoolean()
+    const isThisCaptured = this.parseBoolean()
     const parameterScope = this.parseAssertedParameterScope()
     const param = this.parseParameter()
     const bodyScope = this.parseAssertedVarScope()
@@ -1219,11 +1219,11 @@ export default class Parser {
   }
 
   parseAssertedParameterScope(): AssertedParameterScope {
-    const type = this.parseKind(NodeType.AssertedParameterScope)
+    const type = this.parseType(NodeType.AssertedParameterScope)
 
     const paramNames = this.parseAssertedMaybePositionalParameterNameList()
-    const hasDirectEval = this.readBoolean()
-    const isSimpleParameterList = this.readBoolean()
+    const hasDirectEval = this.parseBoolean()
+    const isSimpleParameterList = this.parseBoolean()
     return {
       type,
       paramNames,
@@ -1237,8 +1237,8 @@ export default class Parser {
   }
 
   parseAssertedMaybePositionalParameterName(): AssertedMaybePositionalParameterName {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.AssertedPositionalParameterName:
         return this.parseAssertedPositionalParameterName()
       case NodeType.AssertedRestParameterName:
@@ -1246,16 +1246,16 @@ export default class Parser {
       case NodeType.AssertedParameterName:
         return this.parseAssertedParameterName()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseAssertedPositionalParameterName(): AssertedPositionalParameterName {
-    const type = this.parseKind(NodeType.AssertedPositionalParameterName)
+    const type = this.parseType(NodeType.AssertedPositionalParameterName)
 
-    const index = this.readVarnum()
-    const name = this.readIdentifierName()
-    const isCaptured = this.readBoolean()
+    const index = this.parseVarnum()
+    const name = this.parseIdentifierName()
+    const isCaptured = this.parseBoolean()
     return {
       type,
       index,
@@ -1265,10 +1265,10 @@ export default class Parser {
   }
 
   parseAssertedRestParameterName(): AssertedRestParameterName {
-    const type = this.parseKind(NodeType.AssertedRestParameterName)
+    const type = this.parseType(NodeType.AssertedRestParameterName)
 
-    const name = this.readIdentifierName()
-    const isCaptured = this.readBoolean()
+    const name = this.parseIdentifierName()
+    const isCaptured = this.parseBoolean()
     return {
       type,
       name,
@@ -1277,10 +1277,10 @@ export default class Parser {
   }
 
   parseAssertedParameterName(): AssertedParameterName {
-    const type = this.parseKind(NodeType.AssertedParameterName)
+    const type = this.parseType(NodeType.AssertedParameterName)
 
-    const name = this.readIdentifierName()
-    const isCaptured = this.readBoolean()
+    const name = this.parseIdentifierName()
+    const isCaptured = this.parseBoolean()
     return {
       type,
       name,
@@ -1297,9 +1297,9 @@ export default class Parser {
   }
 
   parseBindingIdentifier(): BindingIdentifier {
-    const type = this.parseKind(NodeType.BindingIdentifier)
+    const type = this.parseType(NodeType.BindingIdentifier)
 
-    const name = this.readIdentifierName()
+    const name = this.parseIdentifierName()
     return {
       type,
       name
@@ -1307,7 +1307,7 @@ export default class Parser {
   }
 
   parseDebuggerStatement(): DebuggerStatement {
-    const type = this.parseKind(NodeType.DebuggerStatement)
+    const type = this.parseType(NodeType.DebuggerStatement)
 
     return {
       type
@@ -1315,7 +1315,7 @@ export default class Parser {
   }
 
   parseEmptyStatement(): EmptyStatement {
-    const type = this.parseKind(NodeType.EmptyStatement)
+    const type = this.parseType(NodeType.EmptyStatement)
 
     return {
       type
@@ -1323,7 +1323,7 @@ export default class Parser {
   }
 
   parseExpressionStatement(): ExpressionStatement {
-    const type = this.parseKind(NodeType.ExpressionStatement)
+    const type = this.parseType(NodeType.ExpressionStatement)
 
     const expression = this.parseExpression()
     return {
@@ -1333,12 +1333,12 @@ export default class Parser {
   }
 
   parseEagerFunctionDeclaration(): EagerFunctionDeclaration {
-    const type = this.parseKind(NodeType.EagerFunctionDeclaration)
+    const type = this.parseType(NodeType.EagerFunctionDeclaration)
 
-    const isAsync = this.readBoolean()
-    const isGenerator = this.readBoolean()
+    const isAsync = this.parseBoolean()
+    const isGenerator = this.parseBoolean()
     const name = this.parseBindingIdentifier()
-    const length = this.readVarnum()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseFunctionOrMethodContents()
     return {
@@ -1353,12 +1353,12 @@ export default class Parser {
   }
 
   parseLazyFunctionDeclaration(): LazyFunctionDeclaration {
-    const type = this.parseKind(NodeType.LazyFunctionDeclaration)
+    const type = this.parseType(NodeType.LazyFunctionDeclaration)
 
-    const isAsync = this.readBoolean()
-    const isGenerator = this.readBoolean()
+    const isAsync = this.parseBoolean()
+    const isGenerator = this.parseBoolean()
     const name = this.parseBindingIdentifier()
-    const length = this.readVarnum()
+    const length = this.parseVarnum()
     const directives = this.parseDirectiveList()
     const contents = this.parseFunctionOrMethodContents()
     return {
@@ -1373,7 +1373,7 @@ export default class Parser {
   }
 
   parseIfStatement(): IfStatement {
-    const type = this.parseKind(NodeType.IfStatement)
+    const type = this.parseType(NodeType.IfStatement)
 
     const test = this.parseExpression()
     const consequent = this.parseStatement()
@@ -1387,7 +1387,7 @@ export default class Parser {
   }
 
   parseDoWhileStatement(): DoWhileStatement {
-    const type = this.parseKind(NodeType.DoWhileStatement)
+    const type = this.parseType(NodeType.DoWhileStatement)
 
     const test = this.parseExpression()
     const body = this.parseStatement()
@@ -1399,7 +1399,7 @@ export default class Parser {
   }
 
   parseVariableDeclaration(): VariableDeclaration {
-    const type = this.parseKind(NodeType.VariableDeclaration)
+    const type = this.parseType(NodeType.VariableDeclaration)
 
     const kind = this.parseVariableDeclarationKind()
     const declarators = this.parseVariableDeclaratorList()
@@ -1411,7 +1411,7 @@ export default class Parser {
   }
 
   parseVariableDeclarationKind(): VariableDeclarationKind {
-    const variant = this.readVariant()
+    const variant = this.parseVariant()
     switch (variant) {
       case Variant.Let:
         return VariableDeclarationKind.Let
@@ -1429,7 +1429,7 @@ export default class Parser {
   }
 
   parseVariableDeclarator(): VariableDeclarator {
-    const type = this.parseKind(NodeType.VariableDeclarator)
+    const type = this.parseType(NodeType.VariableDeclarator)
 
     const binding = this.parseBinding()
     const init = this.parseOptional(() => this.parseExpression())
@@ -1441,32 +1441,32 @@ export default class Parser {
   }
 
   parseBinding(): Binding {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.ObjectBinding:
       case NodeType.ArrayBinding:
         return this.parseBindingPattern()
       case NodeType.BindingIdentifier:
         return this.parseBindingIdentifier()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseBindingPattern(): BindingPattern {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.ObjectBinding:
         return this.parseObjectBinding()
       case NodeType.ArrayBinding:
         return this.parseArrayBinding()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseObjectBinding(): ObjectBinding {
-    const type = this.parseKind(NodeType.ObjectBinding)
+    const type = this.parseType(NodeType.ObjectBinding)
 
     const properties = this.parseBindingPropertyList()
     return {
@@ -1480,20 +1480,20 @@ export default class Parser {
   }
 
   parseBindingProperty(): BindingProperty {
-    const kind = this.peekTaggedTuple()
+    const type = this.peekTaggedTuple()
 
-    switch (kind) {
+    switch (type) {
       case NodeType.BindingPropertyIdentifier:
         return this.parseBindingPropertyIdentifier()
       case NodeType.BindingPropertyProperty:
         return this.parseBindingPropertyProperty()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseBindingPropertyIdentifier(): BindingPropertyIdentifier {
-    const type = this.parseKind(NodeType.BindingPropertyIdentifier)
+    const type = this.parseType(NodeType.BindingPropertyIdentifier)
 
     const binding = this.parseBindingIdentifier()
     const init = this.parseOptional(() => this.parseExpression())
@@ -1505,7 +1505,7 @@ export default class Parser {
   }
 
   parseBindingPropertyProperty(): BindingPropertyProperty {
-    const type = this.parseKind(NodeType.BindingPropertyProperty)
+    const type = this.parseType(NodeType.BindingPropertyProperty)
 
     const name = this.parsePropertyName()
     const binding = this.parseBindingOrBindingWithInitializer()
@@ -1517,19 +1517,19 @@ export default class Parser {
   }
 
   parsePropertyName(): PropertyName {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.ComputedPropertyName:
         return this.parseComputedPropertyName()
       case NodeType.LiteralPropertyName:
         return this.parseLiteralPropertyName()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseComputedPropertyName(): ComputedPropertyName {
-    const type = this.parseKind(NodeType.ComputedPropertyName)
+    const type = this.parseType(NodeType.ComputedPropertyName)
 
     const expression = this.parseExpression()
     return {
@@ -1539,9 +1539,9 @@ export default class Parser {
   }
 
   parseLiteralPropertyName(): LiteralPropertyName {
-    const type = this.parseKind(NodeType.LiteralPropertyName)
+    const type = this.parseType(NodeType.LiteralPropertyName)
 
-    const value = this.readAtom()
+    const value = this.parseAtom()
     return {
       type,
       value
@@ -1553,9 +1553,9 @@ export default class Parser {
   }
 
   parseBindingOrBindingWithInitializer(): Binding | BindingWithInitializer {
-    const kind = this.peekTaggedTuple()
+    const type = this.peekTaggedTuple()
 
-    switch (kind) {
+    switch (type) {
       case NodeType.BindingWithInitializer:
         return this.parseBindingWithInitializer()
       default:
@@ -1564,7 +1564,7 @@ export default class Parser {
   }
 
   parseBindingWithInitializer(): BindingWithInitializer {
-    const type = this.parseKind(NodeType.BindingWithInitializer)
+    const type = this.parseType(NodeType.BindingWithInitializer)
     const binding = this.parseBinding()
     const init = this.parseExpression()
 
@@ -1576,7 +1576,7 @@ export default class Parser {
   }
 
   parseArrayBinding(): ArrayBinding {
-    const type = this.parseKind(NodeType.ArrayBinding)
+    const type = this.parseType(NodeType.ArrayBinding)
 
     const elements = this.parseBindingOrBindingWithInitializerList()
     const rest = this.parseOptional(() => this.parseBinding())
@@ -1588,7 +1588,7 @@ export default class Parser {
   }
 
   parseForInStatement(): ForInStatement {
-    const type = this.parseKind(NodeType.ForInStatement)
+    const type = this.parseType(NodeType.ForInStatement)
 
     const left = this.parseForInOfBindingOrAssignmentTarget()
     const right = this.parseExpression()
@@ -1602,7 +1602,7 @@ export default class Parser {
   }
 
   parseForOfStatement(): ForOfStatement {
-    const type = this.parseKind(NodeType.ForOfStatement)
+    const type = this.parseType(NodeType.ForOfStatement)
 
     const left = this.parseForInOfBindingOrAssignmentTarget()
     const right = this.parseExpression()
@@ -1616,7 +1616,7 @@ export default class Parser {
   }
 
   parseForStatement(): ForStatement {
-    const type = this.parseKind(NodeType.ForStatement)
+    const type = this.parseType(NodeType.ForStatement)
 
     const init = this.parseOptional(() => this.parseVariableDeclarationOrExpression())
     const test = this.parseOptional(() => this.parseExpression())
@@ -1632,8 +1632,8 @@ export default class Parser {
   }
 
   parseVariableDeclarationOrExpression(): VariableDeclaration | Expression {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.VariableDeclaration:
         return this.parseVariableDeclaration()
       default:
@@ -1642,8 +1642,8 @@ export default class Parser {
   }
 
   parseForInOfBindingOrAssignmentTarget(): ForInOfBinding | AssignmentTarget {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.ForInOfBinding:
         return this.parseForInOfBinding()
       case NodeType.ObjectAssignmentTarget:
@@ -1653,13 +1653,13 @@ export default class Parser {
       case NodeType.StaticMemberAssignmentTarget:
         return this.parseAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseAssignmentTarget(): AssignmentTarget {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.ObjectAssignmentTarget:
       case NodeType.ArrayAssignmentTarget:
         return this.parseAssignmentTargetPattern()
@@ -1668,24 +1668,24 @@ export default class Parser {
       case NodeType.StaticMemberAssignmentTarget:
         return this.parseSimpleAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseAssignmentTargetPattern(): AssignmentTargetPattern {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.ObjectAssignmentTarget:
         return this.parseObjectAssignmentTarget()
       case NodeType.ArrayAssignmentTarget:
         return this.parseArrayAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseObjectAssignmentTarget(): ObjectAssignmentTarget {
-    const type = this.parseKind(NodeType.ObjectAssignmentTarget)
+    const type = this.parseType(NodeType.ObjectAssignmentTarget)
 
     const properties = this.parseAssignmentTargetPropertyList()
     return {
@@ -1699,19 +1699,19 @@ export default class Parser {
   }
 
   parseAssignmentTargetProperty(): AssignmentTargetProperty {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.AssignmentTargetPropertyIdentifier:
         return this.parseAssignmentTargetPropertyIdentifier()
       case NodeType.AssignmentTargetPropertyProperty:
         return this.parseAssignmentTargetPropertyProperty()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseAssignmentTargetPropertyIdentifier(): AssignmentTargetPropertyIdentifier {
-    const type = this.parseKind(NodeType.AssignmentTargetPropertyIdentifier)
+    const type = this.parseType(NodeType.AssignmentTargetPropertyIdentifier)
 
     const binding = this.parseAssignmentTargetIdentifier()
     const init = this.parseOptional(() => this.parseExpression())
@@ -1723,9 +1723,9 @@ export default class Parser {
   }
 
   parseAssignmentTargetIdentifier(): AssignmentTargetIdentifier {
-    const type = this.parseKind(NodeType.AssignmentTargetIdentifier)
+    const type = this.parseType(NodeType.AssignmentTargetIdentifier)
 
-    const name = this.readIdentifierName()
+    const name = this.parseIdentifierName()
     return {
       type,
       name
@@ -1737,8 +1737,8 @@ export default class Parser {
   }
 
   parseAssignmentTargetOrAssignmentTargetWithInitializer(): AssignmentTarget | AssignmentTargetWithInitializer {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.AssignmentTargetWithInitializer:
         return this.parseAssignmentTargetWithInitializer()
       default:
@@ -1747,7 +1747,7 @@ export default class Parser {
   }
 
   parseAssignmentTargetWithInitializer(): AssignmentTargetWithInitializer {
-    const type = this.parseKind(NodeType.AssignmentTargetWithInitializer)
+    const type = this.parseType(NodeType.AssignmentTargetWithInitializer)
 
     const binding = this.parseAssignmentTarget()
     const init = this.parseExpression()
@@ -1759,7 +1759,7 @@ export default class Parser {
   }
 
   parseAssignmentTargetPropertyProperty(): AssignmentTargetPropertyProperty {
-    const type = this.parseKind(NodeType.AssignmentTargetPropertyProperty)
+    const type = this.parseType(NodeType.AssignmentTargetPropertyProperty)
 
     const name = this.parsePropertyName()
     const binding = this.parseAssignmentTargetOrAssignmentTargetWithInitializer()
@@ -1771,7 +1771,7 @@ export default class Parser {
   }
 
   parseArrayAssignmentTarget(): ArrayAssignmentTarget {
-    const type = this.parseKind(NodeType.ArrayAssignmentTarget)
+    const type = this.parseType(NodeType.ArrayAssignmentTarget)
 
     const elements = this.parseAssignmentTargetOrAssignmentTargetWithInitializerList()
     const rest = this.parseOptional(() => this.parseAssignmentTarget())
@@ -1783,8 +1783,8 @@ export default class Parser {
   }
 
   parseSimpleAssignmentTarget(): SimpleAssignmentTarget {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.AssignmentTargetIdentifier:
         return this.parseAssignmentTargetIdentifier()
       case NodeType.ComputedMemberAssignmentTarget:
@@ -1792,12 +1792,12 @@ export default class Parser {
       case NodeType.StaticMemberAssignmentTarget:
         return this.parseStaticMemberAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + kind)
+        throw new Error("Unexpected kind: " + type)
     }
   }
 
   parseComputedMemberAssignmentTarget(): ComputedMemberAssignmentTarget {
-    const type = this.parseKind(NodeType.ComputedMemberAssignmentTarget)
+    const type = this.parseType(NodeType.ComputedMemberAssignmentTarget)
 
     const _object = this.parseExpressionOrSuper()
     const expression = this.parseExpression()
@@ -1809,10 +1809,10 @@ export default class Parser {
   }
 
   parseStaticMemberAssignmentTarget(): StaticMemberAssignmentTarget {
-    const type = this.parseKind(NodeType.StaticMemberAssignmentTarget)
+    const type = this.parseType(NodeType.StaticMemberAssignmentTarget)
 
     const _object = this.parseExpressionOrSuper()
-    const property = this.readIdentifierName()
+    const property = this.parseIdentifierName()
     return {
       type,
       _object,
@@ -1821,8 +1821,8 @@ export default class Parser {
   }
 
   parseExpressionOrSuper(): Expression | Super {
-    const kind = this.peekTaggedTuple()
-    switch (kind) {
+    const type = this.peekTaggedTuple()
+    switch (type) {
       case NodeType.Super:
         return this.parseSuper()
       default:
@@ -1831,7 +1831,7 @@ export default class Parser {
   }
 
   parseSuper(): Super {
-    const type = this.parseKind(NodeType.Super)
+    const type = this.parseType(NodeType.Super)
 
     return {
       type
@@ -1839,7 +1839,7 @@ export default class Parser {
   }
 
   parseForInOfBinding(): ForInOfBinding {
-    const type = this.parseKind(NodeType.ForInOfBinding)
+    const type = this.parseType(NodeType.ForInOfBinding)
 
     const kind = this.parseVariableDeclarationKind()
     const binding = this.parseBinding()
@@ -1851,7 +1851,7 @@ export default class Parser {
   }
 
   parseWhileStatement(): WhileStatement {
-    const type = this.parseKind(NodeType.WhileStatement)
+    const type = this.parseType(NodeType.WhileStatement)
 
     const test = this.parseExpression()
     const body = this.parseStatement()
@@ -1863,9 +1863,9 @@ export default class Parser {
   }
 
   parseLabelledStatement(): LabelledStatement {
-    const type = this.parseKind(NodeType.LabelledStatement)
+    const type = this.parseType(NodeType.LabelledStatement)
 
-    const label = this.readAtom()
+    const label = this.parseAtom()
     const body = this.parseStatement()
     return {
       type,
@@ -1875,7 +1875,7 @@ export default class Parser {
   }
 
   parseReturnStatement(): ReturnStatement {
-    const type = this.parseKind(NodeType.ReturnStatement)
+    const type = this.parseType(NodeType.ReturnStatement)
 
     const expression = this.parseOptional(() => this.parseExpression())
     return {
@@ -1885,7 +1885,7 @@ export default class Parser {
   }
 
   parseSwitchStatement(): SwitchStatement {
-    const type = this.parseKind(NodeType.SwitchStatement)
+    const type = this.parseType(NodeType.SwitchStatement)
 
     const discriminant = this.parseExpression()
     const cases = this.parseSwitchCaseList()
@@ -1901,7 +1901,7 @@ export default class Parser {
   }
 
   parseSwitchCase(): SwitchCase {
-    const type = this.parseKind(NodeType.SwitchCase)
+    const type = this.parseType(NodeType.SwitchCase)
 
     const test = this.parseExpression()
     const consequent = this.parseStatementList()
@@ -1913,7 +1913,7 @@ export default class Parser {
   }
 
   parseSwitchStatementWithDefault(): SwitchStatementWithDefault {
-    const type = this.parseKind(NodeType.SwitchStatementWithDefault)
+    const type = this.parseType(NodeType.SwitchStatementWithDefault)
 
     const discriminant = this.parseExpression()
     const preDefaultCases = this.parseSwitchCaseList()
@@ -1929,7 +1929,7 @@ export default class Parser {
   }
 
   parseSwitchDefault(): SwitchDefault {
-    const type = this.parseKind(NodeType.SwitchDefault)
+    const type = this.parseType(NodeType.SwitchDefault)
 
     const consequent = this.parseStatementList()
     return {
@@ -1939,7 +1939,7 @@ export default class Parser {
   }
 
   parseThrowStatement(): ThrowStatement {
-    const type = this.parseKind(NodeType.ThrowStatement)
+    const type = this.parseType(NodeType.ThrowStatement)
 
     const expression = this.parseExpression()
     return {
@@ -1949,7 +1949,7 @@ export default class Parser {
   }
 
   parseTryCatchStatement(): TryCatchStatement {
-    const type = this.parseKind(NodeType.TryCatchStatement)
+    const type = this.parseType(NodeType.TryCatchStatement)
 
     const body = this.parseBlock()
     const catchClause = this.parseCatchClause()
@@ -1961,7 +1961,7 @@ export default class Parser {
   }
 
   parseCatchClause(): CatchClause {
-    const type = this.parseKind(NodeType.CatchClause)
+    const type = this.parseType(NodeType.CatchClause)
 
     const bindingScope = this.parseAssertedBoundNamesScope()
     const binding = this.parseBinding()
@@ -1975,10 +1975,10 @@ export default class Parser {
   }
 
   parseAssertedBoundNamesScope(): AssertedBoundNamesScope {
-    const type = this.parseKind(NodeType.AssertedBoundNamesScope)
+    const type = this.parseType(NodeType.AssertedBoundNamesScope)
 
     const boundNames = this.parseAssertedBoundNameList()
-    const hasDirectEval = this.readBoolean()
+    const hasDirectEval = this.parseBoolean()
     return {
       type,
       boundNames,
@@ -1991,10 +1991,10 @@ export default class Parser {
   }
 
   parseAssertedBoundName(): AssertedBoundName {
-    const type = this.parseKind(NodeType.AssertedBoundName)
+    const type = this.parseType(NodeType.AssertedBoundName)
 
-    const name = this.readIdentifierName()
-    const isCaptured = this.readBoolean()
+    const name = this.parseIdentifierName()
+    const isCaptured = this.parseBoolean()
     return {
       type,
       name,
@@ -2003,7 +2003,7 @@ export default class Parser {
   }
 
   parseTryFinallyStatement(): TryFinallyStatement {
-    const type = this.parseKind(NodeType.TryFinallyStatement)
+    const type = this.parseType(NodeType.TryFinallyStatement)
 
     const body = this.parseBlock()
     const catchClause = this.parseOptional(() => this.parseCatchClause())
@@ -2017,7 +2017,7 @@ export default class Parser {
   }
 
   parseWithStatement(): WithStatement {
-    const type = this.parseKind(NodeType.WithStatement)
+    const type = this.parseType(NodeType.WithStatement)
 
     const _object = this.parseExpression()
     const body = this.parseStatement()

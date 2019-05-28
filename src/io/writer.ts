@@ -1,6 +1,6 @@
 import { WriterContext } from "./context";
 import { Variant, NodeType } from "../types";
-import { variantToValueMapper, nodeKindToNameMapper } from "../mapper";
+import { variantToValueMapper, nodeTypeToNameMapper } from "../mapper";
 import { Magic, Section, Compression } from "./constants";
 
 export default class MultipartWriter {
@@ -149,7 +149,7 @@ export default class MultipartWriter {
         return bytes.length
     }
 
-    writeKind(value: NodeType) {
+    writeType(value: NodeType) {
         if (this.context.grammarTableToIndex.has(value)) {
             return this.writeVarnum(this.context.grammarTableToIndex.get(value)!)
         } else {
@@ -183,8 +183,8 @@ export default class MultipartWriter {
 
         const [, grammarBuffer ] = this.writeInContext(() => {
             this.writeVarnum(this.context.grammarTable.length)
-            this.context.grammarTable.forEach(kind => {
-                const name = nodeKindToNameMapper(kind)
+            this.context.grammarTable.forEach(type => {
+                const name = nodeTypeToNameMapper(type)
                 if (name === undefined || name === null) {
                     throw new Error("Invalid entry in grammar table")
                 }

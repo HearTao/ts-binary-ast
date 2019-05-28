@@ -406,16 +406,16 @@ const VariantValueToTypeMap = {
 
 export const NodeTypeLimit = Object.keys(NodeType).length
 
-export function nameToNodeKindMapper (name: string) {
+export function nameToNodeTypeMapper (name: string) {
   if (name in NodeTypeNameToTypeMap) {
     return NodeTypeNameToTypeMap[name as keyof typeof NodeTypeNameToTypeMap]
   }
   return undefined
 }
 
-export function nodeKindToNameMapper(kind: NodeType) {
-  if (kind in NodeTypeToNameMap) {
-    return NodeTypeToNameMap[kind]
+export function nodeTypeToNameMapper(type: NodeType) {
+  if (type in NodeTypeToNameMap) {
+    return NodeTypeToNameMap[type]
   }
   return undefined
 }
