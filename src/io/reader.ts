@@ -1,6 +1,10 @@
-import { NodeType, Variant } from "../types";
-import { nameToNodeTypeMapper, nameToVariantMapper, NodeTypeLimit } from "../mapper";
-import { Context } from "./context";
+import { NodeType, Variant } from '../types'
+import {
+  nameToNodeTypeMapper,
+  nameToVariantMapper,
+  NodeTypeLimit
+} from '../mapper'
+import { Context } from './context'
 import { Magic, Section, Compression } from './constants'
 
 const MAX_STRING_COUNT = 0xffff
@@ -17,16 +21,16 @@ export default class MultipartReader {
     this.view = new DataView(buffer)
   }
 
-  lookAhead <T>(cb: () => T): T {
+  lookAhead<T>(cb: () => T): T {
     const savedCurr = this.curr
     const result = cb()
     this.curr = savedCurr
     return result
   }
 
-  readByte (): number {
+  readByte(): number {
     if (this.curr >= this.view.byteLength) {
-      throw new Error("Read byte failed: out of range")
+      throw new Error('Read byte failed: out of range')
     }
     return this.view.getUint8(this.curr++)
   }
@@ -37,7 +41,7 @@ export default class MultipartReader {
     return result
   }
 
-  readGrammar (length: number): string {
+  readGrammar(length: number): string {
     const result: string[] = []
     for (let i = 0; i < length; ++i) {
       result.push(String.fromCharCode(this.readByte()))
@@ -45,39 +49,45 @@ export default class MultipartReader {
     return result.join('')
   }
 
-  readString (length: number) {
-    const dec = new TextDecoder("utf-8")
-    const result = new Uint8Array(this.buffer.slice(this.curr, this.curr + length))
+  readString(length: number) {
+    const dec = new TextDecoder('utf-8')
+    const result = new Uint8Array(
+      this.buffer.slice(this.curr, this.curr + length)
+    )
     this.curr += length
     return dec.decode(result)
   }
 
-  readConst (str: string): boolean {
+  readConst(str: string): boolean {
     if (this.readGrammar(str.length) === str) {
       return true
     }
 
-    throw new Error("Unexpected constant value: " + str)
+    throw new Error('Unexpected constant value: ' + str)
   }
 
-  enterTaggedTuple () {
+  enterTaggedTuple() {
     const index = this.readVarnum()
     if (index >= this.context.grammarTable.length) {
-      throw new Error("Invalid index to grammar table: " + index + this.context.grammarTable.length)
+      throw new Error(
+        'Invalid index to grammar table: ' +
+          index +
+          this.context.grammarTable.length
+      )
     }
 
     return this.context.grammarTable[index]
   }
 
-  readAtom () {
+  readAtom() {
     const index = this.readVarnum()
     if (index >= this.context.stringsTable.length) {
-      throw new Error("Invalid index to strings table")
+      throw new Error('Invalid index to strings table')
     }
     return this.context.stringsTable[index]
   }
 
-  readBoolean () {
+  readBoolean() {
     const result = this.readByte()
     switch (result) {
       case 0:
@@ -85,16 +95,16 @@ export default class MultipartReader {
       case 1:
         return true
       case 2:
-        throw new Error("Nullable boolean not supported")
+        throw new Error('Nullable boolean not supported')
       default:
-        throw new Error("Invalid boolean value")
+        throw new Error('Invalid boolean value')
     }
   }
 
-  readVariant () {
+  readVariant() {
     const index = this.readVarnum()
     if (index >= this.context.stringsTable.length) {
-      throw new Error("Invalid index to strings table")
+      throw new Error('Invalid index to strings table')
     }
 
     if (this.context.variantTable.has(index)) {
@@ -104,7 +114,7 @@ export default class MultipartReader {
     const name = this.context.stringsTable[index]
     const variant = nameToVariantMapper(name)
     if (!variant) {
-      throw new Error("Invalid entry in variant table: " + name)
+      throw new Error('Invalid entry in variant table: ' + name)
     }
     this.context.variantTable.set(index, variant)
     return variant
@@ -113,17 +123,17 @@ export default class MultipartReader {
   readIdentifierName() {
     const result = this.readAtom()
     if (!IsIdentifier()) {
-      throw new Error("Invalid identifier")
+      throw new Error('Invalid identifier')
     }
     return result
   }
 
-  readHeader () {
+  readHeader() {
     this.readConst(Magic.Header)
 
     const version = this.readVarnum()
     if (version !== Magic.Version) {
-      throw new Error("Unexpected version")
+      throw new Error('Unexpected version')
     }
 
     this.readConst(Section.Grammar)
@@ -133,31 +143,33 @@ export default class MultipartReader {
     const posBeforeGrammar = this.curr
 
     if (this.curr + grammarByteLen > this.view.byteLength) {
-      throw new Error("Invalid byte length in grammar table")
+      throw new Error('Invalid byte length in grammar table')
     }
 
     const grammarNumberOfEntries = this.readVarnum()
     if (grammarNumberOfEntries > NodeTypeLimit) {
-      throw new Error("Invalid number of entries in grammar table")
+      throw new Error('Invalid number of entries in grammar table')
     }
 
     const grammarTable: NodeType[] = []
     for (let i = 0; i < grammarNumberOfEntries; ++i) {
       const byteLength = this.readVarnum()
       if (this.curr + byteLength > this.view.byteLength) {
-        throw new Error("Invalid byte length in grammar table")
+        throw new Error('Invalid byte length in grammar table')
       }
 
       const name = this.readGrammar(byteLength)
       const type = nameToNodeTypeMapper(name)
       if (type === undefined) {
-        throw new Error("Invalid entry in grammar table")
+        throw new Error('Invalid entry in grammar table')
       }
 
       grammarTable.push(type)
     }
     if (this.curr !== posBeforeGrammar + grammarByteLen) {
-      throw new Error("The length of the grammar table didn't match its contents")
+      throw new Error(
+        "The length of the grammar table didn't match its contents"
+      )
     }
 
     this.readConst(Section.Strings)
@@ -166,29 +178,36 @@ export default class MultipartReader {
     const posBeforeStrings = this.curr
 
     if (this.curr + stringsByteLen > this.view.byteLength) {
-      throw new Error("Invalid byte length in strings table1")
+      throw new Error('Invalid byte length in strings table1')
     }
 
     const stringsNumberOfEntries = this.readVarnum()
     if (stringsNumberOfEntries > MAX_STRING_COUNT) {
-      throw new Error("Too many entries in strings table")
+      throw new Error('Too many entries in strings table')
     }
 
     const stringsTable: string[] = []
-    for (let i = 0 ; i< stringsNumberOfEntries; ++i) {
+    for (let i = 0; i < stringsNumberOfEntries; ++i) {
       const byteLength = this.readVarnum()
       if (this.curr + byteLength > this.view.byteLength) {
-        throw new Error("Invalid byte length in strings table2")
+        throw new Error('Invalid byte length in strings table2')
       }
-      if (byteLength === 2 && this.lookAhead(() => this.readByte() === 0xFF && this.readByte() === 0x00)) {
+      if (
+        byteLength === 2 &&
+        this.lookAhead(
+          () => this.readByte() === 0xff && this.readByte() === 0x00
+        )
+      ) {
         this.curr += 2
-        stringsTable.push("")
+        stringsTable.push('')
       } else {
         stringsTable.push(this.readString(byteLength))
       }
     }
     if (this.curr !== posBeforeStrings + stringsByteLen) {
-      throw new Error("The length of the strings table didn't match its contents")
+      throw new Error(
+        "The length of the strings table didn't match its contents"
+      )
     }
 
     this.readConst(Section.Tree)
@@ -197,14 +216,14 @@ export default class MultipartReader {
 
     const treeByteLen = this.readVarnum()
     if (posBeforeTree + treeByteLen > this.buffer.byteLength) {
-      throw new Error("Invalid byte length in tree table")
+      throw new Error('Invalid byte length in tree table')
     }
 
     this.context.grammarTable = grammarTable
     this.context.stringsTable = stringsTable
   }
 
-  readVarnum () {
+  readVarnum() {
     let result = 0
     let shift = 0
     while (true) {
@@ -212,7 +231,7 @@ export default class MultipartReader {
       const newResult = result | ((byte >> 1) << shift)
 
       if (newResult < result) {
-        throw new Error("Overflow on readVarnum result")
+        throw new Error('Overflow on readVarnum result')
       }
 
       result = newResult
@@ -223,7 +242,7 @@ export default class MultipartReader {
       }
 
       if (shift >= 32) {
-        throw new Error("Overflow on readVarnum shift")
+        throw new Error('Overflow on readVarnum shift')
       }
     }
   }

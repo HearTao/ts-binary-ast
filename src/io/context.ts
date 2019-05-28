@@ -1,4 +1,4 @@
-import { NodeType, Variant } from "../types";
+import { NodeType, Variant } from '../types'
 
 export interface Context {
   grammarTable: NodeType[]

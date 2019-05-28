@@ -1,6 +1,143 @@
-import MultipartReader from "./io/reader";
-import { Context } from "./io/context";
-import { Program, NodeType, Script, FrozenArray, Directive, Statement, AssertedScriptGlobalScope, AssertedDeclaredName, AssertedDeclaredKind, Variant, Block, AssertedBlockScope, BreakStatement, ContinueStatement, ClassDeclaration, BindingIdentifier, ClassElement, Expression, MethodDefinition, DebuggerStatement, EmptyStatement, ExpressionStatement, EagerFunctionDeclaration, LazyFunctionDeclaration, IfStatement, DoWhileStatement, VariableDeclaration, VariableDeclarator, VariableDeclarationKind, Binding, ForInStatement, ForInOfBinding, AssignmentTarget, ForOfStatement, ForStatement, WhileStatement, LabelledStatement, ReturnStatement, SwitchStatement, SwitchCase, SwitchDefault, SwitchStatementWithDefault, ThrowStatement, TryCatchStatement, CatchClause, AssertedBoundNamesScope, AssertedBoundName, TryFinallyStatement, WithStatement, BindingPattern, ObjectBinding, ArrayBinding, BindingProperty, BindingPropertyIdentifier, BindingPropertyProperty, BindingWithInitializer, ComputedPropertyName, LiteralPropertyName, PropertyName, AssignmentTargetPattern, SimpleAssignmentTarget, AssignmentTargetProperty, ObjectAssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetPropertyProperty, AssignmentTargetIdentifier, AssignmentTargetWithInitializer, ArrayAssignmentTarget, StaticMemberAssignmentTarget, ComputedMemberAssignmentTarget, Super, Getter, Setter, Method, EagerMethod, LazyMethod, EagerGetter, LazyGetter, GetterContents, AssertedVarScope, FunctionBody, EagerSetter, LazySetter, SetterContents, AssertedParameterScope, AssertedMaybePositionalParameterName, Parameter, FunctionOrMethodContents, FormalParameters, AssertedPositionalParameterName, AssertedRestParameterName, AssertedParameterName, LiteralBooleanExpression, LiteralInfinityExpression, LiteralNullExpression, LiteralNumericExpression, LiteralStringExpression, LiteralRegExpExpression, ArrayExpression, EagerArrowExpressionWithFunctionBody, LazyArrowExpressionWithFunctionBody, EagerArrowExpressionWithExpression, LazyArrowExpressionWithExpression, AssignmentExpression, BinaryExpression, CallExpression, CompoundAssignmentExpression, ComputedMemberExpression, ConditionalExpression, ClassExpression, EagerFunctionExpression, LazyFunctionExpression, IdentifierExpression, NewExpression, NewTargetExpression, ObjectExpression, UnaryExpression, StaticMemberExpression, TemplateExpression, ThisExpression, UpdateExpression, YieldExpression, YieldStarExpression, AwaitExpression, UpdateOperator, TemplateElement, UnaryOperator, ObjectProperty, ShorthandProperty, DataProperty, Arguments, SpreadElement, CompoundAssignmentOperator, BinaryOperator, ArrowExpressionContentsWithExpression, ArrowExpressionContentsWithFunctionBody } from "./types";
+import MultipartReader from './io/reader'
+import { Context } from './io/context'
+import {
+  Program,
+  NodeType,
+  Script,
+  FrozenArray,
+  Directive,
+  Statement,
+  AssertedScriptGlobalScope,
+  AssertedDeclaredName,
+  AssertedDeclaredKind,
+  Variant,
+  Block,
+  AssertedBlockScope,
+  BreakStatement,
+  ContinueStatement,
+  ClassDeclaration,
+  BindingIdentifier,
+  ClassElement,
+  Expression,
+  MethodDefinition,
+  DebuggerStatement,
+  EmptyStatement,
+  ExpressionStatement,
+  EagerFunctionDeclaration,
+  LazyFunctionDeclaration,
+  IfStatement,
+  DoWhileStatement,
+  VariableDeclaration,
+  VariableDeclarator,
+  VariableDeclarationKind,
+  Binding,
+  ForInStatement,
+  ForInOfBinding,
+  AssignmentTarget,
+  ForOfStatement,
+  ForStatement,
+  WhileStatement,
+  LabelledStatement,
+  ReturnStatement,
+  SwitchStatement,
+  SwitchCase,
+  SwitchDefault,
+  SwitchStatementWithDefault,
+  ThrowStatement,
+  TryCatchStatement,
+  CatchClause,
+  AssertedBoundNamesScope,
+  AssertedBoundName,
+  TryFinallyStatement,
+  WithStatement,
+  BindingPattern,
+  ObjectBinding,
+  ArrayBinding,
+  BindingProperty,
+  BindingPropertyIdentifier,
+  BindingPropertyProperty,
+  BindingWithInitializer,
+  ComputedPropertyName,
+  LiteralPropertyName,
+  PropertyName,
+  AssignmentTargetPattern,
+  SimpleAssignmentTarget,
+  AssignmentTargetProperty,
+  ObjectAssignmentTarget,
+  AssignmentTargetPropertyIdentifier,
+  AssignmentTargetPropertyProperty,
+  AssignmentTargetIdentifier,
+  AssignmentTargetWithInitializer,
+  ArrayAssignmentTarget,
+  StaticMemberAssignmentTarget,
+  ComputedMemberAssignmentTarget,
+  Super,
+  Getter,
+  Setter,
+  Method,
+  EagerMethod,
+  LazyMethod,
+  EagerGetter,
+  LazyGetter,
+  GetterContents,
+  AssertedVarScope,
+  FunctionBody,
+  EagerSetter,
+  LazySetter,
+  SetterContents,
+  AssertedParameterScope,
+  AssertedMaybePositionalParameterName,
+  Parameter,
+  FunctionOrMethodContents,
+  FormalParameters,
+  AssertedPositionalParameterName,
+  AssertedRestParameterName,
+  AssertedParameterName,
+  LiteralBooleanExpression,
+  LiteralInfinityExpression,
+  LiteralNullExpression,
+  LiteralNumericExpression,
+  LiteralStringExpression,
+  LiteralRegExpExpression,
+  ArrayExpression,
+  EagerArrowExpressionWithFunctionBody,
+  LazyArrowExpressionWithFunctionBody,
+  EagerArrowExpressionWithExpression,
+  LazyArrowExpressionWithExpression,
+  AssignmentExpression,
+  BinaryExpression,
+  CallExpression,
+  CompoundAssignmentExpression,
+  ComputedMemberExpression,
+  ConditionalExpression,
+  ClassExpression,
+  EagerFunctionExpression,
+  LazyFunctionExpression,
+  IdentifierExpression,
+  NewExpression,
+  NewTargetExpression,
+  ObjectExpression,
+  UnaryExpression,
+  StaticMemberExpression,
+  TemplateExpression,
+  ThisExpression,
+  UpdateExpression,
+  YieldExpression,
+  YieldStarExpression,
+  AwaitExpression,
+  UpdateOperator,
+  TemplateElement,
+  UnaryOperator,
+  ObjectProperty,
+  ShorthandProperty,
+  DataProperty,
+  Arguments,
+  SpreadElement,
+  CompoundAssignmentOperator,
+  BinaryOperator,
+  ArrowExpressionContentsWithExpression,
+  ArrowExpressionContentsWithFunctionBody
+} from './types'
 
 export default class Parser {
   context: Context
@@ -39,7 +176,7 @@ export default class Parser {
     return this.reader.readAtom()
   }
 
-  parseMaybeAtom () {
+  parseMaybeAtom() {
     const result = this.reader.readAtom()
     return result ? result : undefined
   }
@@ -85,7 +222,7 @@ export default class Parser {
   parseType<T extends NodeType>(expectedType: T): T {
     const type = this.enterTaggedTuple()
     if (type !== expectedType) {
-      throw new Error("Invalid Kind: " + expectedType)
+      throw new Error('Invalid Kind: ' + expectedType)
     }
     return expectedType
   }
@@ -97,7 +234,7 @@ export default class Parser {
         return this.parseScript()
       case NodeType.Module:
       default:
-        throw new Error("Invalid Kind: " + type)
+        throw new Error('Invalid Kind: ' + type)
     }
   }
 
@@ -137,8 +274,11 @@ export default class Parser {
 
     const name = this.parseIdentifierName()
     const kind = this.parseAssertedDeclaredKind()
-    if (kind === AssertedDeclaredKind.ConstLexical || kind === AssertedDeclaredKind.NonConstLexical) {
-      throw new Error("Let Or Const is not supported")
+    if (
+      kind === AssertedDeclaredKind.ConstLexical ||
+      kind === AssertedDeclaredKind.NonConstLexical
+    ) {
+      throw new Error('Let Or Const is not supported')
     }
 
     const isCaptured = this.parseBoolean()
@@ -234,7 +374,7 @@ export default class Parser {
       case NodeType.WithStatement:
         return this.parseWithStatement()
       default:
-        throw new Error("Unexpected Statement" + type)
+        throw new Error('Unexpected Statement' + type)
     }
   }
 
@@ -306,7 +446,7 @@ export default class Parser {
       case NodeType.AwaitExpression:
         return this.parseAwaitExpression()
       default:
-        throw new Error("Unexpected Expression: " + type)
+        throw new Error('Unexpected Expression: ' + type)
     }
   }
 
@@ -321,7 +461,7 @@ export default class Parser {
   }
 
   parseLiteralInfinityExpression(): LiteralInfinityExpression {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.')
   }
 
   parseLiteralNullExpression(): LiteralNullExpression {
@@ -407,7 +547,9 @@ export default class Parser {
   }
 
   parseArrowExpressionContentsWithFunctionBody(): ArrowExpressionContentsWithFunctionBody {
-    const type = this.parseType(NodeType.ArrowExpressionContentsWithFunctionBody)
+    const type = this.parseType(
+      NodeType.ArrowExpressionContentsWithFunctionBody
+    )
 
     const parameterScope = this.parseAssertedParameterScope()
     const params = this.parseFormalParameters()
@@ -604,7 +746,7 @@ export default class Parser {
       case Variant.LogicXorEqual:
         return CompoundAssignmentOperator.LogicXorEqual
       default:
-        throw new Error("Unexpected variant: " + variant)
+        throw new Error('Unexpected variant: ' + variant)
     }
   }
 
@@ -649,11 +791,11 @@ export default class Parser {
   }
 
   parseEagerFunctionExpression(): EagerFunctionExpression {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.')
   }
 
   parseLazyFunctionExpression(): LazyFunctionExpression {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.')
   }
 
   parseIdentifierExpression(): IdentifierExpression {
@@ -827,7 +969,9 @@ export default class Parser {
     }
   }
 
-  parseExpressionOrTemplateElementList(): FrozenArray<Expression | TemplateElement> {
+  parseExpressionOrTemplateElementList(): FrozenArray<
+    Expression | TemplateElement
+  > {
     return this.parseList(() => this.parseExpressionOrTemplateElement())
   }
 
@@ -843,7 +987,7 @@ export default class Parser {
 
   parseTemplateElement(): TemplateElement {
     const type = this.parseType(NodeType.TemplateElement)
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.')
   }
 
   parseThisExpression(): ThisExpression {
@@ -998,7 +1142,7 @@ export default class Parser {
       case NodeType.LazySetter:
         return this.parseSetter()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1010,7 +1154,7 @@ export default class Parser {
       case NodeType.LazyMethod:
         return this.parseLazyMethod()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1092,7 +1236,7 @@ export default class Parser {
       case NodeType.LazyGetter:
         return this.parseLazyGetter()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1162,7 +1306,7 @@ export default class Parser {
       case NodeType.LazySetter:
         return this.parseLazySetter()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1232,8 +1376,12 @@ export default class Parser {
     }
   }
 
-  parseAssertedMaybePositionalParameterNameList(): FrozenArray<AssertedMaybePositionalParameterName> {
-    return this.parseList(() => this.parseAssertedMaybePositionalParameterName())
+  parseAssertedMaybePositionalParameterNameList(): FrozenArray<
+    AssertedMaybePositionalParameterName
+  > {
+    return this.parseList(() =>
+      this.parseAssertedMaybePositionalParameterName()
+    )
   }
 
   parseAssertedMaybePositionalParameterName(): AssertedMaybePositionalParameterName {
@@ -1246,7 +1394,7 @@ export default class Parser {
       case NodeType.AssertedParameterName:
         return this.parseAssertedParameterName()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1420,7 +1568,7 @@ export default class Parser {
       case Variant.AssertedDeclaredKindOrVariableDeclarationKindVar:
         return VariableDeclarationKind.Var
       default:
-        throw new Error("Unexpected Variant: " + variant)
+        throw new Error('Unexpected Variant: ' + variant)
     }
   }
 
@@ -1449,7 +1597,7 @@ export default class Parser {
       case NodeType.BindingIdentifier:
         return this.parseBindingIdentifier()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1461,7 +1609,7 @@ export default class Parser {
       case NodeType.ArrayBinding:
         return this.parseArrayBinding()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1488,7 +1636,7 @@ export default class Parser {
       case NodeType.BindingPropertyProperty:
         return this.parseBindingPropertyProperty()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1524,7 +1672,7 @@ export default class Parser {
       case NodeType.LiteralPropertyName:
         return this.parseLiteralPropertyName()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1548,7 +1696,9 @@ export default class Parser {
     }
   }
 
-  parseBindingOrBindingWithInitializerList(): FrozenArray<Binding | BindingWithInitializer> {
+  parseBindingOrBindingWithInitializerList(): FrozenArray<
+    Binding | BindingWithInitializer
+  > {
     return this.parseList(() => this.parseBindingOrBindingWithInitializer())
   }
 
@@ -1618,7 +1768,9 @@ export default class Parser {
   parseForStatement(): ForStatement {
     const type = this.parseType(NodeType.ForStatement)
 
-    const init = this.parseOptional(() => this.parseVariableDeclarationOrExpression())
+    const init = this.parseOptional(() =>
+      this.parseVariableDeclarationOrExpression()
+    )
     const test = this.parseOptional(() => this.parseExpression())
     const update = this.parseOptional(() => this.parseExpression())
     const body = this.parseStatement()
@@ -1653,7 +1805,7 @@ export default class Parser {
       case NodeType.StaticMemberAssignmentTarget:
         return this.parseAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1668,7 +1820,7 @@ export default class Parser {
       case NodeType.StaticMemberAssignmentTarget:
         return this.parseSimpleAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1680,7 +1832,7 @@ export default class Parser {
       case NodeType.ArrayAssignmentTarget:
         return this.parseArrayAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1706,7 +1858,7 @@ export default class Parser {
       case NodeType.AssignmentTargetPropertyProperty:
         return this.parseAssignmentTargetPropertyProperty()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 
@@ -1732,11 +1884,17 @@ export default class Parser {
     }
   }
 
-  parseAssignmentTargetOrAssignmentTargetWithInitializerList(): FrozenArray<AssignmentTarget | AssignmentTargetWithInitializer> {
-    return this.parseList(() => this.parseAssignmentTargetOrAssignmentTargetWithInitializer())
+  parseAssignmentTargetOrAssignmentTargetWithInitializerList(): FrozenArray<
+    AssignmentTarget | AssignmentTargetWithInitializer
+  > {
+    return this.parseList(() =>
+      this.parseAssignmentTargetOrAssignmentTargetWithInitializer()
+    )
   }
 
-  parseAssignmentTargetOrAssignmentTargetWithInitializer(): AssignmentTarget | AssignmentTargetWithInitializer {
+  parseAssignmentTargetOrAssignmentTargetWithInitializer():
+    | AssignmentTarget
+    | AssignmentTargetWithInitializer {
     const type = this.peekTaggedTuple()
     switch (type) {
       case NodeType.AssignmentTargetWithInitializer:
@@ -1792,7 +1950,7 @@ export default class Parser {
       case NodeType.StaticMemberAssignmentTarget:
         return this.parseStaticMemberAssignmentTarget()
       default:
-        throw new Error("Unexpected kind: " + type)
+        throw new Error('Unexpected kind: ' + type)
     }
   }
 

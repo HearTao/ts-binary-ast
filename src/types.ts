@@ -10,73 +10,73 @@ export type IdentifierName = string
 export type Label = string
 
 export enum VariableDeclarationKind {
-  Var = "var",
+  Var = 'var',
   Let = 'let',
   Const = 'const'
 }
 
 export enum CompoundAssignmentOperator {
-  PlusEqual = "+=",
-  MinusEqual = "-=",
-  StarEqual = "*=",
-  DivEuqal = "/=",
-  ModEqual = "%=",
-  StarStarEqual = "**=",
-  LessThanLessThanEqual = "<<=",
-  GreaterThanGreaterThanEequal = ">>=",
-  GreaterThanGreaterThanGreaterThanEequal = ">>>=",
-  LoginOrEqual = "|=",
-  LogicAndEuqal = "&=",
-  LogicXorEqual = "^=",
+  PlusEqual = '+=',
+  MinusEqual = '-=',
+  StarEqual = '*=',
+  DivEuqal = '/=',
+  ModEqual = '%=',
+  StarStarEqual = '**=',
+  LessThanLessThanEqual = '<<=',
+  GreaterThanGreaterThanEequal = '>>=',
+  GreaterThanGreaterThanGreaterThanEequal = '>>>=',
+  LoginOrEqual = '|=',
+  LogicAndEuqal = '&=',
+  LogicXorEqual = '^='
 }
 
 export enum BinaryOperator {
-  Comma = ",",
-  Or = "||",
-  And = "&&",
-  LogicOr = "|",
-  LogicXor = "^",
-  LogicAnd = "&",
-  EqualEqual = "==",
-  NotEqual = "!=",
-  EqualEqualEqual = "===",
-  NotEqualEqual = "!==",
-  LessThan = "<",
-  LessThanEqual = "<=",
-  GreaterThan = ">",
-  GreaterThanEqual = ">=",
-  In = "in",
-  InstanceOf = "instanceof",
-  LessThanLessThan = "<<",
-  GreaterThanGreaterThan = ">>",
-  GreaterThanGreaterThanGreaterThan = ">>>",
-  Plus = "+",
-  Minus = "-",
-  Star = "*",
-  Div = "/",
-  Mod = "%",
-  StarStar = "**"
+  Comma = ',',
+  Or = '||',
+  And = '&&',
+  LogicOr = '|',
+  LogicXor = '^',
+  LogicAnd = '&',
+  EqualEqual = '==',
+  NotEqual = '!=',
+  EqualEqualEqual = '===',
+  NotEqualEqual = '!==',
+  LessThan = '<',
+  LessThanEqual = '<=',
+  GreaterThan = '>',
+  GreaterThanEqual = '>=',
+  In = 'in',
+  InstanceOf = 'instanceof',
+  LessThanLessThan = '<<',
+  GreaterThanGreaterThan = '>>',
+  GreaterThanGreaterThanGreaterThan = '>>>',
+  Plus = '+',
+  Minus = '-',
+  Star = '*',
+  Div = '/',
+  Mod = '%',
+  StarStar = '**'
 }
 
 export enum UnaryOperator {
-  Plus = "+",
-  Minus = "-",
-  Not = "!",
-  LogicNot = "~",
-  TypeOf = "typeof",
-  Void = "void",
-  Delete = "delete"
+  Plus = '+',
+  Minus = '-',
+  Not = '!',
+  LogicNot = '~',
+  TypeOf = 'typeof',
+  Void = 'void',
+  Delete = 'delete'
 }
 
 export enum UpdateOperator {
-  PlusPlus = "++",
-  MinusMinus = "--"
+  PlusPlus = '++',
+  MinusMinus = '--'
 }
 
 export enum AssertedDeclaredKind {
-  Var = "var",
-  NonConstLexical = "non-const lexical",
-  ConstLexical = "const lexical"
+  Var = 'var',
+  NonConstLexical = 'non-const lexical',
+  ConstLexical = 'const lexical'
 }
 
 export enum Variant {
@@ -158,7 +158,10 @@ export interface AssertedParameterName {
   isCaptured: boolean
 }
 
-export type AssertedMaybePositionalParameterName = AssertedPositionalParameterName | AssertedRestParameterName | AssertedParameterName
+export type AssertedMaybePositionalParameterName =
+  | AssertedPositionalParameterName
+  | AssertedRestParameterName
+  | AssertedParameterName
 
 export interface AssertedBoundName {
   type: NodeType.AssertedBoundName
@@ -328,13 +331,66 @@ export interface Node {
 
 export type Program = Script | Module
 
-export type IterationStatement = DoWhileStatement | ForInStatement | ForOfStatement | ForStatement | WhileStatement
+export type IterationStatement =
+  | DoWhileStatement
+  | ForInStatement
+  | ForOfStatement
+  | ForStatement
+  | WhileStatement
 
-export type Statement = Block | BreakStatement | ContinueStatement | ClassDeclaration | DebuggerStatement | EmptyStatement | ExpressionStatement | FunctionDeclaration | IfStatement | IterationStatement | LabelledStatement | ReturnStatement | SwitchStatement | SwitchStatementWithDefault | ThrowStatement | TryCatchStatement | TryFinallyStatement | VariableDeclaration | WithStatement
+export type Statement =
+  | Block
+  | BreakStatement
+  | ContinueStatement
+  | ClassDeclaration
+  | DebuggerStatement
+  | EmptyStatement
+  | ExpressionStatement
+  | FunctionDeclaration
+  | IfStatement
+  | IterationStatement
+  | LabelledStatement
+  | ReturnStatement
+  | SwitchStatement
+  | SwitchStatementWithDefault
+  | ThrowStatement
+  | TryCatchStatement
+  | TryFinallyStatement
+  | VariableDeclaration
+  | WithStatement
 
-export type Literal = LiteralBooleanExpression | LiteralInfinityExpression | LiteralNullExpression | LiteralNumericExpression | LiteralStringExpression
+export type Literal =
+  | LiteralBooleanExpression
+  | LiteralInfinityExpression
+  | LiteralNullExpression
+  | LiteralNumericExpression
+  | LiteralStringExpression
 
-export type Expression = Literal | LiteralRegExpExpression | ArrayExpression | ArrowExpression | AssignmentExpression | BinaryExpression | CallExpression | CompoundAssignmentExpression | ComputedMemberExpression | ConditionalExpression | ClassExpression | FunctionExpression | IdentifierExpression | NewExpression | NewTargetExpression | ObjectExpression | UnaryExpression | StaticMemberExpression | TemplateExpression | ThisExpression | UpdateExpression | YieldExpression | YieldStarExpression | AwaitExpression
+export type Expression =
+  | Literal
+  | LiteralRegExpExpression
+  | ArrayExpression
+  | ArrowExpression
+  | AssignmentExpression
+  | BinaryExpression
+  | CallExpression
+  | CompoundAssignmentExpression
+  | ComputedMemberExpression
+  | ConditionalExpression
+  | ClassExpression
+  | FunctionExpression
+  | IdentifierExpression
+  | NewExpression
+  | NewTargetExpression
+  | ObjectExpression
+  | UnaryExpression
+  | StaticMemberExpression
+  | TemplateExpression
+  | ThisExpression
+  | UpdateExpression
+  | YieldExpression
+  | YieldStarExpression
+  | AwaitExpression
 
 export type PropertyName = ComputedPropertyName | LiteralPropertyName
 
@@ -342,13 +398,22 @@ export type MethodDefinition = Method | Getter | Setter
 
 export type ObjectProperty = MethodDefinition | DataProperty | ShorthandProperty
 
-export type ExportDeclaration = ExportAllFrom | ExportFrom | ExportLocals | ExportDefault | Export
+export type ExportDeclaration =
+  | ExportAllFrom
+  | ExportFrom
+  | ExportLocals
+  | ExportDefault
+  | Export
 
 export type ImportDeclaration = ImportNamespace | Import
 
-export type FunctionDeclaration = EagerFunctionDeclaration | LazyFunctionDeclaration
+export type FunctionDeclaration =
+  | EagerFunctionDeclaration
+  | LazyFunctionDeclaration
 
-export type FunctionExpression = EagerFunctionExpression | LazyFunctionExpression
+export type FunctionExpression =
+  | EagerFunctionExpression
+  | LazyFunctionExpression
 
 export type Method = EagerMethod | LazyMethod
 
@@ -356,7 +421,11 @@ export type Getter = EagerGetter | LazyGetter
 
 export type Setter = EagerSetter | LazySetter
 
-export type ArrowExpression = EagerArrowExpressionWithFunctionBody | LazyArrowExpressionWithFunctionBody | EagerArrowExpressionWithExpression | LazyArrowExpressionWithExpression
+export type ArrowExpression =
+  | EagerArrowExpressionWithFunctionBody
+  | LazyArrowExpressionWithFunctionBody
+  | EagerArrowExpressionWithExpression
+  | LazyArrowExpressionWithExpression
 
 // bindings
 
@@ -369,9 +438,14 @@ export type BindingPattern = ObjectBinding | ArrayBinding
 
 export type Binding = BindingPattern | BindingIdentifier
 
-export type SimpleAssignmentTarget = AssignmentTargetIdentifier | ComputedMemberAssignmentTarget | StaticMemberAssignmentTarget
+export type SimpleAssignmentTarget =
+  | AssignmentTargetIdentifier
+  | ComputedMemberAssignmentTarget
+  | StaticMemberAssignmentTarget
 
-export type AssignmentTargetPattern = ObjectAssignmentTarget | ArrayAssignmentTarget
+export type AssignmentTargetPattern =
+  | ObjectAssignmentTarget
+  | ArrayAssignmentTarget
 
 export type AssignmentTarget = AssignmentTargetPattern | SimpleAssignmentTarget
 
@@ -418,7 +492,9 @@ export interface BindingPropertyProperty extends Node {
   binding: Binding | BindingWithInitializer
 }
 
-export type BindingProperty = BindingPropertyIdentifier | BindingPropertyProperty
+export type BindingProperty =
+  | BindingPropertyIdentifier
+  | BindingPropertyProperty
 
 export interface ObjectBinding extends Node {
   type: NodeType.ObjectBinding
@@ -449,7 +525,9 @@ export interface AssignmentTargetPropertyProperty extends Node {
   binding: AssignmentTarget | AssignmentTargetWithInitializer
 }
 
-export type AssignmentTargetProperty = AssignmentTargetPropertyIdentifier | AssignmentTargetPropertyProperty
+export type AssignmentTargetProperty =
+  | AssignmentTargetPropertyIdentifier
+  | AssignmentTargetPropertyProperty
 
 export interface ObjectAssignmentTarget extends Node {
   type: NodeType.ObjectAssignmentTarget
