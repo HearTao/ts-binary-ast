@@ -140,7 +140,9 @@ import {
   Binding,
   BindingPattern,
   BindingProperty,
-  Parameter
+  Parameter,
+  FunctionDeclaration,
+  FunctionExpression
 } from './types'
 import * as ts from 'typescript'
 import {
@@ -793,37 +795,93 @@ namespace Ecmaify {
   export function ExportLocalSpecifierEcmaify(node: ExportLocalSpecifier): any {
     throw new Error('Not Implemented')
   }
+
+  export function uniformMethodEcmaify(
+    node: EagerMethod | LazyMethod
+  ): ts.MethodDeclaration {
+    const contents = MethodContentsEcmaify(node.contents)
+    contents.modifiers = node.isAsync
+      ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)])
+      : undefined
+    contents.name = PropertyNameEcmaify(node.name)
+    contents.asteriskToken = node.isGenerator
+      ? ts.createToken(ts.SyntaxKind.AsteriskToken)
+      : undefined
+    return contents
+  }
+
   export function EagerMethodEcmaify(node: EagerMethod): ts.MethodDeclaration {
-    throw new Error('Not Implemented')
+    return uniformMethodEcmaify(node)
   }
+
   export function LazyMethodEcmaify(node: LazyMethod): ts.MethodDeclaration {
-    throw new Error('Not Implemented')
+    return uniformMethodEcmaify(node)
   }
+
+  export function uniformGetterEcmaify(
+    node: Getter
+  ): ts.GetAccessorDeclaration {
+    const contents = GetterContentsEcmaify(node.contents)
+    contents.name = PropertyNameEcmaify(node.name)
+    return contents
+  }
+
   export function EagerGetterEcmaify(
     node: EagerGetter
   ): ts.GetAccessorDeclaration {
-    throw new Error('Not Implemented')
+    return uniformGetterEcmaify(node)
   }
+
   export function LazyGetterEcmaify(
     node: LazyGetter
   ): ts.GetAccessorDeclaration {
-    throw new Error('Not Implemented')
+    return uniformGetterEcmaify(node)
   }
-  export function GetterContentsEcmaify(node: GetterContents): any {
-    throw new Error('Not Implemented')
+
+  export function GetterContentsEcmaify(
+    node: GetterContents
+  ): ts.GetAccessorDeclaration {
+    return ts.createGetAccessor(
+      undefined,
+      undefined,
+      '',
+      [],
+      undefined,
+      ts.createBlock(StatementListEcmaify(node.body))
+    )
   }
+
+  export function uniformSetterEcmaify(
+    node: Setter
+  ): ts.SetAccessorDeclaration {
+    const contents = SetterContentsEcmaify(node.contents)
+    contents.name = PropertyNameEcmaify(node.name)
+
+    return contents
+  }
+
   export function EagerSetterEcmaify(
     node: EagerSetter
   ): ts.SetAccessorDeclaration {
-    throw new Error('Not Implemented')
+    return uniformSetterEcmaify(node)
   }
+
   export function LazySetterEcmaify(
     node: LazySetter
   ): ts.SetAccessorDeclaration {
-    throw new Error('Not Implemented')
+    return uniformSetterEcmaify(node)
   }
-  export function SetterContentsEcmaify(node: SetterContents): any {
-    throw new Error('Not Implemented')
+
+  export function SetterContentsEcmaify(
+    node: SetterContents
+  ): ts.SetAccessorDeclaration {
+    return ts.createSetAccessor(
+      undefined,
+      undefined,
+      '',
+      [ParameterEcmaify(node.param)],
+      ts.createBlock(StatementListEcmaify(node.body))
+    )
   }
 
   export function PropertyNameEcmaify(node: PropertyName): ts.PropertyName {
@@ -919,40 +977,78 @@ namespace Ecmaify {
     )
   }
 
+  export function uniformArrowExpressionWithFunctionBodyEcmaify(
+    node:
+      | EagerArrowExpressionWithFunctionBody
+      | LazyArrowExpressionWithFunctionBody
+  ): ts.ArrowFunction {
+    const contents = ArrowExpressionContentsWithFunctionBodyEcmaify(
+      node.contents
+    )
+    contents.asteriskToken = node.isAsync
+      ? ts.createToken(ts.SyntaxKind.AsteriskToken)
+      : undefined
+    return contents
+  }
+
   export function EagerArrowExpressionWithFunctionBodyEcmaify(
     node: EagerArrowExpressionWithFunctionBody
   ): ts.ArrowFunction {
-    throw new Error('Not Implemented')
+    return uniformArrowExpressionWithFunctionBodyEcmaify(node)
   }
 
   export function LazyArrowExpressionWithFunctionBodyEcmaify(
     node: LazyArrowExpressionWithFunctionBody
   ): ts.ArrowFunction {
-    throw new Error('Not Implemented')
+    return uniformArrowExpressionWithFunctionBodyEcmaify(node)
+  }
+
+  export function uniformArrowExpressionWithExpressionEcmaify(
+    node: EagerArrowExpressionWithExpression | LazyArrowExpressionWithExpression
+  ): ts.ArrowFunction {
+    const contents = ArrowExpressionContentsWithExpressionEcmaify(node.contents)
+    contents.asteriskToken = node.isAsync
+      ? ts.createToken(ts.SyntaxKind.AsteriskToken)
+      : undefined
+    return contents
   }
 
   export function EagerArrowExpressionWithExpressionEcmaify(
     node: EagerArrowExpressionWithExpression
   ): ts.ArrowFunction {
-    throw new Error('Not Implemented')
+    return uniformArrowExpressionWithExpressionEcmaify(node)
   }
 
   export function LazyArrowExpressionWithExpressionEcmaify(
     node: LazyArrowExpressionWithExpression
   ): ts.ArrowFunction {
-    throw new Error('Not Implemented')
+    return uniformArrowExpressionWithExpressionEcmaify(node)
   }
 
   export function ArrowExpressionContentsWithFunctionBodyEcmaify(
     node: ArrowExpressionContentsWithFunctionBody
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.ArrowFunction {
+    return ts.createArrowFunction(
+      undefined,
+      undefined,
+      FormalParametersEcmaify(node.params),
+      undefined,
+      ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ts.createBlock(StatementListEcmaify(node.body))
+    )
   }
 
   export function ArrowExpressionContentsWithExpressionEcmaify(
     node: ArrowExpressionContentsWithExpression
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.ArrowFunction {
+    return ts.createArrowFunction(
+      undefined,
+      undefined,
+      FormalParametersEcmaify(node.params),
+      undefined,
+      ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+      ExpressionEcmaify(node.body)
+    )
   }
 
   export function AssignmentExpressionEcmaify(
@@ -1105,7 +1201,7 @@ namespace Ecmaify {
       ExpressionEcmaify(node.expression)
     )
   }
-  
+
   export function ConditionalExpressionEcmaify(
     node: ConditionalExpression
   ): ts.ConditionalExpression {
@@ -1116,22 +1212,44 @@ namespace Ecmaify {
     )
   }
 
+  export function uniformFunctionExpressionEcmaify(
+    node: FunctionExpression
+  ): ts.FunctionExpression {
+    const contents = FunctionExpressionContentsEcmaify(node.contents)
+    contents.modifiers = node.isAsync
+      ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)])
+      : undefined
+    contents.asteriskToken = node.isGenerator
+      ? ts.createToken(ts.SyntaxKind.AsteriskToken)
+      : undefined
+    contents.name = EcmaifyOption(node.name, BindingIdentifierEcmaify)
+    return contents
+  }
+
   export function EagerFunctionExpressionEcmaify(
     node: EagerFunctionExpression
   ): ts.FunctionExpression {
-    throw new Error('Not Implemented')
+    return uniformFunctionExpressionEcmaify(node)
   }
 
   export function LazyFunctionExpressionEcmaify(
     node: LazyFunctionExpression
   ): ts.FunctionExpression {
-    throw new Error('Not Implemented')
+    return uniformFunctionExpressionEcmaify(node)
   }
 
   export function FunctionExpressionContentsEcmaify(
     node: FunctionExpressionContents
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.FunctionExpression {
+    return ts.createFunctionExpression(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      FormalParametersEcmaify(node.params),
+      undefined,
+      ts.createBlock(StatementListEcmaify(node.body))
+    )
   }
 
   export function IdentifierExpressionEcmaify(
@@ -1157,16 +1275,47 @@ namespace Ecmaify {
     )
   }
 
+  export function MethodContentsEcmaify(
+    node: FunctionOrMethodContents
+  ): ts.MethodDeclaration {
+    return ts.createMethod(
+      undefined,
+      undefined,
+      undefined,
+      '',
+      undefined,
+      undefined,
+      FormalParametersEcmaify(node.params),
+      undefined,
+      ts.createBlock(StatementListEcmaify(node.body))
+    )
+  }
+
   export function MethodEcmaify(node: Method): ts.MethodDeclaration {
-    throw new Error('Not Implemented')
+    switch (node.type) {
+      case NodeType.EagerMethod:
+        return EagerMethodEcmaify(node)
+      case NodeType.LazyMethod:
+        return LazyMethodEcmaify(node)
+    }
   }
 
   export function GetterEcmaify(node: Getter): ts.GetAccessorDeclaration {
-    throw new Error('Not Implemented')
+    switch (node.type) {
+      case NodeType.EagerGetter:
+        return EagerGetterEcmaify(node)
+      case NodeType.LazyGetter:
+        return LazyGetterEcmaify(node)
+    }
   }
 
   export function SetterEcmaify(node: Setter): ts.SetAccessorDeclaration {
-    throw new Error('Not Implemented')
+    switch (node.type) {
+      case NodeType.EagerSetter:
+        return EagerSetterEcmaify(node)
+      case NodeType.LazySetter:
+        return LazySetterEcmaify(node)
+    }
   }
 
   export function MethodDefinitionEcmaify(
@@ -1594,44 +1743,62 @@ namespace Ecmaify {
     return ts.createStringLiteral(node.rawValue)
   }
 
+  export function ParameterListEcmaify(nodes: FrozenArray<Parameter>) {
+    return nodes.map(ParameterEcmaify)
+  }
+
+  export function ParameterEcmaify(node: Parameter): ts.ParameterDeclaration {
+    const element = BindingOrBindingWithInitializerEcmaify(node)
+    return ts.createParameter(
+      undefined,
+      undefined,
+      undefined,
+      element.name,
+      undefined,
+      undefined,
+      element.initializer
+    )
+  }
+
   export function FormalParametersEcmaify(
-    nodes: FormalParameters
+    node: FormalParameters
   ): ts.ParameterDeclaration[] {
-    return nodes.items.map(node => {
-      const element = BindingOrBindingWithInitializerEcmaify(node)
-      return ts.createParameter(
-        undefined,
-        undefined,
-        undefined,
-        element.name,
-        undefined,
-        undefined,
-        element.initializer
-      )
-    })
+    return ParameterListEcmaify(node.items)
+  }
+
+  export function uniformFunctionDeclarationEcmaify(
+    node: FunctionDeclaration
+  ): ts.FunctionDeclaration {
+    const contents = FunctionContentsEcmaify(node.contents)
+    contents.modifiers = node.isAsync
+      ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)])
+      : undefined
+    contents.asteriskToken = node.isGenerator
+      ? ts.createToken(ts.SyntaxKind.AsteriskToken)
+      : undefined
+    contents.name = BindingIdentifierEcmaify(node.name)
+    return contents
   }
 
   export function EagerFunctionDeclarationEcmaify(
     node: EagerFunctionDeclaration
   ): ts.FunctionDeclaration {
-    const contents = FunctionOrMethodContentsEcmaify(node.contents)
-    contents.modifiers = node.isAsync ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)]) : undefined
-    contents.asteriskToken = node.isGenerator ? ts.createToken(ts.SyntaxKind.AsteriskToken) : undefined
-    contents.name = BindingIdentifierEcmaify(node.name)
-    return contents
+    return uniformFunctionDeclarationEcmaify(node)
   }
 
   export function LazyFunctionDeclarationEcmaify(
     node: LazyFunctionDeclaration
   ): ts.FunctionDeclaration {
-    const contents = FunctionOrMethodContentsEcmaify(node.contents)
-    contents.modifiers = node.isAsync ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)]) : undefined
-    contents.asteriskToken = node.isGenerator ? ts.createToken(ts.SyntaxKind.AsteriskToken) : undefined
-    contents.name = BindingIdentifierEcmaify(node.name)
-    return contents
+    return uniformFunctionDeclarationEcmaify(node)
   }
 
   export function FunctionOrMethodContentsEcmaify(
+    node: FunctionOrMethodContents
+  ): ts.FunctionDeclaration {
+    throw new Error('Not Implemented')
+  }
+
+  export function FunctionContentsEcmaify(
     node: FunctionOrMethodContents
   ): ts.FunctionDeclaration {
     return ts.createFunctionDeclaration(
@@ -1642,9 +1809,7 @@ namespace Ecmaify {
       undefined,
       FormalParametersEcmaify(node.params),
       undefined,
-      ts.createBlock(
-        StatementListEcmaify(node.body)
-      )
+      ts.createBlock(StatementListEcmaify(node.body))
     )
   }
 
