@@ -1700,11 +1700,11 @@ namespace Ecmaify {
   export function VariableDeclaratorEcmaify(
     node: VariableDeclarator
   ): ts.VariableDeclaration {
-    const element = BindingOrBindingWithInitializerEcmaify(node.binding)
+    const element = BindingEcmaify(node.binding)
     return ts.createVariableDeclaration(
-      element.name,
+      element,
       undefined,
-      element.initializer
+      EcmaifyOption(node.init, ExpressionEcmaify)
     )
   }
 }
