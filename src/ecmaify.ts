@@ -142,15 +142,14 @@ import {
   BindingProperty,
   Parameter,
   FunctionDeclaration,
-  FunctionExpression
+  FunctionExpression,
+  AssignmentTargetProperty,
+  IdentifierName,
+  ImportDeclaration,
+  ExportDeclaration
 } from './types'
 import * as ts from 'typescript'
-import {
-  isSuper,
-  isSwitchCase,
-  isSpreadElement,
-  isBindingWithInitializer
-} from './utils'
+import { isSwitchCase, isSpreadElement, append, addModifiers } from './utils'
 
 namespace Ecmaify {
   export function EcmaifyOption<T, U>(
@@ -724,85 +723,363 @@ namespace Ecmaify {
 
   export function AssignmentTargetWithInitializerEcmaify(
     node: AssignmentTargetWithInitializer
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.BinaryExpression {
+    return ts.createAssignment(
+      AssignmentTargetEcmaify(node.binding),
+      ExpressionEcmaify(node.init)
+    )
   }
+
+  export function AssignmentTargetOrAssignmentTargetWithInitializerEcmaify(
+    node: AssignmentTarget | AssignmentTargetWithInitializer
+  ): ts.Expression {
+    switch (node.type) {
+      case NodeType.AssignmentTargetWithInitializer:
+        return AssignmentTargetWithInitializerEcmaify(node)
+      default:
+        return AssignmentTargetEcmaify(node)
+    }
+  }
+
   export function ArrayAssignmentTargetEcmaify(
     node: ArrayAssignmentTarget
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.ArrayLiteralExpression {
+    const rest = EcmaifyOption(node.rest, AssignmentTargetEcmaify)
+    return ts.createArrayLiteral(
+      append<ts.Expression>(
+        node.elements.map(
+          AssignmentTargetOrAssignmentTargetWithInitializerEcmaify
+        ),
+        rest && ts.createSpread(rest)
+      )
+    )
   }
   export function AssignmentTargetPropertyIdentifierEcmaify(
     node: AssignmentTargetPropertyIdentifier
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.ShorthandPropertyAssignment {
+    return ts.createShorthandPropertyAssignment(
+      AssignmentTargetIdentifierEcmaify(node.binding),
+      EcmaifyOption(node.init, ExpressionEcmaify)
+    )
   }
+
   export function AssignmentTargetPropertyPropertyEcmaify(
     node: AssignmentTargetPropertyProperty
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.PropertyAssignment {
+    return ts.createPropertyAssignment(
+      PropertyNameEcmaify(node.name),
+      AssignmentTargetOrAssignmentTargetWithInitializerEcmaify(node.binding)
+    )
   }
+
+  export function AssignmentTargetPropertyEcmaify(
+    node: AssignmentTargetProperty
+  ) {
+    switch (node.type) {
+      case NodeType.AssignmentTargetPropertyIdentifier:
+        return AssignmentTargetPropertyIdentifierEcmaify(node)
+      case NodeType.AssignmentTargetPropertyProperty:
+        return AssignmentTargetPropertyPropertyEcmaify(node)
+    }
+  }
+
   export function ObjectAssignmentTargetEcmaify(
     node: ObjectAssignmentTarget
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.ObjectLiteralExpression {
+    return ts.createObjectLiteral(
+      node.properties.map(AssignmentTargetPropertyEcmaify)
+    )
   }
+
+  export function HeritageClauseEcmaify(node: Expression): ts.HeritageClause {
+    return ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
+      ts.createExpressionWithTypeArguments(undefined, ExpressionEcmaify(node))
+    ])
+  }
+
   export function ClassExpressionEcmaify(
     node: ClassExpression
   ): ts.ClassExpression {
-    throw new Error('Not Implemented')
+    return ts.createClassExpression(
+      undefined,
+      EcmaifyOption(node.name, BindingIdentifierEcmaify),
+      undefined,
+      EcmaifyOption(node.super, node => [HeritageClauseEcmaify(node)]),
+      node.elements.map(ClassElementEcmaify)
+    )
   }
+
   export function ClassDeclarationEcmaify(
     node: ClassDeclaration
   ): ts.ClassDeclaration {
-    throw new Error('Not Implemented')
+    return ts.createClassDeclaration(
+      undefined,
+      undefined,
+      BindingIdentifierEcmaify(node.name),
+      undefined,
+      EcmaifyOption(node.super, node => [HeritageClauseEcmaify(node)]),
+      node.elements.map(ClassElementEcmaify)
+    )
   }
+
   export function ClassElementEcmaify(node: ClassElement): ts.ClassElement {
-    throw new Error('Not Implemented')
+    const method = MethodDefinitionEcmaify(node.method)
+    addModifiers(
+      method,
+      node.isStatic ? ts.ModifierFlags.Static : ts.ModifierFlags.None
+    )
+    return method
   }
-  export function ModuleEcmaify(node: Module): any {
-    throw new Error('Not Implemented')
+
+  export function ImportDeclarationOrExportDeclarationOrStatementEcmaify(
+    node: ImportDeclaration | ExportDeclaration | Statement
+  ) {
+    switch (node.type) {
+      case NodeType.Import:
+      case NodeType.ImportNamespace:
+        return ImportDeclarationEcmaify(node)
+      case NodeType.ExportAllFrom:
+      case NodeType.ExportFrom:
+      case NodeType.ExportLocals:
+      case NodeType.ExportDefault:
+      case NodeType.Export:
+        return ExportDeclarationEcmaify(node)
+      default:
+        return StatementEcmaify(node)
+    }
   }
-  export function ImportEcmaify(node: Import): any {
-    throw new Error('Not Implemented')
+
+  export function ModuleEcmaify(node: Module) {
+    return node.items.map(
+      ImportDeclarationOrExportDeclarationOrStatementEcmaify
+    )
   }
-  export function ImportNamespaceEcmaify(node: ImportNamespace): any {
-    throw new Error('Not Implemented')
+
+  export function NamedImportBindingsEcmaify(
+    node: ReadonlyArray<ImportSpecifier>
+  ): ts.NamedImports {
+    return ts.createNamedImports(node.map(ImportSpecifierEcmaify))
   }
+
+  export function ImportClauseImportEcmaify(node: Import): ts.ImportClause {
+    return ts.createImportClause(
+      EcmaifyOption(node.defaultBinding, BindingIdentifierEcmaify),
+      EcmaifyOption(node.namedImports, NamedImportBindingsEcmaify)
+    )
+  }
+
+  export function ImportClauseImportNamespaceEcmaify(
+    node: ImportNamespace
+  ): ts.ImportClause {
+    return ts.createImportClause(
+      EcmaifyOption(node.defaultBinding, BindingIdentifierEcmaify),
+      ts.createNamespaceImport(BindingIdentifierEcmaify(node.namespaceBinding))
+    )
+  }
+
+  export function ImportClauseEcmaify(
+    node: Import | ImportNamespace
+  ): ts.ImportClause {
+    switch (node.type) {
+      case NodeType.Import:
+        return ImportClauseImportEcmaify(node)
+      case NodeType.ImportNamespace:
+        return ImportClauseImportNamespaceEcmaify(node)
+    }
+  }
+
+  export function ImportEcmaify(node: Import): ts.ImportDeclaration {
+    return ts.createImportDeclaration(
+      undefined,
+      undefined,
+      ImportClauseEcmaify(node),
+      ts.createStringLiteral(node.moduleSpecifier)
+    )
+  }
+
+  export function ImportNamespaceEcmaify(
+    node: ImportNamespace
+  ): ts.ImportDeclaration {
+    return ts.createImportDeclaration(
+      undefined,
+      undefined,
+      ImportClauseEcmaify(node),
+      ts.createStringLiteral(node.moduleSpecifier)
+    )
+  }
+
+  export function ImportDeclarationEcmaify(node: ImportDeclaration) {
+    switch (node.type) {
+      case NodeType.Import:
+        return ImportEcmaify(node)
+      case NodeType.ImportNamespace:
+        return ImportNamespaceEcmaify(node)
+    }
+  }
+
+  export function IdentifierNameEcmaify(node: IdentifierName): ts.Identifier {
+    return ts.createIdentifier(node)
+  }
+
   export function ImportSpecifierEcmaify(
     node: ImportSpecifier
   ): ts.ImportSpecifier {
-    throw new Error('Not Implemented')
+    return ts.createImportSpecifier(
+      IdentifierNameEcmaify(node.name),
+      BindingIdentifierEcmaify(node.binding)
+    )
   }
-  export function ExportAllFromEcmaify(node: ExportAllFrom): any {
-    throw new Error('Not Implemented')
+
+  export function ExportAllFromEcmaify(
+    node: ExportAllFrom
+  ): ts.ExportDeclaration {
+    return ts.createExportDeclaration(
+      undefined,
+      undefined,
+      undefined,
+      ts.createStringLiteral(node.moduleSpecifier)
+    )
   }
-  export function ExportFromEcmaify(node: ExportFrom): any {
-    throw new Error('Not Implemented')
+
+  export function NamedExportsEcmaify(
+    node: ReadonlyArray<ExportFromSpecifier | ExportLocalSpecifier>
+  ): ts.NamedExports {
+    return ts.createNamedExports(node.map(ExportSpecifierEcmaify))
   }
-  export function ExportLocalsEcmaify(node: ExportLocals): any {
-    throw new Error('Not Implemented')
+
+  export function ExportFromEcmaify(node: ExportFrom): ts.ExportDeclaration {
+    return ts.createExportDeclaration(
+      undefined,
+      undefined,
+      NamedExportsEcmaify(node.namedExports),
+      ts.createIdentifier(node.moduleSpecifier)
+    )
   }
-  export function ExportEcmaify(node: Export): any {
-    throw new Error('Not Implemented')
+
+  export function ExportLocalsEcmaify(
+    node: ExportLocals
+  ): ts.ExportDeclaration {
+    return ts.createExportDeclaration(
+      undefined,
+      undefined,
+      NamedExportsEcmaify(node.namedExports),
+      undefined
+    )
   }
-  export function ExportDefaultEcmaify(node: ExportDefault): any {
-    throw new Error('Not Implemented')
+
+  export function ExportEcmaify(
+    node: Export
+  ): ts.FunctionDeclaration | ts.ClassDeclaration | ts.VariableStatement {
+    return addModifiers<
+      ts.FunctionDeclaration | ts.ClassDeclaration | ts.VariableStatement
+    >(
+      FunctionDeclarationOrClassDeclarationOrVariableDeclarationEcmaify(
+        node.declaration
+      ),
+      ts.ModifierFlags.Export
+    )
   }
-  export function ExportFromSpecifierEcmaify(node: ExportFromSpecifier): any {
-    throw new Error('Not Implemented')
+
+  export function FunctionDeclarationOrClassDeclarationEcmaify(
+    node: FunctionDeclaration | ClassDeclaration
+  ): ts.FunctionDeclaration | ts.ClassDeclaration {
+    switch (node.type) {
+      case NodeType.ClassDeclaration:
+        return ClassDeclarationEcmaify(node)
+      default:
+        return FunctionDeclarationEcmaify(node)
+    }
   }
-  export function ExportLocalSpecifierEcmaify(node: ExportLocalSpecifier): any {
-    throw new Error('Not Implemented')
+
+  export function FunctionDeclarationOrClassDeclarationOrVariableDeclarationEcmaify(
+    node: FunctionDeclaration | ClassDeclaration | VariableDeclaration
+  ): ts.FunctionDeclaration | ts.ClassDeclaration | ts.VariableStatement {
+    switch (node.type) {
+      case NodeType.VariableDeclaration:
+        return VariableDeclarationEcmaify(node)
+      default:
+        return FunctionDeclarationOrClassDeclarationEcmaify(node)
+    }
+  }
+
+  export function ExportDefaultFunctionDeclarationOrClassDeclarationEcmaify(
+    node: FunctionDeclaration | ClassDeclaration
+  ): ts.FunctionDeclaration | ts.ClassDeclaration {
+    return addModifiers(
+      FunctionDeclarationOrClassDeclarationEcmaify(node),
+      ts.ModifierFlags.ExportDefault
+    )
+  }
+
+  export function ExportDefaultEcmaify(
+    node: ExportDefault
+  ): ts.FunctionDeclaration | ts.ClassDeclaration | ts.ExportAssignment {
+    switch (node.body.type) {
+      case NodeType.EagerFunctionDeclaration:
+      case NodeType.LazyFunctionDeclaration:
+      case NodeType.ClassDeclaration:
+        return ExportDefaultFunctionDeclarationOrClassDeclarationEcmaify(
+          node.body
+        )
+      default:
+        return ts.createExportAssignment(
+          undefined,
+          undefined,
+          undefined,
+          ExpressionEcmaify(node.body)
+        )
+    }
+  }
+
+  export function ExportFromSpecifierEcmaify(
+    node: ExportFromSpecifier
+  ): ts.ExportSpecifier {
+    return ts.createExportSpecifier(node.exportedName, node.name)
+  }
+
+  export function ExportLocalSpecifierEcmaify(
+    node: ExportLocalSpecifier
+  ): ts.ExportSpecifier {
+    return ts.createExportSpecifier(
+      node.exportedName,
+      IdentifierExpressionEcmaify(node.name)
+    )
+  }
+
+  export function ExportSpecifierEcmaify(
+    node: ExportFromSpecifier | ExportLocalSpecifier
+  ) {
+    switch (node.type) {
+      case NodeType.ExportFromSpecifier:
+        return ExportFromSpecifierEcmaify(node)
+      case NodeType.ExportLocalSpecifier:
+        return ExportLocalSpecifierEcmaify(node)
+    }
+  }
+
+  export function ExportDeclarationEcmaify(node: ExportDeclaration) {
+    switch (node.type) {
+      case NodeType.ExportAllFrom:
+        return ExportAllFromEcmaify(node)
+      case NodeType.ExportFrom:
+        return ExportFromEcmaify(node)
+      case NodeType.ExportLocals:
+        return ExportLocalsEcmaify(node)
+      case NodeType.ExportDefault:
+        return ExportDefaultEcmaify(node)
+      case NodeType.Export:
+        return ExportEcmaify(node)
+    }
   }
 
   export function uniformMethodEcmaify(
     node: EagerMethod | LazyMethod
   ): ts.MethodDeclaration {
     const contents = MethodContentsEcmaify(node.contents)
-    contents.modifiers = node.isAsync
-      ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)])
-      : undefined
+    addModifiers(
+      contents,
+      node.isAsync ? ts.ModifierFlags.Async : ts.ModifierFlags.None
+    )
     contents.name = PropertyNameEcmaify(node.name)
     contents.asteriskToken = node.isGenerator
       ? ts.createToken(ts.SyntaxKind.AsteriskToken)
@@ -1216,9 +1493,10 @@ namespace Ecmaify {
     node: FunctionExpression
   ): ts.FunctionExpression {
     const contents = FunctionExpressionContentsEcmaify(node.contents)
-    contents.modifiers = node.isAsync
-      ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)])
-      : undefined
+    addModifiers(
+      contents,
+      node.isAsync ? ts.ModifierFlags.Async : ts.ModifierFlags.None
+    )
     contents.asteriskToken = node.isGenerator
       ? ts.createToken(ts.SyntaxKind.AsteriskToken)
       : undefined
@@ -1537,7 +1815,7 @@ namespace Ecmaify {
 
   export function AssignmentTargetPatternEcmaify(
     node: AssignmentTargetPattern
-  ): ts.Expression {
+  ): ts.ObjectLiteralExpression | ts.ArrayLiteralExpression {
     switch (node.type) {
       case NodeType.ObjectAssignmentTarget:
         return ObjectAssignmentTargetEcmaify(node)
@@ -1561,7 +1839,7 @@ namespace Ecmaify {
 
   export function AssignmentTargetEcmaify(
     node: AssignmentTarget
-  ): ts.Expression {
+  ): ts.Expression | ts.ObjectLiteralExpression | ts.ArrayLiteralExpression {
     switch (node.type) {
       case NodeType.ObjectAssignmentTarget:
       case NodeType.ArrayAssignmentTarget:
@@ -1770,9 +2048,10 @@ namespace Ecmaify {
     node: FunctionDeclaration
   ): ts.FunctionDeclaration {
     const contents = FunctionContentsEcmaify(node.contents)
-    contents.modifiers = node.isAsync
-      ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)])
-      : undefined
+    addModifiers(
+      contents,
+      node.isAsync ? ts.ModifierFlags.Async : ts.ModifierFlags.None
+    )
     contents.asteriskToken = node.isGenerator
       ? ts.createToken(ts.SyntaxKind.AsteriskToken)
       : undefined
@@ -1790,6 +2069,15 @@ namespace Ecmaify {
     node: LazyFunctionDeclaration
   ): ts.FunctionDeclaration {
     return uniformFunctionDeclarationEcmaify(node)
+  }
+
+  export function FunctionDeclarationEcmaify(node: FunctionDeclaration) {
+    switch (node.type) {
+      case NodeType.EagerFunctionDeclaration:
+        return EagerFunctionDeclarationEcmaify(node)
+      case NodeType.LazyFunctionDeclaration:
+        return LazyFunctionDeclarationEcmaify(node)
+    }
   }
 
   export function FunctionOrMethodContentsEcmaify(

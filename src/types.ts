@@ -603,7 +603,7 @@ export interface ExportLocals extends Node {
 
 export interface Export extends Node {
   type: NodeType.Export
-  declaration: FunctionDeclaration | ClassDeclaration | FunctionDeclaration
+  declaration: FunctionDeclaration | ClassDeclaration | VariableDeclaration
 }
 
 export interface ExportDefault extends Node {
