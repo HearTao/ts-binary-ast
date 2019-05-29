@@ -9,6 +9,14 @@ import {
   BindingWithInitializer
 } from './types'
 
+export function isDef<T>(v: T | null | undefined): v is T {
+  return v !== null && v !== undefined
+}
+
+export function arrayify<T>(v: T | T[]): T[] {
+  return Array.isArray(v) ? v : [v]
+}
+
 export function isSuper(node: Super | Expression): node is Super {
   return node.type === NodeType.Super
 }

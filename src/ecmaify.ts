@@ -150,7 +150,7 @@ import {
   isBindingWithInitializer
 } from './utils'
 
-export namespace Ecmaify {
+namespace Ecmaify {
   export function EcmaifyOption<T, U>(
     v: T | undefined,
     cb: (v: T) => U
@@ -159,7 +159,7 @@ export namespace Ecmaify {
     return cb(v)
   }
 
-  export function Ecmaify(node: Node): ts.Node | ts.NodeArray<ts.Node> {
+  export function Ecmaify(node: Node): ts.Node | ts.Node[] {
     switch (node.type) {
       case NodeType.AssertedBoundName:
         return AssertedBoundNameEcmaify(node as AssertedBoundName)
@@ -1099,7 +1099,13 @@ export namespace Ecmaify {
 
   export function ComputedMemberExpressionEcmaify(
     node: ComputedMemberExpression
-  ): any {}
+  ): ts.ElementAccessExpression {
+    return ts.createElementAccess(
+      ExpressionOrSuperEcmaify(node._object),
+      ExpressionEcmaify(node.expression)
+    )
+  }
+  
   export function ConditionalExpressionEcmaify(
     node: ConditionalExpression
   ): ts.ConditionalExpression {
@@ -1590,43 +1596,63 @@ export namespace Ecmaify {
 
   export function FormalParametersEcmaify(
     nodes: FormalParameters
-  ): ts.NodeArray<ts.ParameterDeclaration> {
-    return ts.createNodeArray(
-      nodes.items.map(node => {
-        const element = BindingOrBindingWithInitializerEcmaify(node)
-        return ts.createParameter(
-          undefined,
-          undefined,
-          undefined,
-          element.name,
-          undefined,
-          undefined,
-          element.initializer
-        )
-      })
-    )
+  ): ts.ParameterDeclaration[] {
+    return nodes.items.map(node => {
+      const element = BindingOrBindingWithInitializerEcmaify(node)
+      return ts.createParameter(
+        undefined,
+        undefined,
+        undefined,
+        element.name,
+        undefined,
+        undefined,
+        element.initializer
+      )
+    })
   }
 
   export function EagerFunctionDeclarationEcmaify(
     node: EagerFunctionDeclaration
   ): ts.FunctionDeclaration {
-    throw new Error('Not Implemented')
+    const contents = FunctionOrMethodContentsEcmaify(node.contents)
+    contents.modifiers = node.isAsync ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)]) : undefined
+    contents.asteriskToken = node.isGenerator ? ts.createToken(ts.SyntaxKind.AsteriskToken) : undefined
+    contents.name = BindingIdentifierEcmaify(node.name)
+    return contents
   }
 
   export function LazyFunctionDeclarationEcmaify(
     node: LazyFunctionDeclaration
   ): ts.FunctionDeclaration {
-    throw new Error('Not Implemented')
+    const contents = FunctionOrMethodContentsEcmaify(node.contents)
+    contents.modifiers = node.isAsync ? ts.createNodeArray([ts.createModifier(ts.SyntaxKind.AsyncKeyword)]) : undefined
+    contents.asteriskToken = node.isGenerator ? ts.createToken(ts.SyntaxKind.AsteriskToken) : undefined
+    contents.name = BindingIdentifierEcmaify(node.name)
+    return contents
   }
 
   export function FunctionOrMethodContentsEcmaify(
     node: FunctionOrMethodContents
-  ): any {
-    throw new Error('Not Implemented')
+  ): ts.FunctionDeclaration {
+    return ts.createFunctionDeclaration(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      FormalParametersEcmaify(node.params),
+      undefined,
+      ts.createBlock(
+        StatementListEcmaify(node.body)
+      )
+    )
   }
 
-  export function ScriptEcmaify(node: Script): any {
-    throw new Error('Not Implemented')
+  export function ScriptEcmaify(node: Script): ts.SourceFile {
+    return ts.updateSourceFileNode(
+      ts.createSourceFile('', '', ts.ScriptTarget.Latest),
+      StatementListEcmaify(node.statements)
+    )
   }
 
   export function SpreadElementEcmaify(node: SpreadElement): ts.SpreadElement {
@@ -1682,3 +1708,5 @@ export namespace Ecmaify {
     )
   }
 }
+
+export = Ecmaify
