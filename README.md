@@ -5,6 +5,6 @@
 - [x] Types
 - [x] Encoder
 - [x] Decoder
-- [ ] Ecmaify
+- [x] Ecmaify
 - [ ] Unecmaify
-- [ ] TypeScript Emitter
+
