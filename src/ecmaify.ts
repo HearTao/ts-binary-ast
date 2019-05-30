@@ -1824,9 +1824,7 @@ namespace Ecmaify {
     }
   }
 
-  export function SimpleAssignmentTargetEcmaify(
-    node: SimpleAssignmentTarget
-  ): ts.Expression {
+  export function SimpleAssignmentTargetEcmaify(node: SimpleAssignmentTarget) {
     switch (node.type) {
       case NodeType.AssignmentTargetIdentifier:
         return AssignmentTargetIdentifierEcmaify(node)
@@ -1837,9 +1835,7 @@ namespace Ecmaify {
     }
   }
 
-  export function AssignmentTargetEcmaify(
-    node: AssignmentTarget
-  ): ts.Expression | ts.ObjectLiteralExpression | ts.ArrayLiteralExpression {
+  export function AssignmentTargetEcmaify(node: AssignmentTarget) {
     switch (node.type) {
       case NodeType.ObjectAssignmentTarget:
       case NodeType.ArrayAssignmentTarget:

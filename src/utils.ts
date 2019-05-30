@@ -69,3 +69,40 @@ export function addModifiers<T extends ts.Declaration | ts.VariableStatement>(
   )
   return decl
 }
+
+export function mapIfDef<T, U>(
+  items: ReadonlyArray<T> | undefined,
+  cb: (v: T) => U
+): U[] {
+  if (isDef(items)) {
+    return items.map(cb)
+  }
+  return []
+}
+
+export function Assert(expr: boolean, message?: string) {
+  if (!expr) {
+    throw new Error(message)
+  }
+}
+
+export function AssertDef<T>(v: T | undefined | null): T {
+  if (!isDef(v)) {
+    throw new Error('must be defined')
+  }
+  return v
+}
+
+export function first<T>(items: ReadonlyArray<T>): T {
+  if (!items.length) {
+    throw new Error('must have more than one item')
+  }
+  return items[0]
+}
+
+export function AssertCast<U, T extends U>(v: U, cb: (v: U) => v is T): T {
+  if (!cb(v)) {
+    throw new Error('cast failed')
+  }
+  return v
+}
