@@ -76,19 +76,56 @@ import {
   Arguments,
   ConditionalExpression,
   Super,
-  Parameter
+  Parameter,
+  BinaryOperator,
+  CompoundAssignmentOperator,
+  AssignmentExpression,
+  CompoundAssignmentExpression,
+  UnaryExpression,
+  UpdateExpression,
+  UnaryOperator,
+  UpdateOperator,
+  BindingWithInitializer,
+  BindingPropertyProperty,
+  BindingPropertyIdentifier,
+  BindingProperty,
+  ObjectBinding,
+  ArrayBinding,
+  DataProperty,
+  ShorthandProperty,
+  SwitchStatementWithDefault,
+  Method,
+  FunctionDeclaration,
+  FunctionOrMethodContents,
+  FormalParameters,
+  Getter,
+  Setter,
+  GetterContents,
+  SetterContents,
+  ArrowExpressionContentsWithFunctionBody,
+  ArrowExpressionContentsWithExpression,
+  FunctionExpression,
+  FunctionExpressionContents,
+  MethodDefinition,
+  ClassElement,
+  ClassExpression
 } from './types'
-import { mapIfDef, Assert, AssertDef, isDef, first, AssertCast } from './utils'
+import {
+  mapIfDef,
+  Assert,
+  AssertDef,
+  isDef,
+  first,
+  AssertCast,
+  isArrowFunctionBodyExpression,
+  compose
+} from './utils'
 import {
   createAssertedBlockScope,
-  createAssertedBoundNamesScope
+  createAssertedBoundNamesScope,
+  createAssertedVarScope,
+  createAssertedParameterScope
 } from './factory'
-import {
-  EcmaifyOption as EcmaifyOptional,
-  BindingPatternEcmaify,
-  PropertyNameEcmaify,
-  StatementListEcmaify
-} from './ecmaify'
 
 namespace Unecmaify {
   export function UnecmaifyOptional<T, U>(
@@ -276,6 +313,12 @@ namespace Unecmaify {
         return VariableStatementUnecmaify(node as ts.VariableStatement)
       case ts.SyntaxKind.VariableDeclaration:
         return VariableDeclarationUnecmaify(node as ts.VariableDeclaration)
+      case ts.SyntaxKind.DeleteExpression:
+        return DeleteExpressionUnecmaify(node as ts.DeleteExpression)
+      case ts.SyntaxKind.TypeOfExpression:
+        return TypeOfExpressionUnecmaify(node as ts.TypeOfExpression)
+      case ts.SyntaxKind.VoidExpression:
+        return VoidExpressionUnecmaify(node as ts.VoidExpression)
       default:
         throw new Error('Unexpected kind')
     }
@@ -376,10 +419,11 @@ namespace Unecmaify {
           node as ts.ObjectLiteralExpression
         )
       case ts.SyntaxKind.PrefixUnaryExpression:
+        return PrefixUnaryExpressionUnecmaify(node as ts.PrefixUnaryExpression)
       case ts.SyntaxKind.PostfixUnaryExpression:
-        return UnaryExpressionUnecmaify(node as
-          | ts.PrefixUnaryExpression
-          | ts.PostfixUnaryExpression)
+        return PostfixUnaryExpressionUnecmaify(
+          node as ts.PostfixUnaryExpression
+        )
       case ts.SyntaxKind.PropertyAccessExpression:
         return PropertyAccessExpressionUnecmaify(
           node as ts.PropertyAccessExpression
@@ -395,6 +439,12 @@ namespace Unecmaify {
         return YieldExpressionUnecmaify(node as ts.YieldExpression)
       case ts.SyntaxKind.AwaitExpression:
         return AwaitExpressionUnecmaify(node as ts.AwaitExpression)
+      case ts.SyntaxKind.DeleteExpression:
+        return DeleteExpressionUnecmaify(node as ts.DeleteExpression)
+      case ts.SyntaxKind.TypeOfExpression:
+        return TypeOfExpressionUnecmaify(node as ts.TypeOfExpression)
+      case ts.SyntaxKind.VoidExpression:
+        return VoidExpressionUnecmaify(node as ts.VoidExpression)
       default:
         throw new Error('Unexpected expression')
     }
@@ -431,44 +481,310 @@ namespace Unecmaify {
     }
   }
 
-  export function BindingElementUnecmaify(node: ts.BindingElement): any {}
+  export function BindingElementListUnecmaify(
+    nodes: ReadonlyArray<ts.BindingElement>
+  ) {
+    return nodes.map(BindingElementUnecmaify)
+  }
+
+  export function BindingElementUnecmaify(
+    node: ts.BindingElement
+  ): Binding | BindingWithInitializer {
+    if (node.initializer) {
+      return {
+        type: NodeType.BindingWithInitializer,
+        binding: BindingNameUnecmaify(node.name),
+        init: ExpressionUnecmaify(node.initializer)
+      }
+    }
+    return BindingNameUnecmaify(node.name)
+  }
+
+  export function BindingNameToBindingOrBindingWithInitializer(
+    node: ts.BindingName
+  ): Binding | BindingWithInitializer {
+    switch (node.kind) {
+      case ts.SyntaxKind.Identifier:
+        return IdentifierToBindingIdentifierUnecmaify(node)
+      case ts.SyntaxKind.ArrayBindingPattern:
+      case ts.SyntaxKind.ObjectBindingPattern:
+        return BindingPatternUnecmaify(node)
+    }
+  }
+
+  export function BindingPropertyUnecmaify(
+    node: ts.BindingElement
+  ): BindingProperty {
+    if (node.initializer) {
+      return {
+        type: NodeType.BindingPropertyIdentifier,
+        binding: IdentifierToBindingIdentifierUnecmaify(
+          AssertCast(node.name, ts.isIdentifier)
+        ),
+        init: ExpressionUnecmaify(node.initializer)
+      }
+    }
+    return {
+      type: NodeType.BindingPropertyProperty,
+      binding: BindingNameToBindingOrBindingWithInitializer(node.name),
+      name: PropertyNameUnecmaify(AssertDef(node.propertyName))
+    }
+  }
+
+  export function ArrayBindingElementListUnecmaify(
+    nodes: ReadonlyArray<ts.ArrayBindingElement>
+  ): FrozenArray<Binding | BindingWithInitializer> {
+    return nodes.map(ArrayBindingElementUnecmaify)
+  }
+
+  export function ArrayBindingElementUnecmaify(node: ts.ArrayBindingElement) {
+    switch (node.kind) {
+      case ts.SyntaxKind.OmittedExpression:
+        throw new Error('Unexpected omitted')
+      case ts.SyntaxKind.BindingElement:
+        return BindingElementUnecmaify(node)
+    }
+  }
+
+  export function BindingPropertyListUnecmaify(
+    nodes: ReadonlyArray<ts.BindingElement>
+  ): FrozenArray<BindingProperty> {
+    return nodes.map(BindingPropertyUnecmaify)
+  }
 
   export function ArrayBindingPatternUnecmaify(
     node: ts.ArrayBindingPattern
-  ): any {}
+  ): ArrayBinding {
+    return {
+      type: NodeType.ArrayBinding,
+      elements: ArrayBindingElementListUnecmaify(node.elements),
+      rest: undefined
+    }
+  }
+
   export function ObjectBindingPatternUnecmaify(
     node: ts.ObjectBindingPattern
-  ): any {}
+  ): ObjectBinding {
+    return {
+      type: NodeType.ObjectBinding,
+      properties: BindingPropertyListUnecmaify(node.elements)
+    }
+  }
   export function ShorthandPropertyAssignmentUnecmaify(
     node: ts.ShorthandPropertyAssignment
-  ): any {}
+  ): ShorthandProperty {
+    return {
+      type: NodeType.ShorthandProperty,
+      name: IdentifierToIdentifierExpressionUnecmaify(node.name)
+    }
+  }
+
   export function PropertyAssignmentUnecmaify(
     node: ts.PropertyAssignment
-  ): any {}
-  export function HeritageClauseUnecmaify(node: ts.HeritageClause): any {}
+  ): DataProperty {
+    return {
+      type: NodeType.DataProperty,
+      name: PropertyNameUnecmaify(node.name),
+      expression: ExpressionUnecmaify(node.initializer)
+    }
+  }
+
+  export function HeritageClauseSuperUnecmaify(
+    node: ReadonlyArray<ts.HeritageClause>
+  ): Expression {
+    return HeritageClauseUnecmaify(first(node))
+  }
+
+  export function HeritageClauseUnecmaify(node: ts.HeritageClause): Expression {
+    return ExpressionUnecmaify(first(node.types).expression)
+  }
+
   export function NamedImportsUnecmaify(node: ts.NamedImports): any {}
+
   export function ImportClauseUnecmaify(node: ts.ImportClause): any {}
+
   export function ImportDeclarationUnecmaify(node: ts.ImportDeclaration): any {}
+
   export function ImportSpecifierUnecmaify(node: ts.ImportSpecifier): any {}
+
   export function ExportDeclarationUnecmaify(node: ts.ExportDeclaration): any {}
+
   export function NamedExportsUnecmaify(node: ts.NamedExports): any {}
+
   export function ExportSpecifierUnecmaify(node: ts.ExportSpecifier): any {}
-  export function MethodDeclarationUnecmaify(node: ts.MethodDeclaration): any {}
+
+  export function MethodDeclarationUnecmaify(
+    node: ts.MethodDeclaration
+  ): Method {
+    return {
+      type: NodeType.EagerMethod,
+      name: PropertyNameUnecmaify(node.name),
+      isAsync: !!(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Async),
+      isGenerator: !!node.asteriskToken,
+      contents: FunctionOrMethodContentsUnecmaify(node),
+      directives: [],
+      length: node.parameters.length
+    }
+  }
+
+  export function DeleteExpressionUnecmaify(
+    node: ts.DeleteExpression
+  ): UnaryExpression {
+    return {
+      type: NodeType.UnaryExpression,
+      operator: UnaryOperator.Delete,
+      operand: ExpressionUnecmaify(node.expression)
+    }
+  }
+
+  export function TypeOfExpressionUnecmaify(
+    node: ts.TypeOfExpression
+  ): UnaryExpression {
+    return {
+      type: NodeType.UnaryExpression,
+      operator: UnaryOperator.TypeOf,
+      operand: ExpressionUnecmaify(node.expression)
+    }
+  }
+
+  export function VoidExpressionUnecmaify(
+    node: ts.VoidExpression
+  ): UnaryExpression {
+    return {
+      type: NodeType.UnaryExpression,
+      operator: UnaryOperator.Void,
+      operand: ExpressionUnecmaify(node.expression)
+    }
+  }
+
+  export function GetterContentsUnecmaify(
+    node: ts.GetAccessorDeclaration
+  ): GetterContents {
+    return {
+      type: NodeType.GetterContents,
+      body: StatementListUnecmaify(AssertDef(node.body).statements),
+      bodyScope: createAssertedVarScope(),
+      isThisCaptured: false
+    }
+  }
 
   export function GetAccessorDeclarationUnecmaify(
     node: ts.GetAccessorDeclaration
-  ): any {}
+  ): Getter {
+    return {
+      type: NodeType.EagerGetter,
+      name: PropertyNameUnecmaify(node.name),
+      directives: [],
+      contents: GetterContentsUnecmaify(node)
+    }
+  }
+
+  export function SetterContentsUnecmaify(
+    node: ts.SetAccessorDeclaration
+  ): SetterContents {
+    return {
+      type: NodeType.SetterContents,
+      param: ParameterDeclarationUnecmaify(first(node.parameters)),
+      parameterScope: createAssertedParameterScope(),
+      body: StatementListUnecmaify(AssertDef(node.body).statements),
+      bodyScope: createAssertedVarScope(),
+      isThisCaptured: false
+    }
+  }
 
   export function SetAccessorDeclarationUnecmaify(
     node: ts.SetAccessorDeclaration
-  ): any {}
+  ): Setter {
+    return {
+      type: NodeType.EagerSetter,
+      name: PropertyNameUnecmaify(node.name),
+      length: node.parameters.length,
+      directives: [],
+      contents: SetterContentsUnecmaify(node)
+    }
+  }
+
+  type UpdateExpressionOperator =
+    | ts.SyntaxKind.PlusPlusToken
+    | ts.SyntaxKind.MinusMinusToken
+
+  export function UpdateOperatorUnecmaify(
+    node: UpdateExpressionOperator
+  ): UpdateOperator {
+    switch (node) {
+      case ts.SyntaxKind.PlusPlusToken:
+        return UpdateOperator.PlusPlus
+      case ts.SyntaxKind.MinusMinusToken:
+        return UpdateOperator.MinusMinus
+    }
+  }
+
+  export function UpdateExpressionUnecmaify(
+    node: ts.PostfixUnaryExpression | ts.PrefixUnaryExpression,
+    isPrefix: boolean
+  ): UpdateExpression {
+    switch (node.operator) {
+      case ts.SyntaxKind.PlusPlusToken:
+      case ts.SyntaxKind.MinusMinusToken:
+        return {
+          type: NodeType.UpdateExpression,
+          isPrefix,
+          operator: UpdateOperatorUnecmaify(node.operator),
+          operand: ExpressionToSimpleAssignmentTargetUnecmaify(node.operand)
+        }
+      default:
+        throw new Error('Unecpected operator')
+    }
+  }
+
+  export function PrefixUnaryOperatorUnecmaify(
+    node: Exclude<ts.PrefixUnaryOperator, UpdateExpressionOperator>
+  ): UnaryOperator {
+    switch (node) {
+      case ts.SyntaxKind.PlusToken:
+        return UnaryOperator.Plus
+      case ts.SyntaxKind.MinusToken:
+        return UnaryOperator.Minus
+      case ts.SyntaxKind.TildeToken:
+        return UnaryOperator.Not
+      case ts.SyntaxKind.ExclamationToken:
+        return UnaryOperator.Not
+    }
+  }
+
+  export function UnaryExpressionUnecmaify(
+    node: ts.PrefixUnaryExpression
+  ): UnaryExpression {
+    switch (node.operator) {
+      case ts.SyntaxKind.PlusPlusToken:
+      case ts.SyntaxKind.MinusMinusToken:
+        throw new Error('Unecpected operator')
+      default:
+        return {
+          type: NodeType.UnaryExpression,
+          operator: PrefixUnaryOperatorUnecmaify(node.operator),
+          operand: ExpressionUnecmaify(node.operand)
+        }
+    }
+  }
 
   export function PrefixUnaryExpressionUnecmaify(
     node: ts.PrefixUnaryExpression
-  ): any {}
+  ): UnaryExpression | UpdateExpression {
+    switch (node.operator) {
+      case ts.SyntaxKind.PlusPlusToken:
+      case ts.SyntaxKind.MinusMinusToken:
+        return UpdateExpressionUnecmaify(node, true)
+      default:
+        return UnaryExpressionUnecmaify(node)
+    }
+  }
+
   export function PostfixUnaryExpressionUnecmaify(
     node: ts.PostfixUnaryExpression
-  ): any {}
+  ): UpdateExpression {
+    return UpdateExpressionUnecmaify(node, false)
+  }
 
   export function CaseOrDefaultClauseUnecmaify(
     node: ts.CaseOrDefaultClause
@@ -495,6 +811,12 @@ namespace Unecmaify {
       bindingScope: createAssertedBoundNamesScope(),
       body: BlockUnecmaify(node.block)
     }
+  }
+
+  export function ParameterDeclarationListUnecmaify(
+    nodes: ReadonlyArray<ts.ParameterDeclaration>
+  ) {
+    return nodes.map(ParameterDeclarationUnecmaify)
   }
 
   export function ParameterDeclarationUnecmaify(
@@ -600,16 +922,181 @@ namespace Unecmaify {
     }
   }
 
+  export function ArrowExpressionContentsWithFunctionBodyUnecmaify(
+    node: ts.ArrowFunction
+  ): ArrowExpressionContentsWithFunctionBody {
+    return {
+      type: NodeType.ArrowExpressionContentsWithFunctionBody,
+      params: FormalParametersUnecmaify(node.parameters),
+      body: StatementListUnecmaify(
+        AssertCast(AssertDef(node.body), ts.isBlock).statements
+      ),
+      bodyScope: createAssertedVarScope(),
+      parameterScope: createAssertedParameterScope()
+    }
+  }
+
+  export function ArrowExpressionContentsWithExpressionUnecmaify(
+    node: ts.ArrowFunction
+  ): ArrowExpressionContentsWithExpression {
+    return {
+      type: NodeType.ArrowExpressionContentsWithExpression,
+      params: FormalParametersUnecmaify(node.parameters),
+      body: ExpressionUnecmaify(
+        AssertCast(AssertDef(node.body), isArrowFunctionBodyExpression)
+      ),
+      bodyScope: createAssertedVarScope(),
+      parameterScope: createAssertedParameterScope()
+    }
+  }
+
   export function ArrowFunctionUnecmaify(
     node: ts.ArrowFunction
   ): ArrowExpression {
-    throw new Error('Not implemented')
+    if (ts.isBlock(node.body)) {
+      return {
+        type: NodeType.EagerArrowExpressionWithFunctionBody,
+        isAsync: !!(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Async),
+        contents: ArrowExpressionContentsWithFunctionBodyUnecmaify(node),
+        length: node.parameters.length,
+        directives: []
+      }
+    }
+    return {
+      type: NodeType.EagerArrowExpressionWithExpression,
+      isAsync: !!(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Async),
+      contents: ArrowExpressionContentsWithExpressionUnecmaify(node),
+      length: node.parameters.length
+    }
+  }
+
+  export function BinaryOperatorUnecmaify(
+    node: ts.CompoundAssignmentOperator
+  ): CompoundAssignmentOperator
+  export function BinaryOperatorUnecmaify(
+    node: Exclude<
+      ts.BinaryOperator,
+      ts.CompoundAssignmentOperator | ts.SyntaxKind.EqualsToken
+    >
+  ): BinaryOperator
+  export function BinaryOperatorUnecmaify(
+    node: Exclude<ts.BinaryOperator, ts.SyntaxKind.EqualsToken>
+  ): BinaryOperator | CompoundAssignmentOperator {
+    switch (node) {
+      case ts.SyntaxKind.CommaToken:
+        return BinaryOperator.Comma
+      case ts.SyntaxKind.BarBarToken:
+        return BinaryOperator.Or
+      case ts.SyntaxKind.AmpersandAmpersandToken:
+        return BinaryOperator.And
+      case ts.SyntaxKind.BarToken:
+        return BinaryOperator.LogicOr
+      case ts.SyntaxKind.CaretToken:
+        return BinaryOperator.LogicXor
+      case ts.SyntaxKind.AmpersandToken:
+        return BinaryOperator.LogicAnd
+      case ts.SyntaxKind.EqualsEqualsToken:
+        return BinaryOperator.EqualEqual
+      case ts.SyntaxKind.ExclamationEqualsToken:
+        return BinaryOperator.NotEqual
+      case ts.SyntaxKind.EqualsEqualsEqualsToken:
+        return BinaryOperator.EqualEqualEqual
+      case ts.SyntaxKind.ExclamationEqualsEqualsToken:
+        return BinaryOperator.NotEqualEqual
+      case ts.SyntaxKind.LessThanToken:
+        return BinaryOperator.LessThan
+      case ts.SyntaxKind.LessThanEqualsToken:
+        return BinaryOperator.LessThanEqual
+      case ts.SyntaxKind.GreaterThanToken:
+        return BinaryOperator.GreaterThan
+      case ts.SyntaxKind.GreaterThanEqualsToken:
+        return BinaryOperator.GreaterThanEqual
+      case ts.SyntaxKind.InKeyword:
+        return BinaryOperator.In
+      case ts.SyntaxKind.InstanceOfKeyword:
+        return BinaryOperator.InstanceOf
+      case ts.SyntaxKind.LessThanLessThanToken:
+        return BinaryOperator.LessThanLessThan
+      case ts.SyntaxKind.GreaterThanGreaterThanToken:
+        return BinaryOperator.GreaterThanGreaterThan
+      case ts.SyntaxKind.GreaterThanGreaterThanGreaterThanToken:
+        return BinaryOperator.GreaterThanGreaterThanGreaterThan
+      case ts.SyntaxKind.PlusToken:
+        return BinaryOperator.Plus
+      case ts.SyntaxKind.MinusToken:
+        return BinaryOperator.Minus
+      case ts.SyntaxKind.AsteriskToken:
+        return BinaryOperator.Star
+      case ts.SyntaxKind.SlashToken:
+        return BinaryOperator.Div
+      case ts.SyntaxKind.PercentToken:
+        return BinaryOperator.Mod
+      case ts.SyntaxKind.AsteriskAsteriskToken:
+        return BinaryOperator.StarStar
+      case ts.SyntaxKind.PlusEqualsToken:
+        return CompoundAssignmentOperator.PlusEqual
+      case ts.SyntaxKind.MinusEqualsToken:
+        return CompoundAssignmentOperator.MinusEqual
+      case ts.SyntaxKind.AsteriskEqualsToken:
+        return CompoundAssignmentOperator.StarEqual
+      case ts.SyntaxKind.SlashEqualsToken:
+        return CompoundAssignmentOperator.DivEuqal
+      case ts.SyntaxKind.PercentEqualsToken:
+        return CompoundAssignmentOperator.ModEqual
+      case ts.SyntaxKind.AsteriskAsteriskEqualsToken:
+        return CompoundAssignmentOperator.StarStarEqual
+      case ts.SyntaxKind.LessThanLessThanEqualsToken:
+        return CompoundAssignmentOperator.LessThanLessThanEqual
+      case ts.SyntaxKind.GreaterThanGreaterThanEqualsToken:
+        return CompoundAssignmentOperator.GreaterThanGreaterThanEequal
+      case ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken:
+        return CompoundAssignmentOperator.GreaterThanGreaterThanGreaterThanEequal
+      case ts.SyntaxKind.BarEqualsToken:
+        return CompoundAssignmentOperator.LoginOrEqual
+      case ts.SyntaxKind.AmpersandEqualsToken:
+        return CompoundAssignmentOperator.LogicAndEuqal
+      case ts.SyntaxKind.CaretEqualsToken:
+        return CompoundAssignmentOperator.LogicXorEqual
+    }
   }
 
   export function BinaryExpressionUnecmaify(
     node: ts.BinaryExpression
-  ): BinaryExpression {
-    throw new Error('Not implemented')
+  ): BinaryExpression | AssignmentExpression | CompoundAssignmentExpression {
+    switch (node.operatorToken.kind) {
+      case ts.SyntaxKind.EqualsToken:
+        return {
+          type: NodeType.AssignmentExpression,
+          binding: ExpressionToAssignmentTargetUnecmaify(node.left),
+          expression: ExpressionUnecmaify(node.right)
+        }
+
+      case ts.SyntaxKind.PlusEqualsToken:
+      case ts.SyntaxKind.MinusEqualsToken:
+      case ts.SyntaxKind.AsteriskEqualsToken:
+      case ts.SyntaxKind.SlashEqualsToken:
+      case ts.SyntaxKind.PercentEqualsToken:
+      case ts.SyntaxKind.AsteriskAsteriskEqualsToken:
+      case ts.SyntaxKind.LessThanLessThanEqualsToken:
+      case ts.SyntaxKind.GreaterThanGreaterThanEqualsToken:
+      case ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken:
+      case ts.SyntaxKind.BarEqualsToken:
+      case ts.SyntaxKind.AmpersandEqualsToken:
+      case ts.SyntaxKind.CaretEqualsToken:
+        return {
+          type: NodeType.CompoundAssignmentExpression,
+          binding: ExpressionToSimpleAssignmentTargetUnecmaify(node.left),
+          operator: BinaryOperatorUnecmaify(node.operatorToken.kind),
+          expression: ExpressionUnecmaify(node.right)
+        }
+      default:
+        return {
+          type: NodeType.BinaryExpression,
+          left: ExpressionUnecmaify(node.left),
+          operator: BinaryOperatorUnecmaify(node.operatorToken.kind),
+          right: ExpressionUnecmaify(node.right)
+        }
+    }
   }
 
   export function CallExpressionUnecmaify(
@@ -643,14 +1130,52 @@ namespace Unecmaify {
     }
   }
 
-  export function ClassExpressionUnecmaify(node: ts.ClassExpression): any {
-    throw new Error('Not implemented')
+  export function ClassExpressionUnecmaify(
+    node: ts.ClassExpression
+  ): ClassExpression {
+    return {
+      type: NodeType.ClassExpression,
+      name: UnecmaifyOptional(
+        node.name,
+        IdentifierToBindingIdentifierUnecmaify
+      ),
+      super: UnecmaifyOptional(
+        node.heritageClauses,
+        HeritageClauseSuperUnecmaify
+      ),
+      elements: MethodDefinitionListUnecmaify(node.members)
+    }
+  }
+
+  export function FunctionExpressionContentsUnecmaify(
+    node: ts.FunctionExpression
+  ): FunctionExpressionContents {
+    return {
+      type: NodeType.FunctionExpressionContents,
+      params: FormalParametersUnecmaify(node.parameters),
+      body: StatementListUnecmaify(AssertDef(node.body).statements),
+      isThisCaptured: false,
+      bodyScope: createAssertedVarScope(),
+      parameterScope: createAssertedParameterScope(),
+      isFunctionNameCaptured: false
+    }
   }
 
   export function FunctionExpressionUnecmaify(
     node: ts.FunctionExpression
-  ): any {
-    throw new Error('Not implemented')
+  ): FunctionExpression {
+    return {
+      type: NodeType.EagerFunctionExpression,
+      name: UnecmaifyOptional(
+        node.name,
+        IdentifierToBindingIdentifierUnecmaify
+      ),
+      isAsync: !!(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Async),
+      isGenerator: !!node.asteriskToken,
+      contents: FunctionExpressionContentsUnecmaify(node),
+      directives: [],
+      length: node.parameters.length
+    }
   }
 
   export function IdentifierUnecmaify(
@@ -716,16 +1241,24 @@ namespace Unecmaify {
     }
   }
 
-  export function UnaryExpressionUnecmaify(
-    node: ts.PrefixUnaryExpression | ts.PostfixUnaryExpression
-  ): any {
-    throw new Error('Not implemented')
+  export function PropertyAccessExpressionToStaticMemberAssignmentTargetUnecmaify(
+    node: ts.PropertyAccessExpression
+  ): StaticMemberAssignmentTarget {
+    return {
+      type: NodeType.StaticMemberAssignmentTarget,
+      _object: ExpressionUnecmaify(node.expression),
+      property: node.name.text
+    }
   }
 
   export function PropertyAccessExpressionUnecmaify(
     node: ts.PropertyAccessExpression
-  ): any {
-    throw new Error('Not implemented')
+  ): StaticMemberExpression {
+    return {
+      type: NodeType.StaticMemberExpression,
+      _object: ExpressionUnecmaify(node.expression),
+      property: node.name.text
+    }
   }
 
   export function TemplateExpressionUnecmaify(
@@ -792,10 +1325,50 @@ namespace Unecmaify {
     }
   }
 
+  export function MethodDefinitionListUnecmaify(
+    nodes: ReadonlyArray<ts.ClassElement>
+  ): FrozenArray<ClassElement> {
+    return nodes.map(node =>
+      ClassElementUnecmaify(node, MethodDefinitionUnecmaify(node))
+    )
+  }
+
+  export function ClassElementUnecmaify(
+    node: ts.ClassElement,
+    method: MethodDefinition
+  ): ClassElement {
+    return {
+      type: NodeType.ClassElement,
+      isStatic: !!(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Static),
+      method
+    }
+  }
+
+  export function MethodDefinitionUnecmaify(
+    node: ts.ClassElement
+  ): MethodDefinition {
+    switch (node.kind) {
+      case ts.SyntaxKind.MethodDeclaration:
+        return MethodDeclarationUnecmaify(node as ts.MethodDeclaration)
+      case ts.SyntaxKind.GetAccessor:
+      case ts.SyntaxKind.SetAccessor:
+      default:
+        throw new Error('Unecpected kind')
+    }
+  }
+
   export function ClassDeclarationUnecmaify(
     node: ts.ClassDeclaration
   ): ClassDeclaration {
-    throw new Error('Not implemented')
+    return {
+      type: NodeType.ClassDeclaration,
+      name: IdentifierToBindingIdentifierUnecmaify(AssertDef(node.name)),
+      super: UnecmaifyOptional(
+        node.heritageClauses,
+        HeritageClauseSuperUnecmaify
+      ),
+      elements: MethodDefinitionListUnecmaify(node.members)
+    }
   }
 
   export function DebuggerStatementUnecmaify(
@@ -823,10 +1396,40 @@ namespace Unecmaify {
     }
   }
 
+  export function FormalParametersUnecmaify(
+    nodes: ReadonlyArray<ts.ParameterDeclaration>
+  ): FormalParameters {
+    return {
+      type: NodeType.FormalParameters,
+      items: ParameterDeclarationListUnecmaify(nodes)
+    }
+  }
+
+  export function FunctionOrMethodContentsUnecmaify(
+    node: ts.FunctionDeclaration | ts.MethodDeclaration
+  ): FunctionOrMethodContents {
+    return {
+      type: NodeType.FunctionOrMethodContents,
+      params: FormalParametersUnecmaify(node.parameters),
+      body: StatementListUnecmaify(AssertDef(node.body).statements),
+      isThisCaptured: false,
+      bodyScope: createAssertedVarScope(),
+      parameterScope: createAssertedParameterScope()
+    }
+  }
+
   export function FunctionDeclarationUnecmaify(
     node: ts.FunctionDeclaration
-  ): EagerFunctionDeclaration {
-    throw new Error('Not implemented')
+  ): FunctionDeclaration {
+    return {
+      type: NodeType.EagerFunctionDeclaration,
+      name: IdentifierToBindingIdentifierUnecmaify(AssertDef(node.name)),
+      isAsync: !!(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Async),
+      isGenerator: !!node.asteriskToken,
+      contents: FunctionOrMethodContentsUnecmaify(node),
+      directives: [],
+      length: node.parameters.length
+    }
   }
 
   export function IfStatementUnecmaify(node: ts.IfStatement): IfStatement {
@@ -834,7 +1437,7 @@ namespace Unecmaify {
       type: NodeType.IfStatement,
       test: ExpressionUnecmaify(node.expression),
       consequent: StatementUnecmaify(node.thenStatement),
-      alternate: EcmaifyOptional(node.elseStatement, StatementUnecmaify)
+      alternate: UnecmaifyOptional(node.elseStatement, StatementUnecmaify)
     }
   }
 
@@ -860,8 +1463,8 @@ namespace Unecmaify {
   ): AssignmentTargetPropertyIdentifier {
     return {
       type: NodeType.AssignmentTargetPropertyIdentifier,
-      binding: identifierToAssignmentTargetIdentifierUnecmaify(node.name),
-      init: EcmaifyOptional(
+      binding: IdentifierToAssignmentTargetIdentifierUnecmaify(node.name),
+      init: UnecmaifyOptional(
         node.objectAssignmentInitializer,
         ExpressionUnecmaify
       )
@@ -1028,11 +1631,20 @@ namespace Unecmaify {
     }
   }
 
-  export function identifierToAssignmentTargetIdentifierUnecmaify(
+  export function IdentifierToAssignmentTargetIdentifierUnecmaify(
     node: ts.Identifier
   ): AssignmentTargetIdentifier {
     return {
       type: NodeType.AssignmentTargetIdentifier,
+      name: node.text
+    }
+  }
+
+  export function IdentifierToIdentifierExpressionUnecmaify(
+    node: ts.Identifier
+  ): IdentifierExpression {
+    return {
+      type: NodeType.IdentifierExpression,
       name: node.text
     }
   }
@@ -1047,28 +1659,20 @@ namespace Unecmaify {
     }
   }
 
-  export function StaticMemberAssignmentTargetUnecmaify(
-    node: ts.PropertyAccessExpression
-  ): StaticMemberAssignmentTarget {
-    return {
-      type: NodeType.StaticMemberAssignmentTarget,
-      _object: ExpressionUnecmaify(node.expression),
-      property: node.name.text
-    }
-  }
-
   export function SimpleAssignmentTargetUnecmaify(
     node: SimpleAssignmentTargetEcmaifyType
   ): SimpleAssignmentTarget {
     switch (node.kind) {
       case ts.SyntaxKind.Identifier:
-        return identifierToAssignmentTargetIdentifierUnecmaify(node)
+        return IdentifierToAssignmentTargetIdentifierUnecmaify(node)
       case ts.SyntaxKind.ElementAccessExpression:
         return ElementAccessExpressionToComputedMemberAssignmentTargetUnecmaify(
           node
         )
       case ts.SyntaxKind.PropertyAccessExpression:
-        return StaticMemberAssignmentTargetUnecmaify(node)
+        return PropertyAccessExpressionToStaticMemberAssignmentTargetUnecmaify(
+          node
+        )
     }
   }
 
@@ -1082,6 +1686,21 @@ namespace Unecmaify {
   export type AssignmentTargetEcmaifyType =
     | AssignmentTargetPatternEcmaifyType
     | SimpleAssignmentTargetEcmaifyType
+
+  export function ExpressionToSimpleAssignmentTargetUnecmaify(
+    node: ts.Expression
+  ): SimpleAssignmentTarget {
+    switch (node.kind) {
+      case ts.SyntaxKind.Identifier:
+      case ts.SyntaxKind.ElementAccessExpression:
+      case ts.SyntaxKind.PropertyAccessExpression:
+        return SimpleAssignmentTargetUnecmaify(
+          node as SimpleAssignmentTargetEcmaifyType
+        )
+      default:
+        throw new Error('Unexpected kind')
+    }
+  }
 
   export function AssignmentTargetUnecmaify(
     node: AssignmentTargetEcmaifyType
@@ -1206,10 +1825,46 @@ namespace Unecmaify {
     }
   }
 
+  export function CaseClauseListUnecmaify(
+    nodes: ReadonlyArray<ts.CaseOrDefaultClause>
+  ): FrozenArray<SwitchCase> {
+    return nodes.map(clause =>
+      CaseClauseUnecmaify(AssertCast(clause, ts.isCaseClause))
+    )
+  }
+
   export function SwitchStatementUnecmaify(
     node: ts.SwitchStatement
-  ): SwitchStatement {
-    throw new Error('Not implemented')
+  ): SwitchStatement | SwitchStatementWithDefault {
+    const defaultClauseIndex = node.caseBlock.clauses.findIndex(
+      ts.isDefaultClause
+    )
+    if (defaultClauseIndex >= 0) {
+      return {
+        type: NodeType.SwitchStatementWithDefault,
+        discriminant: ExpressionUnecmaify(node.expression),
+        defaultCase: DefaultClauseUnecmaify(
+          AssertCast(
+            node.caseBlock.clauses[defaultClauseIndex],
+            ts.isDefaultClause
+          )
+        ),
+        preDefaultCases: CaseClauseListUnecmaify(
+          node.caseBlock.clauses.slice(0, defaultClauseIndex)
+        ),
+        postDefaultCases: CaseClauseListUnecmaify(
+          node.caseBlock.clauses.slice(defaultClauseIndex + 1)
+        )
+      }
+    } else {
+      return {
+        type: NodeType.SwitchStatement,
+        discriminant: ExpressionUnecmaify(node.expression),
+        cases: node.caseBlock.clauses.map(clause =>
+          CaseClauseUnecmaify(AssertCast(clause, ts.isCaseClause))
+        )
+      }
+    }
   }
 
   export function ThrowStatementUnecmaify(

@@ -51,6 +51,12 @@ export function isAssignmentTargetPattern(
   )
 }
 
+export function isArrowFunctionBodyExpression(
+  body: ts.ConciseBody
+): body is ts.Expression {
+  return !ts.isBlock(body)
+}
+
 export function append<T>(to: T[], item?: T) {
   if (!item) return to
   to.push(item)
@@ -105,4 +111,11 @@ export function AssertCast<U, T extends U>(v: U, cb: (v: U) => v is T): T {
     throw new Error('cast failed')
   }
   return v
+}
+
+export function compose<A, B, C>(
+  f: (arg: A) => B,
+  g: (arg: B) => C
+): (arg: A) => C {
+  return x => g(f(x))
 }
