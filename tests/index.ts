@@ -10,12 +10,13 @@ import { Program } from '../src/types';
 function step(buffer: ArrayBuffer) {
   const parser = new Parser(buffer)
   const program = parser.parse()
-  const nodes = arrayify(Ecmaify.Ecmaify(program)) as ts.SourceFile[]
-  const sourceFile = first(nodes)
-  const scripts = arrayify(Unecmaify.Unecmaify(sourceFile)) as Program[]
+  const parserEmitter = new Emitter()
+  const parseResult = parserEmitter.emit(program)
+  const sourceFile = first(arrayify(Ecmaify.Ecmaify(program))) as ts.SourceFile
+  const script = first(arrayify(Unecmaify.Unecmaify(sourceFile))) as Program
   const emitter = new Emitter()
-  const result = emitter.emit(first(scripts))
-  console.log(buffer.byteLength, result.byteLength)
+  const result = emitter.emit(script)
+  console.log(buffer.byteLength, parseResult.byteLength, result.byteLength)
   return result
 }
 

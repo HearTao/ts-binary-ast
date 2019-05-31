@@ -177,8 +177,7 @@ export default class Parser {
   }
 
   parseMaybeAtom() {
-    const result = this.reader.readAtom()
-    return result ? result : undefined
+    return this.reader.readMaybeAtom()
   }
 
   parseDouble() {
