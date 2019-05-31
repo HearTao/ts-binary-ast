@@ -108,7 +108,8 @@ import {
   FunctionExpressionContents,
   MethodDefinition,
   ClassElement,
-  ClassExpression
+  ClassExpression,
+  Script
 } from './types'
 import {
   mapIfDef,
@@ -124,7 +125,8 @@ import {
   createAssertedBlockScope,
   createAssertedBoundNamesScope,
   createAssertedVarScope,
-  createAssertedParameterScope
+  createAssertedParameterScope,
+  createAssertedScriptGlobalScope
 } from './factory'
 
 namespace Unecmaify {
@@ -833,7 +835,14 @@ namespace Unecmaify {
     }
   }
 
-  export function SourceFileUnecmaify(node: ts.SourceFile): any {}
+  export function SourceFileUnecmaify(node: ts.SourceFile): Script {
+    return {
+      type: NodeType.Script,
+      directives: [],
+      scope: createAssertedScriptGlobalScope(),
+      statements: StatementListUnecmaify(node.statements)
+    }
+  }
 
   export function SpreadElementUnecmaify(
     node: ts.SpreadElement

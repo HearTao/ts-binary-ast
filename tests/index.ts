@@ -3,6 +3,7 @@ import * as ts from 'typescript'
 import Parser from "../src/parser";
 import Emitter from '../src/emitter';
 import * as Ecmaify from '../src/ecmaify';
+import * as Unecmaify from '../src/unecmaify';
 import { arrayify } from '../src/utils';
 
 function testParseAndEmit() {

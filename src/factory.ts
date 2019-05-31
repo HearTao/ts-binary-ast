@@ -3,7 +3,8 @@ import {
   NodeType,
   AssertedBoundNamesScope,
   AssertedParameterScope,
-  AssertedVarScope
+  AssertedVarScope,
+  AssertedScriptGlobalScope
 } from './types'
 
 export function createAssertedBlockScope(): AssertedBlockScope {
@@ -36,5 +37,13 @@ export function createAssertedParameterScope(): AssertedParameterScope {
     paramNames: [],
     hasDirectEval: false,
     isSimpleParameterList: false
+  }
+}
+
+export function createAssertedScriptGlobalScope(): AssertedScriptGlobalScope {
+  return {
+    type: NodeType.AssertedScriptGlobalScope,
+    declaredNames: [],
+    hasDirectEval: false
   }
 }
