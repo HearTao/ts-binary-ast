@@ -144,7 +144,7 @@ namespace Unecmaify {
     return v.map(cb)
   }
 
-  export function Unecmaify(node: ts.Node): Node | ReadonlyArray<Node> {
+  export function Unecmaify(node: ts.Node): Node | Node[] {
     switch (node.kind) {
       case ts.SyntaxKind.Identifier:
         return IdentifierUnecmaify(node as ts.Identifier)
@@ -366,12 +366,12 @@ namespace Unecmaify {
         return ThrowStatementUnecmaify(stmt as ts.ThrowStatement)
       case ts.SyntaxKind.TryStatement:
         return TryStatementUnecmaify(stmt as ts.TryStatement)
-      case ts.SyntaxKind.VariableDeclaration:
+      case ts.SyntaxKind.VariableStatement:
         return VariableStatementUnecmaify(stmt as ts.VariableStatement)
       case ts.SyntaxKind.WithStatement:
         return WithStatementUnecmaify(stmt as ts.WithStatement)
       default:
-        throw new Error('Unexpected kind')
+        throw new Error('Unexpected kind: ' + stmt.kind)
     }
   }
 
@@ -801,7 +801,7 @@ namespace Unecmaify {
 
   export function CaseBlockUnecmaify(
     node: ts.CaseBlock
-  ): FrozenArray<SwitchCase | SwitchDefault> {
+  ): Array<SwitchCase | SwitchDefault> {
     return UnecmaifyList(node.clauses, CaseOrDefaultClauseUnecmaify)
   }
 
@@ -1916,7 +1916,7 @@ namespace Unecmaify {
 
   export function VariableDeclarationListUnecmaify(
     node: ts.VariableDeclarationList
-  ): FrozenArray<VariableDeclarator> {
+  ): Array<VariableDeclarator> {
     return node.declarations.map(VariableDeclarationUnecmaify)
   }
 
