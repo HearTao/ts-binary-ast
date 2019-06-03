@@ -6,5 +6,5 @@
 - [x] Parser
 - [x] Emitter
 - [x] Ecmaify
-- [ ] Unecmaify
+- [x] Unecmaify
 - [ ] Test
