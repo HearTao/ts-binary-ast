@@ -18,6 +18,8 @@ function step(buffer: ArrayBuffer) {
   const script = first(arrayify(unecmaify.Unecmaify(sourceFile))) as Program
   const emitter = new Emitter()
   const result = emitter.emit(script)
+  fs.writeFileSync('./tests/out/1.json', JSON.stringify(program, undefined, 2))
+  fs.writeFileSync('./tests/out/2.json', JSON.stringify(script, undefined, 2))
   console.log(buffer.byteLength, parseResult.byteLength, result.byteLength)
   return result
 }
@@ -25,7 +27,7 @@ function step(buffer: ArrayBuffer) {
 function test() {
   const buffer = fs.readFileSync("./tests/forin-001.binjs")
   let arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
-  for (let i = 0; i < 3; ++i) {
+  for (let i = 0; i < 1; ++i) {
     console.log(`${''.padStart(10, '-')} step ${i} ${''.padEnd(10, '-')}`)
     arrayBuffer = step(arrayBuffer)
   }

@@ -8,7 +8,8 @@ import {
   Binding,
   BindingWithInitializer,
   AssignmentTarget,
-  AssignmentTargetPattern
+  AssignmentTargetPattern,
+  IdentifierExpression
 } from './types'
 import * as ts from 'typescript'
 
@@ -55,6 +56,12 @@ export function isArrowFunctionBodyExpression(
   body: ts.ConciseBody
 ): body is ts.Expression {
   return !ts.isBlock(body)
+}
+
+export function isIdentifierExpression(
+  node: Expression
+): node is IdentifierExpression {
+  return node.type === NodeType.IdentifierExpression
 }
 
 export function append<T>(to: T[], item?: T) {
@@ -104,6 +111,13 @@ export function first<T>(items: ReadonlyArray<T>): T {
     throw new Error('must have more than one item')
   }
   return items[0]
+}
+
+export function last<T>(items: ReadonlyArray<T>): T {
+  if (!items.length) {
+    throw new Error('must have more than one item')
+  }
+  return items[items.length - 1]
 }
 
 export function AssertCast<U, T extends U>(v: U, cb: (v: U) => v is T): T {

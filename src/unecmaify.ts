@@ -86,8 +86,6 @@ import {
   UnaryOperator,
   UpdateOperator,
   BindingWithInitializer,
-  BindingPropertyProperty,
-  BindingPropertyIdentifier,
   BindingProperty,
   ObjectBinding,
   ArrayBinding,
@@ -109,7 +107,14 @@ import {
   MethodDefinition,
   ClassElement,
   ClassExpression,
-  Script
+  Script,
+  AssertedParameterScope,
+  AssertedScriptGlobalScope,
+  AssertedDeclaredKind,
+  AssertedMaybePositionalParameterName,
+  AssertedBoundNamesScope,
+  AssertedVarScope,
+  AssertedBlockScope
 } from './types'
 import {
   mapIfDef,
@@ -119,15 +124,10 @@ import {
   first,
   AssertCast,
   isArrowFunctionBodyExpression,
-  compose
+  compose,
+  last,
+  isIdentifierExpression
 } from './utils'
-import {
-  createAssertedBlockScope,
-  createAssertedBoundNamesScope,
-  createAssertedVarScope,
-  createAssertedParameterScope,
-  createAssertedScriptGlobalScope
-} from './factory'
 
 type UpdateExpressionOperator =
   | ts.SyntaxKind.PlusPlusToken
@@ -144,7 +144,68 @@ export type AssignmentTargetEcmaifyType =
   | AssignmentTargetPatternEcmaifyType
   | SimpleAssignmentTargetEcmaifyType
 
+export interface Context {
+  declarations: Set<string>
+  captureSet: Set<string>
+  hasDirectEval: boolean
+}
+
+export interface ContextData {
+  declarations: string[]
+  captureSet: Set<string>
+  hasDirectEval: boolean
+}
+
 export default class Unecmaify {
+  context: Context[]
+
+  constructor() {
+    this.context = []
+  }
+
+  get currentContext() {
+    return last(this.context)
+  }
+
+  pushContext() {
+    this.context.push({
+      declarations: new Set(),
+      captureSet: new Set(),
+      hasDirectEval: false
+    })
+  }
+
+  popContext() {
+    return AssertDef(this.context.pop())
+  }
+
+  processContext(context: Context): ContextData {
+    return {
+      declarations: Array.from(new Set(context.declarations)).sort((a, b) => a.localeCompare(b)),
+      captureSet: context.captureSet,
+      hasDirectEval: false
+    }
+  }
+
+  runInContext<T>(cb: () => T): [T, ContextData] {
+    this.pushContext()
+    const result = cb()
+    const context = this.processContext(this.popContext())
+    return [result, context]
+  }
+
+  markCapture(id: string) {
+    for (let i = this.context.length - 1; i >= 0; --i) {
+      const ctx = this.context[i]
+      if (ctx.declarations.has(id)) {
+        if (ctx !== this.currentContext) {
+          ctx.captureSet.add(id)
+        }
+        return
+      }
+    }
+  }
+
   UnecmaifyOptional<T, U>(v: T | undefined, cb: (v: T) => U): U | undefined {
     return isDef(v) ? cb.call(this, v) : undefined
   }
@@ -475,6 +536,88 @@ export default class Unecmaify {
     }
   }
 
+  createAssertedBlockScope(): AssertedBlockScope {
+    return {
+      type: NodeType.AssertedBlockScope,
+      declaredNames: [],
+      hasDirectEval: false
+    }
+  }
+
+  createAssertedVarScope(context: ContextData): AssertedVarScope {
+    return {
+      type: NodeType.AssertedVarScope,
+      declaredNames: context.declarations.map(name => ({
+        type: NodeType.AssertedDeclaredName,
+        name,
+        kind: AssertedDeclaredKind.Var,
+        isCaptured: context.captureSet.has(name)
+      })),
+      hasDirectEval: context.hasDirectEval
+    }
+  }
+
+  createAssertedBoundNamesScope(): AssertedBoundNamesScope {
+    return {
+      type: NodeType.AssertedBoundNamesScope,
+      boundNames: [],
+      hasDirectEval: false
+    }
+  }
+
+  AssertedMaybePositionalParameterNameUnecmaify(
+    params: ReadonlyArray<ts.ParameterDeclaration>,
+    context: ContextData
+  ): AssertedMaybePositionalParameterName[] {
+    return params.map((param, index) => {
+      const name = context.declarations[index]
+      const isCaptured = context.captureSet.has(name)
+      if (param.dotDotDotToken) {
+        return {
+          type: NodeType.AssertedRestParameterName,
+          name,
+          isCaptured
+        }
+      } else {
+        return {
+          type: NodeType.AssertedPositionalParameterName,
+          name,
+          index,
+          isCaptured
+        }
+      }
+    })
+  }
+
+  createAssertedParameterScope(
+    params: ReadonlyArray<ts.ParameterDeclaration>,
+    context: ContextData
+  ): AssertedParameterScope {
+    return {
+      type: NodeType.AssertedParameterScope,
+      paramNames: this.AssertedMaybePositionalParameterNameUnecmaify(params, context),
+      hasDirectEval: context.hasDirectEval,
+      isSimpleParameterList: !params.some(
+        param =>
+          ts.isArrayBindingPattern(param.name) ||
+          ts.isObjectBindingPattern(param.name)
+      )
+    }
+  }
+
+  createAssertedScriptGlobalScope(context: ContextData): AssertedScriptGlobalScope {
+    return {
+      type: NodeType.AssertedScriptGlobalScope,
+      declaredNames: context.declarations.map(name => ({
+        type: NodeType.AssertedDeclaredName,
+        name,
+        kind: AssertedDeclaredKind.Var,
+        isCaptured: context.captureSet.has(name)
+      })),
+      hasDirectEval: context.hasDirectEval
+    }
+  }
+
   ExpressionListUnecmaify(nodes: ReadonlyArray<ts.Expression>) {
     return this.UnecmaifyList(nodes, this.ExpressionUnecmaify)
   }
@@ -612,19 +755,19 @@ export default class Unecmaify {
     return this.ExpressionUnecmaify(first(node.types).expression)
   }
 
-  NamedImportsUnecmaify(node: ts.NamedImports): any {}
+  NamedImportsUnecmaify(node: ts.NamedImports): any { }
 
-  ImportClauseUnecmaify(node: ts.ImportClause): any {}
+  ImportClauseUnecmaify(node: ts.ImportClause): any { }
 
-  ImportDeclarationUnecmaify(node: ts.ImportDeclaration): any {}
+  ImportDeclarationUnecmaify(node: ts.ImportDeclaration): any { }
 
-  ImportSpecifierUnecmaify(node: ts.ImportSpecifier): any {}
+  ImportSpecifierUnecmaify(node: ts.ImportSpecifier): any { }
 
-  ExportDeclarationUnecmaify(node: ts.ExportDeclaration): any {}
+  ExportDeclarationUnecmaify(node: ts.ExportDeclaration): any { }
 
-  NamedExportsUnecmaify(node: ts.NamedExports): any {}
+  NamedExportsUnecmaify(node: ts.NamedExports): any { }
 
-  ExportSpecifierUnecmaify(node: ts.ExportSpecifier): any {}
+  ExportSpecifierUnecmaify(node: ts.ExportSpecifier): any { }
 
   MethodDeclarationUnecmaify(node: ts.MethodDeclaration): Method {
     return {
@@ -664,10 +807,12 @@ export default class Unecmaify {
 
   GetterContentsUnecmaify(node: ts.GetAccessorDeclaration): GetterContents {
     const stmts = AssertDef(node.body).statements
+    const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
+
     return {
       type: NodeType.GetterContents,
-      body: this.StatementListUnecmaify(stmts),
-      bodyScope: createAssertedVarScope(stmts),
+      body,
+      bodyScope: this.createAssertedVarScope(context),
       isThisCaptured: false
     }
   }
@@ -683,12 +828,15 @@ export default class Unecmaify {
 
   SetterContentsUnecmaify(node: ts.SetAccessorDeclaration): SetterContents {
     const stmts = AssertDef(node.body).statements
+    const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
+    const [param, paramContext] = this.runInContext(() => this.ParameterDeclarationUnecmaify(first(node.parameters)))
+
     return {
       type: NodeType.SetterContents,
-      param: this.ParameterDeclarationUnecmaify(first(node.parameters)),
-      parameterScope: createAssertedParameterScope(node.parameters),
-      body: this.StatementListUnecmaify(stmts),
-      bodyScope: createAssertedVarScope(stmts),
+      param,
+      parameterScope: this.createAssertedParameterScope(node.parameters, paramContext),
+      body,
+      bodyScope: this.createAssertedVarScope(context),
       isThisCaptured: false
     }
   }
@@ -799,7 +947,7 @@ export default class Unecmaify {
     return {
       type: NodeType.CatchClause,
       binding: this.BindingNameUnecmaify(declaration.name),
-      bindingScope: createAssertedBoundNamesScope(),
+      bindingScope: this.createAssertedBoundNamesScope(),
       body: this.BlockUnecmaify(node.block)
     }
   }
@@ -823,12 +971,12 @@ export default class Unecmaify {
   }
 
   SourceFileUnecmaify(node: ts.SourceFile): Script {
-    const stmts = node.statements
+    const [statements, context] = this.runInContext(() => this.StatementListUnecmaify(node.statements))
     return {
       type: NodeType.Script,
       directives: [],
-      scope: createAssertedScriptGlobalScope(stmts),
-      statements: this.StatementListUnecmaify(stmts)
+      scope: this.createAssertedScriptGlobalScope(context),
+      statements
     }
   }
 
@@ -859,7 +1007,7 @@ export default class Unecmaify {
     }
   }
 
-  TemplateSpanUnecmaify(node: ts.TemplateSpan): any {}
+  TemplateSpanUnecmaify(node: ts.TemplateSpan): any { }
 
   BooleanLiteralUnecmaify(node: ts.BooleanLiteral): LiteralBooleanExpression {
     return {
@@ -911,26 +1059,32 @@ export default class Unecmaify {
     node: ts.ArrowFunction
   ): ArrowExpressionContentsWithFunctionBody {
     const stmts = AssertCast(AssertDef(node.body), ts.isBlock).statements
+    const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
+    const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
+
     return {
       type: NodeType.ArrowExpressionContentsWithFunctionBody,
-      params: this.FormalParametersUnecmaify(node.parameters),
-      body: this.StatementListUnecmaify(stmts),
-      bodyScope: createAssertedVarScope(stmts),
-      parameterScope: createAssertedParameterScope(node.parameters)
+      params,
+      body,
+      bodyScope: this.createAssertedVarScope(context),
+      parameterScope: this.createAssertedParameterScope(node.parameters, paramsContext)
     }
   }
 
   ArrowExpressionContentsWithExpressionUnecmaify(
     node: ts.ArrowFunction
   ): ArrowExpressionContentsWithExpression {
+    const [body, context] = this.runInContext(() => this.ExpressionUnecmaify(
+      AssertCast(AssertDef(node.body), isArrowFunctionBodyExpression)
+    ))
+    const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
+    
     return {
       type: NodeType.ArrowExpressionContentsWithExpression,
-      params: this.FormalParametersUnecmaify(node.parameters),
-      body: this.ExpressionUnecmaify(
-        AssertCast(AssertDef(node.body), isArrowFunctionBodyExpression)
-      ),
-      bodyScope: createAssertedVarScope([]),
-      parameterScope: createAssertedParameterScope(node.parameters)
+      params,
+      body,
+      bodyScope: this.createAssertedVarScope(context),
+      parameterScope: this.createAssertedParameterScope(node.parameters, paramsContext)
     }
   }
 
@@ -1082,9 +1236,14 @@ export default class Unecmaify {
   }
 
   CallExpressionUnecmaify(node: ts.CallExpression): CallExpression {
+    const callee = this.ExpressionUnecmaify(node.expression)
+    if (isIdentifierExpression(callee) && callee.name === "eval") {
+      this.currentContext.hasDirectEval = true
+    }
+
     return {
       type: NodeType.CallExpression,
-      callee: this.ExpressionUnecmaify(node.expression),
+      callee,
       arguments: this.ExpressionListUnecmaify(node.arguments)
     }
   }
@@ -1129,13 +1288,16 @@ export default class Unecmaify {
     node: ts.FunctionExpression
   ): FunctionExpressionContents {
     const stmts = AssertDef(node.body).statements
+    const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
+    const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
+
     return {
       type: NodeType.FunctionExpressionContents,
-      params: this.FormalParametersUnecmaify(node.parameters),
-      body: this.StatementListUnecmaify(stmts),
+      params,
+      body,
       isThisCaptured: false,
-      bodyScope: createAssertedVarScope(stmts),
-      parameterScope: createAssertedParameterScope(node.parameters),
+      bodyScope: this.createAssertedVarScope(context),
+      parameterScope: this.createAssertedParameterScope(node.parameters, paramsContext),
       isFunctionNameCaptured: false
     }
   }
@@ -1156,6 +1318,8 @@ export default class Unecmaify {
   }
 
   IdentifierUnecmaify(node: ts.Identifier): IdentifierExpression {
+    this.markCapture(node.text)
+
     return {
       type: NodeType.IdentifierExpression,
       name: node.text
@@ -1175,7 +1339,7 @@ export default class Unecmaify {
   MetaPropertyUnecmaify(node: ts.MetaProperty): NewTargetExpression {
     Assert(
       node.keywordToken === ts.SyntaxKind.NewKeyword &&
-        node.name.text === 'target'
+      node.name.text === 'target'
     )
     return {
       type: NodeType.NewTargetExpression
@@ -1275,7 +1439,7 @@ export default class Unecmaify {
     return {
       type: NodeType.Block,
       statements: this.UnecmaifyList(node.statements, this.StatementUnecmaify),
-      scope: createAssertedBlockScope()
+      scope: this.createAssertedBlockScope()
     }
   }
 
@@ -1324,6 +1488,8 @@ export default class Unecmaify {
   }
 
   ClassDeclarationUnecmaify(node: ts.ClassDeclaration): ClassDeclaration {
+    this.currentContext.declarations.add(AssertDef(node.name).text)
+
     return {
       type: NodeType.ClassDeclaration,
       name: this.IdentifierToBindingIdentifierUnecmaify(AssertDef(node.name)),
@@ -1359,6 +1525,7 @@ export default class Unecmaify {
   FormalParametersUnecmaify(
     nodes: ReadonlyArray<ts.ParameterDeclaration>
   ): FormalParameters {
+    
     return {
       type: NodeType.FormalParameters,
       items: this.ParameterDeclarationListUnecmaify(nodes)
@@ -1369,13 +1536,16 @@ export default class Unecmaify {
     node: ts.FunctionDeclaration | ts.MethodDeclaration
   ): FunctionOrMethodContents {
     const stmts = AssertDef(node.body).statements
+    const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
+    const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
+
     return {
       type: NodeType.FunctionOrMethodContents,
-      params: this.FormalParametersUnecmaify(node.parameters),
-      body: this.StatementListUnecmaify(stmts),
+      params,
+      body,
       isThisCaptured: false,
-      bodyScope: createAssertedVarScope(stmts),
-      parameterScope: createAssertedParameterScope(node.parameters)
+      bodyScope: this.createAssertedVarScope(context),
+      parameterScope: this.createAssertedParameterScope(node.parameters, paramsContext)
     }
   }
 
@@ -1875,6 +2045,8 @@ export default class Unecmaify {
   IdentifierToBindingIdentifierUnecmaify(
     node: ts.Identifier
   ): BindingIdentifier {
+    this.currentContext.declarations.add(AssertDef(node).text)
+
     return {
       type: NodeType.BindingIdentifier,
       name: node.text
@@ -1903,6 +2075,8 @@ export default class Unecmaify {
   VariableDeclarationUnecmaify(
     node: ts.VariableDeclaration
   ): VariableDeclarator {
+    this.currentContext.declarations.add(AssertCast(node.name, ts.isIdentifier).text)
+
     return {
       type: NodeType.VariableDeclarator,
       binding: this.BindingNameUnecmaify(node.name),
