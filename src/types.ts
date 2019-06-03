@@ -1150,3 +1150,8 @@ export interface VariableDeclarator extends Node {
   binding: Binding
   init?: Expression
 }
+
+export interface PositionalParameterIndices {
+  name: string
+  index: number
+}

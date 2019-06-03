@@ -109,7 +109,7 @@ import {
   MethodDefinition,
   ClassElement,
   ClassExpression,
-  Script
+  Script,
 } from './types'
 import {
   mapIfDef,
@@ -662,10 +662,11 @@ namespace Unecmaify {
   export function GetterContentsUnecmaify(
     node: ts.GetAccessorDeclaration
   ): GetterContents {
+    const stmts = AssertDef(node.body).statements
     return {
       type: NodeType.GetterContents,
-      body: StatementListUnecmaify(AssertDef(node.body).statements),
-      bodyScope: createAssertedVarScope(),
+      body: StatementListUnecmaify(stmts),
+      bodyScope: createAssertedVarScope(stmts),
       isThisCaptured: false
     }
   }
@@ -684,12 +685,13 @@ namespace Unecmaify {
   export function SetterContentsUnecmaify(
     node: ts.SetAccessorDeclaration
   ): SetterContents {
+    const stmts = AssertDef(node.body).statements
     return {
       type: NodeType.SetterContents,
       param: ParameterDeclarationUnecmaify(first(node.parameters)),
-      parameterScope: createAssertedParameterScope(),
-      body: StatementListUnecmaify(AssertDef(node.body).statements),
-      bodyScope: createAssertedVarScope(),
+      parameterScope: createAssertedParameterScope(node.parameters),
+      body: StatementListUnecmaify(stmts),
+      bodyScope: createAssertedVarScope(stmts),
       isThisCaptured: false
     }
   }
@@ -836,11 +838,12 @@ namespace Unecmaify {
   }
 
   export function SourceFileUnecmaify(node: ts.SourceFile): Script {
+    const stmts = node.statements
     return {
       type: NodeType.Script,
       directives: [],
-      scope: createAssertedScriptGlobalScope(),
-      statements: StatementListUnecmaify(node.statements)
+      scope: createAssertedScriptGlobalScope(stmts),
+      statements: StatementListUnecmaify(stmts)
     }
   }
 
@@ -934,14 +937,13 @@ namespace Unecmaify {
   export function ArrowExpressionContentsWithFunctionBodyUnecmaify(
     node: ts.ArrowFunction
   ): ArrowExpressionContentsWithFunctionBody {
+    const stmts = AssertCast(AssertDef(node.body), ts.isBlock).statements
     return {
       type: NodeType.ArrowExpressionContentsWithFunctionBody,
       params: FormalParametersUnecmaify(node.parameters),
-      body: StatementListUnecmaify(
-        AssertCast(AssertDef(node.body), ts.isBlock).statements
-      ),
-      bodyScope: createAssertedVarScope(),
-      parameterScope: createAssertedParameterScope()
+      body: StatementListUnecmaify(stmts),
+      bodyScope: createAssertedVarScope(stmts),
+      parameterScope: createAssertedParameterScope(node.parameters)
     }
   }
 
@@ -954,8 +956,8 @@ namespace Unecmaify {
       body: ExpressionUnecmaify(
         AssertCast(AssertDef(node.body), isArrowFunctionBodyExpression)
       ),
-      bodyScope: createAssertedVarScope(),
-      parameterScope: createAssertedParameterScope()
+      bodyScope: createAssertedVarScope([]),
+      parameterScope: createAssertedParameterScope(node.parameters)
     }
   }
 
@@ -1159,13 +1161,14 @@ namespace Unecmaify {
   export function FunctionExpressionContentsUnecmaify(
     node: ts.FunctionExpression
   ): FunctionExpressionContents {
+    const stmts = AssertDef(node.body).statements
     return {
       type: NodeType.FunctionExpressionContents,
       params: FormalParametersUnecmaify(node.parameters),
-      body: StatementListUnecmaify(AssertDef(node.body).statements),
+      body: StatementListUnecmaify(stmts),
       isThisCaptured: false,
-      bodyScope: createAssertedVarScope(),
-      parameterScope: createAssertedParameterScope(),
+      bodyScope: createAssertedVarScope(stmts),
+      parameterScope: createAssertedParameterScope(node.parameters),
       isFunctionNameCaptured: false
     }
   }
@@ -1417,13 +1420,14 @@ namespace Unecmaify {
   export function FunctionOrMethodContentsUnecmaify(
     node: ts.FunctionDeclaration | ts.MethodDeclaration
   ): FunctionOrMethodContents {
+    const stmts = AssertDef(node.body).statements
     return {
       type: NodeType.FunctionOrMethodContents,
       params: FormalParametersUnecmaify(node.parameters),
-      body: StatementListUnecmaify(AssertDef(node.body).statements),
+      body: StatementListUnecmaify(stmts),
       isThisCaptured: false,
-      bodyScope: createAssertedVarScope(),
-      parameterScope: createAssertedParameterScope()
+      bodyScope: createAssertedVarScope(stmts),
+      parameterScope: createAssertedParameterScope(node.parameters)
     }
   }
 
