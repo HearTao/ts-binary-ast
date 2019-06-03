@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as ts from 'typescript'
 import Parser from "../src/parser";
 import Emitter from '../src/emitter';
-import * as Ecmaify from '../src/ecmaify';
+import Ecmaify from '../src/ecmaify';
 import Unecmaify from '../src/unecmaify';
 import { arrayify, first } from '../src/utils';
 import { Program } from '../src/types';
@@ -12,7 +12,8 @@ function step(buffer: ArrayBuffer) {
   const program = parser.parse()
   const parserEmitter = new Emitter()
   const parseResult = parserEmitter.emit(program)
-  const sourceFile = first(arrayify(Ecmaify.Ecmaify(program))) as ts.SourceFile
+  const ecmaify = new Ecmaify()
+  const sourceFile = first(arrayify(ecmaify.Ecmaify(program))) as ts.SourceFile
   const unecmaify = new Unecmaify()
   const script = first(arrayify(unecmaify.Unecmaify(sourceFile))) as Program
   const emitter = new Emitter()
