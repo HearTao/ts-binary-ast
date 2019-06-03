@@ -6,7 +6,7 @@ import {
 } from '../mapper'
 import { Context } from './context'
 import { Magic, Section, Compression } from './constants'
-import { isDef } from '../utils';
+import { isDef } from '../utils'
 
 const MAX_STRING_COUNT = 0xffff
 
@@ -80,7 +80,7 @@ export default class MultipartReader {
     return this.context.grammarTable[index]
   }
 
-  readMaybeAtom () {
+  readMaybeAtom() {
     const index = this.readVarnum()
     if (index < this.context.stringsTable.length) {
       return this.context.stringsTable[index]

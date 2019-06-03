@@ -109,7 +109,7 @@ import {
   MethodDefinition,
   ClassElement,
   ClassExpression,
-  Script,
+  Script
 } from './types'
 import {
   mapIfDef,
@@ -133,7 +133,6 @@ type UpdateExpressionOperator =
   | ts.SyntaxKind.PlusPlusToken
   | ts.SyntaxKind.MinusMinusToken
 
-
 export type AssignmentTargetPatternEcmaifyType =
   | ts.ObjectLiteralExpression
   | ts.ArrayLiteralExpression
@@ -146,17 +145,11 @@ export type AssignmentTargetEcmaifyType =
   | SimpleAssignmentTargetEcmaifyType
 
 export default class Unecmaify {
-  UnecmaifyOptional<T, U>(
-    v: T | undefined,
-    cb: (v: T) => U
-  ): U | undefined {
+  UnecmaifyOptional<T, U>(v: T | undefined, cb: (v: T) => U): U | undefined {
     return isDef(v) ? cb.call(this, v) : undefined
   }
 
-  UnecmaifyList<T, U>(
-    v: ReadonlyArray<T>,
-    cb: (v: T) => U
-  ): U[] {
+  UnecmaifyList<T, U>(v: ReadonlyArray<T>, cb: (v: T) => U): U[] {
     return v.map(cb.bind(this))
   }
 
@@ -177,7 +170,9 @@ export default class Unecmaify {
       case ts.SyntaxKind.ArrayBindingPattern:
         return this.ArrayBindingPatternUnecmaify(node as ts.ArrayBindingPattern)
       case ts.SyntaxKind.ObjectBindingPattern:
-        return this.ObjectBindingPatternUnecmaify(node as ts.ObjectBindingPattern)
+        return this.ObjectBindingPatternUnecmaify(
+          node as ts.ObjectBindingPattern
+        )
       case ts.SyntaxKind.BinaryExpression:
         return this.BinaryExpressionUnecmaify(node as ts.BinaryExpression)
       case ts.SyntaxKind.ArrayLiteralExpression:
@@ -227,7 +222,9 @@ export default class Unecmaify {
           node as ts.SetAccessorDeclaration
         )
       case ts.SyntaxKind.ComputedPropertyName:
-        return this.ComputedPropertyNameUnecmaify(node as ts.ComputedPropertyName)
+        return this.ComputedPropertyNameUnecmaify(
+          node as ts.ComputedPropertyName
+        )
       case ts.SyntaxKind.TrueKeyword:
       case ts.SyntaxKind.FalseKeyword:
         return this.BooleanLiteralUnecmaify(node as ts.BooleanLiteral)
@@ -246,7 +243,9 @@ export default class Unecmaify {
       case ts.SyntaxKind.CallExpression:
         return this.CallExpressionUnecmaify(node as ts.CallExpression)
       case ts.SyntaxKind.ConditionalExpression:
-        return this.ConditionalExpressionUnecmaify(node as ts.ConditionalExpression)
+        return this.ConditionalExpressionUnecmaify(
+          node as ts.ConditionalExpression
+        )
       case ts.SyntaxKind.FunctionExpression:
         return this.FunctionExpressionUnecmaify(node as ts.FunctionExpression)
       case ts.SyntaxKind.NewExpression:
@@ -254,7 +253,9 @@ export default class Unecmaify {
       case ts.SyntaxKind.MetaProperty:
         return this.MetaPropertyUnecmaify(node as ts.MetaProperty)
       case ts.SyntaxKind.PrefixUnaryExpression:
-        return this.PrefixUnaryExpressionUnecmaify(node as ts.PrefixUnaryExpression)
+        return this.PrefixUnaryExpressionUnecmaify(
+          node as ts.PrefixUnaryExpression
+        )
       case ts.SyntaxKind.PostfixUnaryExpression:
         return this.PostfixUnaryExpressionUnecmaify(
           node as ts.PostfixUnaryExpression
@@ -310,7 +311,9 @@ export default class Unecmaify {
       case ts.SyntaxKind.CatchClause:
         return this.CatchClauseUnecmaify(node as ts.CatchClause)
       case ts.SyntaxKind.Parameter:
-        return this.ParameterDeclarationUnecmaify(node as ts.ParameterDeclaration)
+        return this.ParameterDeclarationUnecmaify(
+          node as ts.ParameterDeclaration
+        )
       case ts.SyntaxKind.SourceFile:
         return this.SourceFileUnecmaify(node as ts.SourceFile)
       case ts.SyntaxKind.SpreadElement:
@@ -421,7 +424,9 @@ export default class Unecmaify {
           node as ts.ElementAccessExpression
         )
       case ts.SyntaxKind.ConditionalExpression:
-        return this.ConditionalExpressionUnecmaify(node as ts.ConditionalExpression)
+        return this.ConditionalExpressionUnecmaify(
+          node as ts.ConditionalExpression
+        )
       case ts.SyntaxKind.ClassExpression:
         return this.ClassExpressionUnecmaify(node as ts.ClassExpression)
       case ts.SyntaxKind.FunctionExpression:
@@ -437,7 +442,9 @@ export default class Unecmaify {
           node as ts.ObjectLiteralExpression
         )
       case ts.SyntaxKind.PrefixUnaryExpression:
-        return this.PrefixUnaryExpressionUnecmaify(node as ts.PrefixUnaryExpression)
+        return this.PrefixUnaryExpressionUnecmaify(
+          node as ts.PrefixUnaryExpression
+        )
       case ts.SyntaxKind.PostfixUnaryExpression:
         return this.PostfixUnaryExpressionUnecmaify(
           node as ts.PostfixUnaryExpression
@@ -476,9 +483,7 @@ export default class Unecmaify {
     return this.UnecmaifyList(nodes, this.StatementUnecmaify)
   }
 
-  ArgumentsUnecmaify(
-    args: ReadonlyArray<ts.Expression>
-  ): Arguments {
+  ArgumentsUnecmaify(args: ReadonlyArray<ts.Expression>): Arguments {
     return this.UnecmaifyList(args, this.SpreadElementOrExpressionUnecmaify)
   }
 
@@ -499,9 +504,7 @@ export default class Unecmaify {
     }
   }
 
-  BindingElementListUnecmaify(
-    nodes: ReadonlyArray<ts.BindingElement>
-  ) {
+  BindingElementListUnecmaify(nodes: ReadonlyArray<ts.BindingElement>) {
     return this.UnecmaifyList(nodes, this.BindingElementUnecmaify)
   }
 
@@ -530,9 +533,7 @@ export default class Unecmaify {
     }
   }
 
-  BindingPropertyUnecmaify(
-    node: ts.BindingElement
-  ): BindingProperty {
+  BindingPropertyUnecmaify(node: ts.BindingElement): BindingProperty {
     if (node.initializer) {
       return {
         type: NodeType.BindingPropertyIdentifier,
@@ -570,9 +571,7 @@ export default class Unecmaify {
     return this.UnecmaifyList(nodes, this.BindingPropertyUnecmaify)
   }
 
-  ArrayBindingPatternUnecmaify(
-    node: ts.ArrayBindingPattern
-  ): ArrayBinding {
+  ArrayBindingPatternUnecmaify(node: ts.ArrayBindingPattern): ArrayBinding {
     return {
       type: NodeType.ArrayBinding,
       elements: this.ArrayBindingElementListUnecmaify(node.elements),
@@ -580,9 +579,7 @@ export default class Unecmaify {
     }
   }
 
-  ObjectBindingPatternUnecmaify(
-    node: ts.ObjectBindingPattern
-  ): ObjectBinding {
+  ObjectBindingPatternUnecmaify(node: ts.ObjectBindingPattern): ObjectBinding {
     return {
       type: NodeType.ObjectBinding,
       properties: this.BindingPropertyListUnecmaify(node.elements)
@@ -597,9 +594,7 @@ export default class Unecmaify {
     }
   }
 
-  PropertyAssignmentUnecmaify(
-    node: ts.PropertyAssignment
-  ): DataProperty {
+  PropertyAssignmentUnecmaify(node: ts.PropertyAssignment): DataProperty {
     return {
       type: NodeType.DataProperty,
       name: this.PropertyNameUnecmaify(node.name),
@@ -617,23 +612,21 @@ export default class Unecmaify {
     return this.ExpressionUnecmaify(first(node.types).expression)
   }
 
-  NamedImportsUnecmaify(node: ts.NamedImports): any { }
+  NamedImportsUnecmaify(node: ts.NamedImports): any {}
 
-  ImportClauseUnecmaify(node: ts.ImportClause): any { }
+  ImportClauseUnecmaify(node: ts.ImportClause): any {}
 
-  ImportDeclarationUnecmaify(node: ts.ImportDeclaration): any { }
+  ImportDeclarationUnecmaify(node: ts.ImportDeclaration): any {}
 
-  ImportSpecifierUnecmaify(node: ts.ImportSpecifier): any { }
+  ImportSpecifierUnecmaify(node: ts.ImportSpecifier): any {}
 
-  ExportDeclarationUnecmaify(node: ts.ExportDeclaration): any { }
+  ExportDeclarationUnecmaify(node: ts.ExportDeclaration): any {}
 
-  NamedExportsUnecmaify(node: ts.NamedExports): any { }
+  NamedExportsUnecmaify(node: ts.NamedExports): any {}
 
-  ExportSpecifierUnecmaify(node: ts.ExportSpecifier): any { }
+  ExportSpecifierUnecmaify(node: ts.ExportSpecifier): any {}
 
-  MethodDeclarationUnecmaify(
-    node: ts.MethodDeclaration
-  ): Method {
+  MethodDeclarationUnecmaify(node: ts.MethodDeclaration): Method {
     return {
       type: NodeType.EagerMethod,
       name: this.PropertyNameUnecmaify(node.name),
@@ -645,9 +638,7 @@ export default class Unecmaify {
     }
   }
 
-  DeleteExpressionUnecmaify(
-    node: ts.DeleteExpression
-  ): UnaryExpression {
+  DeleteExpressionUnecmaify(node: ts.DeleteExpression): UnaryExpression {
     return {
       type: NodeType.UnaryExpression,
       operator: UnaryOperator.Delete,
@@ -655,9 +646,7 @@ export default class Unecmaify {
     }
   }
 
-  TypeOfExpressionUnecmaify(
-    node: ts.TypeOfExpression
-  ): UnaryExpression {
+  TypeOfExpressionUnecmaify(node: ts.TypeOfExpression): UnaryExpression {
     return {
       type: NodeType.UnaryExpression,
       operator: UnaryOperator.TypeOf,
@@ -665,9 +654,7 @@ export default class Unecmaify {
     }
   }
 
-  VoidExpressionUnecmaify(
-    node: ts.VoidExpression
-  ): UnaryExpression {
+  VoidExpressionUnecmaify(node: ts.VoidExpression): UnaryExpression {
     return {
       type: NodeType.UnaryExpression,
       operator: UnaryOperator.Void,
@@ -675,9 +662,7 @@ export default class Unecmaify {
     }
   }
 
-  GetterContentsUnecmaify(
-    node: ts.GetAccessorDeclaration
-  ): GetterContents {
+  GetterContentsUnecmaify(node: ts.GetAccessorDeclaration): GetterContents {
     const stmts = AssertDef(node.body).statements
     return {
       type: NodeType.GetterContents,
@@ -687,9 +672,7 @@ export default class Unecmaify {
     }
   }
 
-  GetAccessorDeclarationUnecmaify(
-    node: ts.GetAccessorDeclaration
-  ): Getter {
+  GetAccessorDeclarationUnecmaify(node: ts.GetAccessorDeclaration): Getter {
     return {
       type: NodeType.EagerGetter,
       name: this.PropertyNameUnecmaify(node.name),
@@ -698,9 +681,7 @@ export default class Unecmaify {
     }
   }
 
-  SetterContentsUnecmaify(
-    node: ts.SetAccessorDeclaration
-  ): SetterContents {
+  SetterContentsUnecmaify(node: ts.SetAccessorDeclaration): SetterContents {
     const stmts = AssertDef(node.body).statements
     return {
       type: NodeType.SetterContents,
@@ -712,9 +693,7 @@ export default class Unecmaify {
     }
   }
 
-  SetAccessorDeclarationUnecmaify(
-    node: ts.SetAccessorDeclaration
-  ): Setter {
+  SetAccessorDeclarationUnecmaify(node: ts.SetAccessorDeclaration): Setter {
     return {
       type: NodeType.EagerSetter,
       name: this.PropertyNameUnecmaify(node.name),
@@ -724,9 +703,7 @@ export default class Unecmaify {
     }
   }
 
-  UpdateOperatorUnecmaify(
-    node: UpdateExpressionOperator
-  ): UpdateOperator {
+  UpdateOperatorUnecmaify(node: UpdateExpressionOperator): UpdateOperator {
     switch (node) {
       case ts.SyntaxKind.PlusPlusToken:
         return UpdateOperator.PlusPlus
@@ -746,7 +723,9 @@ export default class Unecmaify {
           type: NodeType.UpdateExpression,
           isPrefix,
           operator: this.UpdateOperatorUnecmaify(node.operator),
-          operand: this.ExpressionToSimpleAssignmentTargetUnecmaify(node.operand)
+          operand: this.ExpressionToSimpleAssignmentTargetUnecmaify(
+            node.operand
+          )
         }
       default:
         throw new Error('Unecpected operator')
@@ -768,9 +747,7 @@ export default class Unecmaify {
     }
   }
 
-  UnaryExpressionUnecmaify(
-    node: ts.PrefixUnaryExpression
-  ): UnaryExpression {
+  UnaryExpressionUnecmaify(node: ts.PrefixUnaryExpression): UnaryExpression {
     switch (node.operator) {
       case ts.SyntaxKind.PlusPlusToken:
       case ts.SyntaxKind.MinusMinusToken:
@@ -813,9 +790,7 @@ export default class Unecmaify {
     }
   }
 
-  CaseBlockUnecmaify(
-    node: ts.CaseBlock
-  ): Array<SwitchCase | SwitchDefault> {
+  CaseBlockUnecmaify(node: ts.CaseBlock): Array<SwitchCase | SwitchDefault> {
     return this.UnecmaifyList(node.clauses, this.CaseOrDefaultClauseUnecmaify)
   }
 
@@ -835,9 +810,7 @@ export default class Unecmaify {
     return this.UnecmaifyList(nodes, this.ParameterDeclarationUnecmaify)
   }
 
-  ParameterDeclarationUnecmaify(
-    node: ts.ParameterDeclaration
-  ): Parameter {
+  ParameterDeclarationUnecmaify(node: ts.ParameterDeclaration): Parameter {
     if (node.initializer) {
       return {
         type: NodeType.BindingWithInitializer,
@@ -859,9 +832,7 @@ export default class Unecmaify {
     }
   }
 
-  SpreadElementUnecmaify(
-    node: ts.SpreadElement
-  ): SpreadElement {
+  SpreadElementUnecmaify(node: ts.SpreadElement): SpreadElement {
     return {
       type: NodeType.SpreadElement,
       expression: this.ExpressionUnecmaify(node.expression)
@@ -881,37 +852,29 @@ export default class Unecmaify {
     }
   }
 
-  DefaultClauseUnecmaify(
-    node: ts.DefaultClause
-  ): SwitchDefault {
+  DefaultClauseUnecmaify(node: ts.DefaultClause): SwitchDefault {
     return {
       type: NodeType.SwitchDefault,
       consequent: this.StatementListUnecmaify(node.statements)
     }
   }
 
-  TemplateSpanUnecmaify(node: ts.TemplateSpan): any { }
+  TemplateSpanUnecmaify(node: ts.TemplateSpan): any {}
 
-  BooleanLiteralUnecmaify(
-    node: ts.BooleanLiteral
-  ): LiteralBooleanExpression {
+  BooleanLiteralUnecmaify(node: ts.BooleanLiteral): LiteralBooleanExpression {
     return {
       type: NodeType.LiteralBooleanExpression,
       value: node.kind === ts.SyntaxKind.TrueKeyword
     }
   }
 
-  NullLiteralUnecmaify(
-    node: ts.NullLiteral
-  ): LiteralNullExpression {
+  NullLiteralUnecmaify(node: ts.NullLiteral): LiteralNullExpression {
     return {
       type: NodeType.LiteralNullExpression
     }
   }
 
-  NumericLiteralUnecmaify(
-    node: ts.NumericLiteral
-  ): LiteralNumericExpression {
+  NumericLiteralUnecmaify(node: ts.NumericLiteral): LiteralNumericExpression {
     return {
       type: NodeType.LiteralNumericExpression,
       value: +node.text
@@ -928,9 +891,7 @@ export default class Unecmaify {
     }
   }
 
-  StringLiteralUnecmaify(
-    node: ts.StringLiteral
-  ): LiteralStringExpression {
+  StringLiteralUnecmaify(node: ts.StringLiteral): LiteralStringExpression {
     return {
       type: NodeType.LiteralStringExpression,
       value: node.text
@@ -973,9 +934,7 @@ export default class Unecmaify {
     }
   }
 
-  ArrowFunctionUnecmaify(
-    node: ts.ArrowFunction
-  ): ArrowExpression {
+  ArrowFunctionUnecmaify(node: ts.ArrowFunction): ArrowExpression {
     if (ts.isBlock(node.body)) {
       return {
         type: NodeType.EagerArrowExpressionWithFunctionBody,
@@ -1122,9 +1081,7 @@ export default class Unecmaify {
     }
   }
 
-  CallExpressionUnecmaify(
-    node: ts.CallExpression
-  ): CallExpression {
+  CallExpressionUnecmaify(node: ts.CallExpression): CallExpression {
     return {
       type: NodeType.CallExpression,
       callee: this.ExpressionUnecmaify(node.expression),
@@ -1153,9 +1110,7 @@ export default class Unecmaify {
     }
   }
 
-  ClassExpressionUnecmaify(
-    node: ts.ClassExpression
-  ): ClassExpression {
+  ClassExpressionUnecmaify(node: ts.ClassExpression): ClassExpression {
     return {
       type: NodeType.ClassExpression,
       name: this.UnecmaifyOptional(
@@ -1185,9 +1140,7 @@ export default class Unecmaify {
     }
   }
 
-  FunctionExpressionUnecmaify(
-    node: ts.FunctionExpression
-  ): FunctionExpression {
+  FunctionExpressionUnecmaify(node: ts.FunctionExpression): FunctionExpression {
     return {
       type: NodeType.EagerFunctionExpression,
       name: this.UnecmaifyOptional(
@@ -1202,31 +1155,27 @@ export default class Unecmaify {
     }
   }
 
-  IdentifierUnecmaify(
-    node: ts.Identifier
-  ): IdentifierExpression {
+  IdentifierUnecmaify(node: ts.Identifier): IdentifierExpression {
     return {
       type: NodeType.IdentifierExpression,
       name: node.text
     }
   }
 
-  NewExpressionUnecmaify(
-    node: ts.NewExpression
-  ): NewExpression {
+  NewExpressionUnecmaify(node: ts.NewExpression): NewExpression {
     return {
       type: NodeType.NewExpression,
       callee: this.ExpressionUnecmaify(node.expression),
-      arguments: node.arguments ? this.UnecmaifyList(node.arguments, this.ExpressionUnecmaify) : []
+      arguments: node.arguments
+        ? this.UnecmaifyList(node.arguments, this.ExpressionUnecmaify)
+        : []
     }
   }
 
-  MetaPropertyUnecmaify(
-    node: ts.MetaProperty
-  ): NewTargetExpression {
+  MetaPropertyUnecmaify(node: ts.MetaProperty): NewTargetExpression {
     Assert(
       node.keywordToken === ts.SyntaxKind.NewKeyword &&
-      node.name.text === 'target'
+        node.name.text === 'target'
     )
     return {
       type: NodeType.NewTargetExpression
@@ -1261,7 +1210,10 @@ export default class Unecmaify {
   ): ObjectExpression {
     return {
       type: NodeType.ObjectExpression,
-      properties: this.UnecmaifyList(node.properties, this.ObjectLiteralElementLikeUnecmaify)
+      properties: this.UnecmaifyList(
+        node.properties,
+        this.ObjectLiteralElementLikeUnecmaify
+      )
     }
   }
 
@@ -1291,9 +1243,7 @@ export default class Unecmaify {
     throw new Error('Not implemented')
   }
 
-  ThisExpressionUnecmaify(
-    node: ts.ThisExpression
-  ): ThisExpression {
+  ThisExpressionUnecmaify(node: ts.ThisExpression): ThisExpression {
     return {
       type: NodeType.ThisExpression
     }
@@ -1314,9 +1264,7 @@ export default class Unecmaify {
     }
   }
 
-  AwaitExpressionUnecmaify(
-    node: ts.AwaitExpression
-  ): AwaitExpression {
+  AwaitExpressionUnecmaify(node: ts.AwaitExpression): AwaitExpression {
     return {
       type: NodeType.AwaitExpression,
       expression: this.ExpressionUnecmaify(node.expression)
@@ -1331,18 +1279,14 @@ export default class Unecmaify {
     }
   }
 
-  BreakStatementUnecmaify(
-    node: ts.BreakStatement
-  ): BreakStatement {
+  BreakStatementUnecmaify(node: ts.BreakStatement): BreakStatement {
     return {
       type: NodeType.BreakStatement,
       label: this.UnecmaifyOptional(node.label, x => x.text)
     }
   }
 
-  ContinueStatementUnecmaify(
-    node: ts.ContinueStatement
-  ): ContinueStatement {
+  ContinueStatementUnecmaify(node: ts.ContinueStatement): ContinueStatement {
     return {
       type: NodeType.ContinueStatement,
       label: this.UnecmaifyOptional(node.label, x => x.text)
@@ -1352,7 +1296,9 @@ export default class Unecmaify {
   MethodDefinitionListUnecmaify(
     nodes: ReadonlyArray<ts.ClassElement>
   ): FrozenArray<ClassElement> {
-    return this.UnecmaifyList(nodes, node => this.ClassElementUnecmaify(node, this.MethodDefinitionUnecmaify(node)))
+    return this.UnecmaifyList(nodes, node =>
+      this.ClassElementUnecmaify(node, this.MethodDefinitionUnecmaify(node))
+    )
   }
 
   ClassElementUnecmaify(
@@ -1366,9 +1312,7 @@ export default class Unecmaify {
     }
   }
 
-  MethodDefinitionUnecmaify(
-    node: ts.ClassElement
-  ): MethodDefinition {
+  MethodDefinitionUnecmaify(node: ts.ClassElement): MethodDefinition {
     switch (node.kind) {
       case ts.SyntaxKind.MethodDeclaration:
         return this.MethodDeclarationUnecmaify(node as ts.MethodDeclaration)
@@ -1379,9 +1323,7 @@ export default class Unecmaify {
     }
   }
 
-  ClassDeclarationUnecmaify(
-    node: ts.ClassDeclaration
-  ): ClassDeclaration {
+  ClassDeclarationUnecmaify(node: ts.ClassDeclaration): ClassDeclaration {
     return {
       type: NodeType.ClassDeclaration,
       name: this.IdentifierToBindingIdentifierUnecmaify(AssertDef(node.name)),
@@ -1393,17 +1335,13 @@ export default class Unecmaify {
     }
   }
 
-  DebuggerStatementUnecmaify(
-    node: ts.DebuggerStatement
-  ): DebuggerStatement {
+  DebuggerStatementUnecmaify(node: ts.DebuggerStatement): DebuggerStatement {
     return {
       type: NodeType.DebuggerStatement
     }
   }
 
-  EmptyStatementUnecmaify(
-    node: ts.EmptyStatement
-  ): EmptyStatement {
+  EmptyStatementUnecmaify(node: ts.EmptyStatement): EmptyStatement {
     return {
       type: NodeType.EmptyStatement
     }
@@ -1460,7 +1398,10 @@ export default class Unecmaify {
       type: NodeType.IfStatement,
       test: this.ExpressionUnecmaify(node.expression),
       consequent: this.StatementUnecmaify(node.thenStatement),
-      alternate: this.UnecmaifyOptional(node.elseStatement, this.StatementUnecmaify)
+      alternate: this.UnecmaifyOptional(
+        node.elseStatement,
+        this.StatementUnecmaify
+      )
     }
   }
 
@@ -1549,19 +1490,23 @@ export default class Unecmaify {
   ExpressionToAssignmentTargetOrAssignmentTargetWithInitializerListUnecmaify(
     nodes: ReadonlyArray<ts.Expression>
   ): FrozenArray<AssignmentTarget | AssignmentTargetWithInitializer> {
-    return this.UnecmaifyList(nodes, this.ExpressionToAssignmentTargetOrAssignmentTargetWithInitializerUnecmaify)
+    return this.UnecmaifyList(
+      nodes,
+      this
+        .ExpressionToAssignmentTargetOrAssignmentTargetWithInitializerUnecmaify
+    )
   }
 
-  ExpressionToAssignmentTargetUnecmaify(
-    node: ts.Expression
-  ): AssignmentTarget {
+  ExpressionToAssignmentTargetUnecmaify(node: ts.Expression): AssignmentTarget {
     switch (node.kind) {
       case ts.SyntaxKind.ObjectLiteralExpression:
       case ts.SyntaxKind.ArrayLiteralExpression:
       case ts.SyntaxKind.Identifier:
       case ts.SyntaxKind.ElementAccessExpression:
       case ts.SyntaxKind.PropertyAccessExpression:
-        return this.AssignmentTargetUnecmaify(node as AssignmentTargetEcmaifyType)
+        return this.AssignmentTargetUnecmaify(
+          node as AssignmentTargetEcmaifyType
+        )
       default:
         throw new Error('Unecpected kind')
     }
@@ -1580,7 +1525,9 @@ export default class Unecmaify {
       case ts.SyntaxKind.Identifier:
       case ts.SyntaxKind.ElementAccessExpression:
       case ts.SyntaxKind.PropertyAccessExpression:
-        return this.AssignmentTargetUnecmaify(node as AssignmentTargetEcmaifyType)
+        return this.AssignmentTargetUnecmaify(
+          node as AssignmentTargetEcmaifyType
+        )
       default:
         throw new Error('Unecpected kind')
     }
@@ -1646,9 +1593,13 @@ export default class Unecmaify {
   ): AssignmentTargetPattern {
     switch (node.kind) {
       case ts.SyntaxKind.ObjectLiteralExpression:
-        return this.ObjectLiteralExpressionToObjectAssignmentTargetUnecmaify(node)
+        return this.ObjectLiteralExpressionToObjectAssignmentTargetUnecmaify(
+          node
+        )
       case ts.SyntaxKind.ArrayLiteralExpression:
-        return this.ArrayLiteralExpressionToObjectAssignmentTargetUnecmaify(node)
+        return this.ArrayLiteralExpressionToObjectAssignmentTargetUnecmaify(
+          node
+        )
     }
   }
 
@@ -1748,7 +1699,9 @@ export default class Unecmaify {
       case ts.SyntaxKind.Identifier:
       case ts.SyntaxKind.ElementAccessExpression:
       case ts.SyntaxKind.PropertyAccessExpression:
-        return this.AssignmentTargetUnecmaify(node as AssignmentTargetEcmaifyType)
+        return this.AssignmentTargetUnecmaify(
+          node as AssignmentTargetEcmaifyType
+        )
       default:
         throw new Error('Unexpected kind')
     }
@@ -1771,9 +1724,7 @@ export default class Unecmaify {
     }
   }
 
-  ForInStatementUnecmaify(
-    node: ts.ForInStatement
-  ): ForInStatement {
+  ForInStatementUnecmaify(node: ts.ForInStatement): ForInStatement {
     return {
       type: NodeType.ForInStatement,
       left: this.ForInitializerUnecmaify(node.initializer),
@@ -1782,9 +1733,7 @@ export default class Unecmaify {
     }
   }
 
-  ForOfStatementUnecmaify(
-    node: ts.ForOfStatement
-  ): ForOfStatement {
+  ForOfStatementUnecmaify(node: ts.ForOfStatement): ForOfStatement {
     return {
       type: NodeType.ForOfStatement,
       left: this.ForInitializerUnecmaify(node.initializer),
@@ -1801,14 +1750,15 @@ export default class Unecmaify {
         this.ForInitializerToVariableDeclarationOrExpression
       ),
       test: this.UnecmaifyOptional(node.condition, this.ExpressionUnecmaify),
-      update: this.UnecmaifyOptional(node.incrementor, this.ExpressionUnecmaify),
+      update: this.UnecmaifyOptional(
+        node.incrementor,
+        this.ExpressionUnecmaify
+      ),
       body: this.StatementUnecmaify(node.statement)
     }
   }
 
-  WhileStatementUnecmaify(
-    node: ts.WhileStatement
-  ): WhileStatement {
+  WhileStatementUnecmaify(node: ts.WhileStatement): WhileStatement {
     return {
       type: NodeType.WhileStatement,
       test: this.ExpressionUnecmaify(node.expression),
@@ -1816,9 +1766,7 @@ export default class Unecmaify {
     }
   }
 
-  LabeledStatementUnecmaify(
-    node: ts.LabeledStatement
-  ): LabelledStatement {
+  LabeledStatementUnecmaify(node: ts.LabeledStatement): LabelledStatement {
     return {
       type: NodeType.LabelledStatement,
       label: node.label.text,
@@ -1826,12 +1774,13 @@ export default class Unecmaify {
     }
   }
 
-  ReturnStatementUnecmaify(
-    node: ts.ReturnStatement
-  ): ReturnStatement {
+  ReturnStatementUnecmaify(node: ts.ReturnStatement): ReturnStatement {
     return {
       type: NodeType.ReturnStatement,
-      expression: this.UnecmaifyOptional(node.expression, this.ExpressionUnecmaify)
+      expression: this.UnecmaifyOptional(
+        node.expression,
+        this.ExpressionUnecmaify
+      )
     }
   }
 
@@ -1877,9 +1826,7 @@ export default class Unecmaify {
     }
   }
 
-  ThrowStatementUnecmaify(
-    node: ts.ThrowStatement
-  ): ThrowStatement {
+  ThrowStatementUnecmaify(node: ts.ThrowStatement): ThrowStatement {
     return {
       type: NodeType.ThrowStatement,
       expression: this.ExpressionUnecmaify(AssertDef(node.expression))
@@ -1893,7 +1840,10 @@ export default class Unecmaify {
       return {
         type: NodeType.TryFinallyStatement,
         body: this.BlockUnecmaify(node.tryBlock),
-        catchClause: this.UnecmaifyOptional(node.catchClause, this.CatchClauseUnecmaify),
+        catchClause: this.UnecmaifyOptional(
+          node.catchClause,
+          this.CatchClauseUnecmaify
+        ),
         finalizer: this.BlockUnecmaify(AssertDef(node.finallyBlock))
       }
     } else {
@@ -1905,9 +1855,7 @@ export default class Unecmaify {
     }
   }
 
-  VariableStatementUnecmaify(
-    node: ts.VariableStatement
-  ): VariableDeclaration {
+  VariableStatementUnecmaify(node: ts.VariableStatement): VariableDeclaration {
     return {
       type: NodeType.VariableDeclaration,
       kind: VariableDeclarationKind.Var,
@@ -1918,7 +1866,10 @@ export default class Unecmaify {
   VariableDeclarationListUnecmaify(
     node: ts.VariableDeclarationList
   ): Array<VariableDeclarator> {
-    return this.UnecmaifyList(node.declarations, this.VariableDeclarationUnecmaify)
+    return this.UnecmaifyList(
+      node.declarations,
+      this.VariableDeclarationUnecmaify
+    )
   }
 
   IdentifierToBindingIdentifierUnecmaify(
@@ -1930,9 +1881,7 @@ export default class Unecmaify {
     }
   }
 
-  BindingPatternUnecmaify(
-    node: ts.BindingPattern
-  ): BindingPattern {
+  BindingPatternUnecmaify(node: ts.BindingPattern): BindingPattern {
     switch (node.kind) {
       case ts.SyntaxKind.ObjectBindingPattern:
         return this.ObjectBindingPatternUnecmaify(node)
@@ -1961,9 +1910,7 @@ export default class Unecmaify {
     }
   }
 
-  WithStatementUnecmaify(
-    node: ts.WithStatement
-  ): WithStatement {
+  WithStatementUnecmaify(node: ts.WithStatement): WithStatement {
     return {
       type: NodeType.WithStatement,
       _object: this.ExpressionUnecmaify(node.expression),

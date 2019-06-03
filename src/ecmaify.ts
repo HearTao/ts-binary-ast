@@ -152,18 +152,12 @@ import * as ts from 'typescript'
 import { isSwitchCase, isSpreadElement, append, addModifiers } from './utils'
 
 export default class Ecmaify {
-  EcmaifyOption<T, U>(
-    v: T | undefined,
-    cb: (v: T) => U
-  ): U | undefined {
+  EcmaifyOption<T, U>(v: T | undefined, cb: (v: T) => U): U | undefined {
     if (v === null || v === undefined) return undefined
     return cb.call(this, v)
   }
 
-  EcmaifyList<T, U>(
-    v: ReadonlyArray<T>,
-    cb: (v: T) => U
-  ): U[] {
+  EcmaifyList<T, U>(v: ReadonlyArray<T>, cb: (v: T) => U): U[] {
     return v.map(cb.bind(this))
   }
 
@@ -180,9 +174,13 @@ export default class Ecmaify {
       case NodeType.AssertedVarScope:
         return this.AssertedVarScopeEcmaify(node as AssertedVarScope)
       case NodeType.AssertedParameterScope:
-        return this.AssertedParameterScopeEcmaify(node as AssertedParameterScope)
+        return this.AssertedParameterScopeEcmaify(
+          node as AssertedParameterScope
+        )
       case NodeType.AssertedBoundNamesScope:
-        return this.AssertedBoundNamesScopeEcmaify(node as AssertedBoundNamesScope)
+        return this.AssertedBoundNamesScopeEcmaify(
+          node as AssertedBoundNamesScope
+        )
       case NodeType.AssertedDeclaredName:
         return this.AssertedDeclaredNameEcmaify(node as AssertedDeclaredName)
       case NodeType.AssertedPositionalParameterName:
@@ -198,7 +196,9 @@ export default class Ecmaify {
       case NodeType.BindingIdentifier:
         return this.BindingIdentifierEcmaify(node as BindingIdentifier)
       case NodeType.BindingWithInitializer:
-        return this.BindingWithInitializerEcmaify(node as BindingWithInitializer)
+        return this.BindingWithInitializerEcmaify(
+          node as BindingWithInitializer
+        )
       case NodeType.AssignmentTargetIdentifier:
         return this.AssignmentTargetIdentifierEcmaify(
           node as AssignmentTargetIdentifier
@@ -218,7 +218,9 @@ export default class Ecmaify {
           node as BindingPropertyIdentifier
         )
       case NodeType.BindingPropertyProperty:
-        return this.BindingPropertyPropertyEcmaify(node as BindingPropertyProperty)
+        return this.BindingPropertyPropertyEcmaify(
+          node as BindingPropertyProperty
+        )
       case NodeType.ObjectBinding:
         return this.ObjectBindingEcmaify(node as ObjectBinding)
       case NodeType.AssignmentTargetWithInitializer:
@@ -236,7 +238,9 @@ export default class Ecmaify {
           node as AssignmentTargetPropertyProperty
         )
       case NodeType.ObjectAssignmentTarget:
-        return this.ObjectAssignmentTargetEcmaify(node as ObjectAssignmentTarget)
+        return this.ObjectAssignmentTargetEcmaify(
+          node as ObjectAssignmentTarget
+        )
       case NodeType.ClassExpression:
         return this.ClassExpressionEcmaify(node as ClassExpression)
       case NodeType.ClassDeclaration:
@@ -290,7 +294,9 @@ export default class Ecmaify {
       case NodeType.LiteralPropertyName:
         return this.LiteralPropertyNameEcmaify(node as LiteralPropertyName)
       case NodeType.LiteralBooleanExpression:
-        return this.LiteralBooleanExpressionEcmaify(node as LiteralBooleanExpression)
+        return this.LiteralBooleanExpressionEcmaify(
+          node as LiteralBooleanExpression
+        )
       case NodeType.LiteralInfinityExpression:
         return this.LiteralInfinityExpressionEcmaify(
           node as LiteralInfinityExpression
@@ -298,11 +304,17 @@ export default class Ecmaify {
       case NodeType.LiteralNullExpression:
         return this.LiteralNullExpressionEcmaify(node as LiteralNullExpression)
       case NodeType.LiteralNumericExpression:
-        return this.LiteralNumericExpressionEcmaify(node as LiteralNumericExpression)
+        return this.LiteralNumericExpressionEcmaify(
+          node as LiteralNumericExpression
+        )
       case NodeType.LiteralRegExpExpression:
-        return this.LiteralRegExpExpressionEcmaify(node as LiteralRegExpExpression)
+        return this.LiteralRegExpExpressionEcmaify(
+          node as LiteralRegExpExpression
+        )
       case NodeType.LiteralStringExpression:
-        return this.LiteralStringExpressionEcmaify(node as LiteralStringExpression)
+        return this.LiteralStringExpressionEcmaify(
+          node as LiteralStringExpression
+        )
       case NodeType.ArrayExpression:
         return this.ArrayExpressionEcmaify(node as ArrayExpression)
       case NodeType.EagerArrowExpressionWithFunctionBody:
@@ -340,13 +352,19 @@ export default class Ecmaify {
           node as CompoundAssignmentExpression
         )
       case NodeType.ComputedMemberExpression:
-        return this.ComputedMemberExpressionEcmaify(node as ComputedMemberExpression)
+        return this.ComputedMemberExpressionEcmaify(
+          node as ComputedMemberExpression
+        )
       case NodeType.ConditionalExpression:
         return this.ConditionalExpressionEcmaify(node as ConditionalExpression)
       case NodeType.EagerFunctionExpression:
-        return this.EagerFunctionExpressionEcmaify(node as EagerFunctionExpression)
+        return this.EagerFunctionExpressionEcmaify(
+          node as EagerFunctionExpression
+        )
       case NodeType.LazyFunctionExpression:
-        return this.LazyFunctionExpressionEcmaify(node as LazyFunctionExpression)
+        return this.LazyFunctionExpressionEcmaify(
+          node as LazyFunctionExpression
+        )
       case NodeType.FunctionExpressionContents:
         return this.FunctionExpressionContentsEcmaify(
           node as FunctionExpressionContents
@@ -362,7 +380,9 @@ export default class Ecmaify {
       case NodeType.UnaryExpression:
         return this.UnaryExpressionEcmaify(node as UnaryExpression)
       case NodeType.StaticMemberExpression:
-        return this.StaticMemberExpressionEcmaify(node as StaticMemberExpression)
+        return this.StaticMemberExpressionEcmaify(
+          node as StaticMemberExpression
+        )
       case NodeType.TemplateExpression:
         return this.TemplateExpressionEcmaify(node as TemplateExpression)
       case NodeType.ThisExpression:
@@ -426,11 +446,17 @@ export default class Ecmaify {
       case NodeType.FormalParameters:
         return this.FormalParametersEcmaify(node as FormalParameters)
       case NodeType.EagerFunctionDeclaration:
-        return this.EagerFunctionDeclarationEcmaify(node as EagerFunctionDeclaration)
+        return this.EagerFunctionDeclarationEcmaify(
+          node as EagerFunctionDeclaration
+        )
       case NodeType.LazyFunctionDeclaration:
-        return this.LazyFunctionDeclarationEcmaify(node as LazyFunctionDeclaration)
+        return this.LazyFunctionDeclarationEcmaify(
+          node as LazyFunctionDeclaration
+        )
       case NodeType.FunctionOrMethodContents:
-        return this.FunctionOrMethodContentsEcmaify(node as FunctionOrMethodContents)
+        return this.FunctionOrMethodContentsEcmaify(
+          node as FunctionOrMethodContents
+        )
       case NodeType.Script:
         return this.ScriptEcmaify(node as Script)
       case NodeType.SpreadElement:
@@ -580,22 +606,16 @@ export default class Ecmaify {
   AssertedBlockScopeEcmaify(node: AssertedBlockScope): any {
     throw new Error('Not Implemented')
   }
-  AssertedScriptGlobalScopeEcmaify(
-    node: AssertedScriptGlobalScope
-  ): any {
+  AssertedScriptGlobalScopeEcmaify(node: AssertedScriptGlobalScope): any {
     throw new Error('Not Implemented')
   }
   AssertedVarScopeEcmaify(node: AssertedVarScope): any {
     throw new Error('Not Implemented')
   }
-  AssertedParameterScopeEcmaify(
-    node: AssertedParameterScope
-  ): any {
+  AssertedParameterScopeEcmaify(node: AssertedParameterScope): any {
     throw new Error('Not Implemented')
   }
-  AssertedBoundNamesScopeEcmaify(
-    node: AssertedBoundNamesScope
-  ): any {
+  AssertedBoundNamesScopeEcmaify(node: AssertedBoundNamesScope): any {
     throw new Error('Not Implemented')
   }
   AssertedDeclaredNameEcmaify(node: AssertedDeclaredName): any {
@@ -606,20 +626,14 @@ export default class Ecmaify {
   ): any {
     throw new Error('Not Implemented')
   }
-  AssertedRestParameterNameEcmaify(
-    node: AssertedRestParameterName
-  ): any {
+  AssertedRestParameterNameEcmaify(node: AssertedRestParameterName): any {
     throw new Error('Not Implemented')
   }
-  AssertedParameterNameEcmaify(
-    node: AssertedParameterName
-  ): any {
+  AssertedParameterNameEcmaify(node: AssertedParameterName): any {
     throw new Error('Not Implemented')
   }
 
-  BindingIdentifierEcmaify(
-    node: BindingIdentifier
-  ): ts.Identifier {
+  BindingIdentifierEcmaify(node: BindingIdentifier): ts.Identifier {
     return ts.createIdentifier(node.name)
   }
 
@@ -679,9 +693,7 @@ export default class Ecmaify {
     }
   }
 
-  ArrayBindingEcmaify(
-    node: ArrayBinding
-  ): ts.ArrayBindingPattern {
+  ArrayBindingEcmaify(node: ArrayBinding): ts.ArrayBindingPattern {
     return ts.createArrayBindingPattern(
       this.BindingOrBindingWithInitializerListEcmaify(node.elements).concat([
         this.BindingOrBindingWithInitializerEcmaify(node.rest!)
@@ -720,9 +732,7 @@ export default class Ecmaify {
     })
   }
 
-  ObjectBindingEcmaify(
-    node: ObjectBinding
-  ): ts.ObjectBindingPattern {
+  ObjectBindingEcmaify(node: ObjectBinding): ts.ObjectBindingPattern {
     return ts.createObjectBindingPattern(
       this.BindingPropertyListEcmaify(node.properties)
     )
@@ -754,7 +764,10 @@ export default class Ecmaify {
     const rest = this.EcmaifyOption(node.rest, this.AssignmentTargetEcmaify)
     return ts.createArrayLiteral(
       append<ts.Expression>(
-        this.EcmaifyList(node.elements, this.AssignmentTargetOrAssignmentTargetWithInitializerEcmaify),
+        this.EcmaifyList(
+          node.elements,
+          this.AssignmentTargetOrAssignmentTargetWithInitializerEcmaify
+        ),
         rest && ts.createSpread(rest)
       )
     )
@@ -773,13 +786,13 @@ export default class Ecmaify {
   ): ts.PropertyAssignment {
     return ts.createPropertyAssignment(
       this.PropertyNameEcmaify(node.name),
-      this.AssignmentTargetOrAssignmentTargetWithInitializerEcmaify(node.binding)
+      this.AssignmentTargetOrAssignmentTargetWithInitializerEcmaify(
+        node.binding
+      )
     )
   }
 
-  AssignmentTargetPropertyEcmaify(
-    node: AssignmentTargetProperty
-  ) {
+  AssignmentTargetPropertyEcmaify(node: AssignmentTargetProperty) {
     switch (node.type) {
       case NodeType.AssignmentTargetPropertyIdentifier:
         return this.AssignmentTargetPropertyIdentifierEcmaify(node)
@@ -798,31 +811,34 @@ export default class Ecmaify {
 
   HeritageClauseEcmaify(node: Expression): ts.HeritageClause {
     return ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
-      ts.createExpressionWithTypeArguments(undefined, this.ExpressionEcmaify(node))
+      ts.createExpressionWithTypeArguments(
+        undefined,
+        this.ExpressionEcmaify(node)
+      )
     ])
   }
 
-  ClassExpressionEcmaify(
-    node: ClassExpression
-  ): ts.ClassExpression {
+  ClassExpressionEcmaify(node: ClassExpression): ts.ClassExpression {
     return ts.createClassExpression(
       undefined,
       this.EcmaifyOption(node.name, this.BindingIdentifierEcmaify),
       undefined,
-      this.EcmaifyOption(node.super, node => [this.HeritageClauseEcmaify(node)]),
+      this.EcmaifyOption(node.super, node => [
+        this.HeritageClauseEcmaify(node)
+      ]),
       this.EcmaifyList(node.elements, this.ClassElementEcmaify)
     )
   }
 
-  ClassDeclarationEcmaify(
-    node: ClassDeclaration
-  ): ts.ClassDeclaration {
+  ClassDeclarationEcmaify(node: ClassDeclaration): ts.ClassDeclaration {
     return ts.createClassDeclaration(
       undefined,
       undefined,
       this.BindingIdentifierEcmaify(node.name),
       undefined,
-      this.EcmaifyOption(node.super, node => [this.HeritageClauseEcmaify(node)]),
+      this.EcmaifyOption(node.super, node => [
+        this.HeritageClauseEcmaify(node)
+      ]),
       this.EcmaifyList(node.elements, this.ClassElementEcmaify)
     )
   }
@@ -855,13 +871,18 @@ export default class Ecmaify {
   }
 
   ModuleEcmaify(node: Module) {
-    return this.EcmaifyList(node.items, this.ImportDeclarationOrExportDeclarationOrStatementEcmaify)
+    return this.EcmaifyList(
+      node.items,
+      this.ImportDeclarationOrExportDeclarationOrStatementEcmaify
+    )
   }
 
   NamedImportBindingsEcmaify(
     nodes: ReadonlyArray<ImportSpecifier>
   ): ts.NamedImports {
-    return ts.createNamedImports(this.EcmaifyList(nodes, this.ImportSpecifierEcmaify))
+    return ts.createNamedImports(
+      this.EcmaifyList(nodes, this.ImportSpecifierEcmaify)
+    )
   }
 
   ImportClauseImportEcmaify(node: Import): ts.ImportClause {
@@ -871,18 +892,16 @@ export default class Ecmaify {
     )
   }
 
-  ImportClauseImportNamespaceEcmaify(
-    node: ImportNamespace
-  ): ts.ImportClause {
+  ImportClauseImportNamespaceEcmaify(node: ImportNamespace): ts.ImportClause {
     return ts.createImportClause(
       this.EcmaifyOption(node.defaultBinding, this.BindingIdentifierEcmaify),
-      ts.createNamespaceImport(this.BindingIdentifierEcmaify(node.namespaceBinding))
+      ts.createNamespaceImport(
+        this.BindingIdentifierEcmaify(node.namespaceBinding)
+      )
     )
   }
 
-  ImportClauseEcmaify(
-    node: Import | ImportNamespace
-  ): ts.ImportClause {
+  ImportClauseEcmaify(node: Import | ImportNamespace): ts.ImportClause {
     switch (node.type) {
       case NodeType.Import:
         return this.ImportClauseImportEcmaify(node)
@@ -900,9 +919,7 @@ export default class Ecmaify {
     )
   }
 
-  ImportNamespaceEcmaify(
-    node: ImportNamespace
-  ): ts.ImportDeclaration {
+  ImportNamespaceEcmaify(node: ImportNamespace): ts.ImportDeclaration {
     return ts.createImportDeclaration(
       undefined,
       undefined,
@@ -924,18 +941,14 @@ export default class Ecmaify {
     return ts.createIdentifier(node)
   }
 
-  ImportSpecifierEcmaify(
-    node: ImportSpecifier
-  ): ts.ImportSpecifier {
+  ImportSpecifierEcmaify(node: ImportSpecifier): ts.ImportSpecifier {
     return ts.createImportSpecifier(
       this.IdentifierNameEcmaify(node.name),
       this.BindingIdentifierEcmaify(node.binding)
     )
   }
 
-  ExportAllFromEcmaify(
-    node: ExportAllFrom
-  ): ts.ExportDeclaration {
+  ExportAllFromEcmaify(node: ExportAllFrom): ts.ExportDeclaration {
     return ts.createExportDeclaration(
       undefined,
       undefined,
@@ -947,7 +960,9 @@ export default class Ecmaify {
   NamedExportsEcmaify(
     nodes: ReadonlyArray<ExportFromSpecifier | ExportLocalSpecifier>
   ): ts.NamedExports {
-    return ts.createNamedExports(this.EcmaifyList(nodes, this.ExportSpecifierEcmaify))
+    return ts.createNamedExports(
+      this.EcmaifyList(nodes, this.ExportSpecifierEcmaify)
+    )
   }
 
   ExportFromEcmaify(node: ExportFrom): ts.ExportDeclaration {
@@ -959,9 +974,7 @@ export default class Ecmaify {
     )
   }
 
-  ExportLocalsEcmaify(
-    node: ExportLocals
-  ): ts.ExportDeclaration {
+  ExportLocalsEcmaify(node: ExportLocals): ts.ExportDeclaration {
     return ts.createExportDeclaration(
       undefined,
       undefined,
@@ -1034,24 +1047,18 @@ export default class Ecmaify {
     }
   }
 
-  ExportFromSpecifierEcmaify(
-    node: ExportFromSpecifier
-  ): ts.ExportSpecifier {
+  ExportFromSpecifierEcmaify(node: ExportFromSpecifier): ts.ExportSpecifier {
     return ts.createExportSpecifier(node.exportedName, node.name)
   }
 
-  ExportLocalSpecifierEcmaify(
-    node: ExportLocalSpecifier
-  ): ts.ExportSpecifier {
+  ExportLocalSpecifierEcmaify(node: ExportLocalSpecifier): ts.ExportSpecifier {
     return ts.createExportSpecifier(
       node.exportedName,
       this.IdentifierExpressionEcmaify(node.name)
     )
   }
 
-  ExportSpecifierEcmaify(
-    node: ExportFromSpecifier | ExportLocalSpecifier
-  ) {
+  ExportSpecifierEcmaify(node: ExportFromSpecifier | ExportLocalSpecifier) {
     switch (node.type) {
       case NodeType.ExportFromSpecifier:
         return this.ExportFromSpecifierEcmaify(node)
@@ -1075,9 +1082,7 @@ export default class Ecmaify {
     }
   }
 
-  uniformMethodEcmaify(
-    node: EagerMethod | LazyMethod
-  ): ts.MethodDeclaration {
+  uniformMethodEcmaify(node: EagerMethod | LazyMethod): ts.MethodDeclaration {
     const contents = this.MethodContentsEcmaify(node.contents)
     addModifiers(
       contents,
@@ -1098,29 +1103,21 @@ export default class Ecmaify {
     return this.uniformMethodEcmaify(node)
   }
 
-  uniformGetterEcmaify(
-    node: Getter
-  ): ts.GetAccessorDeclaration {
+  uniformGetterEcmaify(node: Getter): ts.GetAccessorDeclaration {
     const contents = this.GetterContentsEcmaify(node.contents)
     contents.name = this.PropertyNameEcmaify(node.name)
     return contents
   }
 
-  EagerGetterEcmaify(
-    node: EagerGetter
-  ): ts.GetAccessorDeclaration {
+  EagerGetterEcmaify(node: EagerGetter): ts.GetAccessorDeclaration {
     return this.uniformGetterEcmaify(node)
   }
 
-  LazyGetterEcmaify(
-    node: LazyGetter
-  ): ts.GetAccessorDeclaration {
+  LazyGetterEcmaify(node: LazyGetter): ts.GetAccessorDeclaration {
     return this.uniformGetterEcmaify(node)
   }
 
-  GetterContentsEcmaify(
-    node: GetterContents
-  ): ts.GetAccessorDeclaration {
+  GetterContentsEcmaify(node: GetterContents): ts.GetAccessorDeclaration {
     return ts.createGetAccessor(
       undefined,
       undefined,
@@ -1131,30 +1128,22 @@ export default class Ecmaify {
     )
   }
 
-  uniformSetterEcmaify(
-    node: Setter
-  ): ts.SetAccessorDeclaration {
+  uniformSetterEcmaify(node: Setter): ts.SetAccessorDeclaration {
     const contents = this.SetterContentsEcmaify(node.contents)
     contents.name = this.PropertyNameEcmaify(node.name)
 
     return contents
   }
 
-  EagerSetterEcmaify(
-    node: EagerSetter
-  ): ts.SetAccessorDeclaration {
+  EagerSetterEcmaify(node: EagerSetter): ts.SetAccessorDeclaration {
     return this.uniformSetterEcmaify(node)
   }
 
-  LazySetterEcmaify(
-    node: LazySetter
-  ): ts.SetAccessorDeclaration {
+  LazySetterEcmaify(node: LazySetter): ts.SetAccessorDeclaration {
     return this.uniformSetterEcmaify(node)
   }
 
-  SetterContentsEcmaify(
-    node: SetterContents
-  ): ts.SetAccessorDeclaration {
+  SetterContentsEcmaify(node: SetterContents): ts.SetAccessorDeclaration {
     return ts.createSetAccessor(
       undefined,
       undefined,
@@ -1173,9 +1162,7 @@ export default class Ecmaify {
     }
   }
 
-  DataPropertyEcmaify(
-    node: DataProperty
-  ): ts.PropertyAssignment {
+  DataPropertyEcmaify(node: DataProperty): ts.PropertyAssignment {
     return ts.createPropertyAssignment(
       this.PropertyNameEcmaify(node.name),
       this.ExpressionEcmaify(node.expression)
@@ -1192,12 +1179,12 @@ export default class Ecmaify {
   ComputedPropertyNameEcmaify(
     node: ComputedPropertyName
   ): ts.ComputedPropertyName {
-    return ts.createComputedPropertyName(this.ExpressionEcmaify(node.expression))
+    return ts.createComputedPropertyName(
+      this.ExpressionEcmaify(node.expression)
+    )
   }
 
-  LiteralPropertyNameEcmaify(
-    node: LiteralPropertyName
-  ): ts.Identifier {
+  LiteralPropertyNameEcmaify(node: LiteralPropertyName): ts.Identifier {
     return ts.createIdentifier(node.value)
   }
 
@@ -1213,9 +1200,7 @@ export default class Ecmaify {
     return ts.createLiteral(Infinity)
   }
 
-  LiteralNullExpressionEcmaify(
-    node: LiteralNullExpression
-  ): ts.NullLiteral {
+  LiteralNullExpressionEcmaify(node: LiteralNullExpression): ts.NullLiteral {
     return ts.createNull()
   }
 
@@ -1249,9 +1234,7 @@ export default class Ecmaify {
     })
   }
 
-  ArrayExpressionEcmaify(
-    node: ArrayExpression
-  ): ts.ArrayLiteralExpression {
+  ArrayExpressionEcmaify(node: ArrayExpression): ts.ArrayLiteralExpression {
     return ts.createArrayLiteral(
       this.SpreadElementOrExpressionListEcmaify(node.elements)
     )
@@ -1286,7 +1269,9 @@ export default class Ecmaify {
   uniformArrowExpressionWithExpressionEcmaify(
     node: EagerArrowExpressionWithExpression | LazyArrowExpressionWithExpression
   ): ts.ArrowFunction {
-    const contents = this.ArrowExpressionContentsWithExpressionEcmaify(node.contents)
+    const contents = this.ArrowExpressionContentsWithExpressionEcmaify(
+      node.contents
+    )
     contents.asteriskToken = node.isAsync
       ? ts.createToken(ts.SyntaxKind.AsteriskToken)
       : undefined
@@ -1331,18 +1316,14 @@ export default class Ecmaify {
     )
   }
 
-  AssignmentExpressionEcmaify(
-    node: AssignmentExpression
-  ): ts.BinaryExpression {
+  AssignmentExpressionEcmaify(node: AssignmentExpression): ts.BinaryExpression {
     return ts.createAssignment(
       this.AssignmentTargetEcmaify(node.binding),
       this.ExpressionEcmaify(node.expression)
     )
   }
 
-  BinaryOperatorEcmaify(
-    node: BinaryOperator
-  ): ts.BinaryOperator {
+  BinaryOperatorEcmaify(node: BinaryOperator): ts.BinaryOperator {
     switch (node) {
       case BinaryOperator.Comma:
         return ts.SyntaxKind.CommaToken
@@ -1397,9 +1378,7 @@ export default class Ecmaify {
     }
   }
 
-  BinaryExpressionEcmaify(
-    node: BinaryExpression
-  ): ts.BinaryExpression {
+  BinaryExpressionEcmaify(node: BinaryExpression): ts.BinaryExpression {
     return ts.createBinary(
       this.ExpressionEcmaify(node.left),
       this.BinaryOperatorEcmaify(node.operator),
@@ -1533,9 +1512,7 @@ export default class Ecmaify {
     )
   }
 
-  IdentifierExpressionEcmaify(
-    node: IdentifierExpression
-  ): ts.Identifier {
+  IdentifierExpressionEcmaify(node: IdentifierExpression): ts.Identifier {
     return ts.createIdentifier(node.name)
   }
 
@@ -1547,18 +1524,14 @@ export default class Ecmaify {
     )
   }
 
-  NewTargetExpressionEcmaify(
-    node: NewTargetExpression
-  ): ts.MetaProperty {
+  NewTargetExpressionEcmaify(node: NewTargetExpression): ts.MetaProperty {
     return ts.createMetaProperty(
       ts.SyntaxKind.NewKeyword,
       ts.createIdentifier('target')
     )
   }
 
-  MethodContentsEcmaify(
-    node: FunctionOrMethodContents
-  ): ts.MethodDeclaration {
+  MethodContentsEcmaify(node: FunctionOrMethodContents): ts.MethodDeclaration {
     return ts.createMethod(
       undefined,
       undefined,
@@ -1635,10 +1608,10 @@ export default class Ecmaify {
     })
   }
 
-  ObjectExpressionEcmaify(
-    node: ObjectExpression
-  ): ts.ObjectLiteralExpression {
-    return ts.createObjectLiteral(this.ObjectPropertyListEcmaify(node.properties))
+  ObjectExpressionEcmaify(node: ObjectExpression): ts.ObjectLiteralExpression {
+    return ts.createObjectLiteral(
+      this.ObjectPropertyListEcmaify(node.properties)
+    )
   }
 
   UnaryOperatorEcmaify(
@@ -1660,9 +1633,7 @@ export default class Ecmaify {
     }
   }
 
-  UnaryExpressionEcmaify(
-    node: UnaryExpression
-  ): ts.UnaryExpression {
+  UnaryExpressionEcmaify(node: UnaryExpression): ts.UnaryExpression {
     switch (node.operator) {
       case UnaryOperator.TypeOf:
         return ts.createTypeOf(this.ExpressionEcmaify(node.operand))
@@ -1693,15 +1664,11 @@ export default class Ecmaify {
     throw new Error('Not Implemented')
   }
 
-  ThisExpressionEcmaify(
-    node: ThisExpression
-  ): ts.ThisExpression {
+  ThisExpressionEcmaify(node: ThisExpression): ts.ThisExpression {
     return ts.createThis()
   }
 
-  UpdateOperatorEcmaify(
-    node: UpdateOperator
-  ): ts.PostfixUnaryOperator {
+  UpdateOperatorEcmaify(node: UpdateOperator): ts.PostfixUnaryOperator {
     switch (node) {
       case UpdateOperator.PlusPlus:
         return ts.SyntaxKind.PlusPlusToken
@@ -1710,9 +1677,7 @@ export default class Ecmaify {
     }
   }
 
-  UpdateExpressionEcmaify(
-    node: UpdateExpression
-  ): ts.UpdateExpression {
+  UpdateExpressionEcmaify(node: UpdateExpression): ts.UpdateExpression {
     if (node.isPrefix) {
       return ts.createPrefix(
         this.UpdateOperatorEcmaify(node.operator),
@@ -1726,56 +1691,42 @@ export default class Ecmaify {
     }
   }
 
-  YieldExpressionEcmaify(
-    node: YieldExpression
-  ): ts.YieldExpression {
-    return ts.createYield(this.EcmaifyOption(node.expression, this.ExpressionEcmaify))
+  YieldExpressionEcmaify(node: YieldExpression): ts.YieldExpression {
+    return ts.createYield(
+      this.EcmaifyOption(node.expression, this.ExpressionEcmaify)
+    )
   }
 
-  YieldStarExpressionEcmaify(
-    node: YieldStarExpression
-  ): ts.YieldExpression {
+  YieldStarExpressionEcmaify(node: YieldStarExpression): ts.YieldExpression {
     return ts.createYield(
       ts.createToken(ts.SyntaxKind.AsteriskToken),
       this.ExpressionEcmaify(node.expression)
     )
   }
 
-  AwaitExpressionEcmaify(
-    node: AwaitExpression
-  ): ts.AwaitExpression {
+  AwaitExpressionEcmaify(node: AwaitExpression): ts.AwaitExpression {
     return ts.createAwait(this.ExpressionEcmaify(node.expression))
   }
 
-  BreakStatementEcmaify(
-    node: BreakStatement
-  ): ts.BreakStatement {
+  BreakStatementEcmaify(node: BreakStatement): ts.BreakStatement {
     return ts.createBreak(node.label)
   }
 
-  ContinueStatementEcmaify(
-    node: ContinueStatement
-  ): ts.ContinueStatement {
+  ContinueStatementEcmaify(node: ContinueStatement): ts.ContinueStatement {
     return ts.createContinue(node.label)
   }
 
-  DebuggerStatementEcmaify(
-    node: DebuggerStatement
-  ): ts.DebuggerStatement {
+  DebuggerStatementEcmaify(node: DebuggerStatement): ts.DebuggerStatement {
     return ts.createDebuggerStatement()
   }
 
-  DoWhileStatementEcmaify(
-    node: DoWhileStatement
-  ): ts.DoStatement {
+  DoWhileStatementEcmaify(node: DoWhileStatement): ts.DoStatement {
     return ts.createDo(
       this.StatementEcmaify(node.body),
       this.ExpressionEcmaify(node.test)
     )
   }
-  EmptyStatementEcmaify(
-    node: EmptyStatement
-  ): ts.EmptyStatement {
+  EmptyStatementEcmaify(node: EmptyStatement): ts.EmptyStatement {
     return ts.createEmptyStatement()
   }
 
@@ -1785,9 +1736,7 @@ export default class Ecmaify {
     return ts.createExpressionStatement(this.ExpressionEcmaify(node.expression))
   }
 
-  BindingPatternEcmaify(
-    node: BindingPattern
-  ): ts.BindingPattern {
+  BindingPatternEcmaify(node: BindingPattern): ts.BindingPattern {
     switch (node.type) {
       case NodeType.ObjectBinding:
         return this.ObjectBindingEcmaify(node)
@@ -1796,9 +1745,7 @@ export default class Ecmaify {
     }
   }
 
-  BindingEcmaify(
-    node: Binding
-  ): ts.BindingPattern | ts.Identifier {
+  BindingEcmaify(node: Binding): ts.BindingPattern | ts.Identifier {
     switch (node.type) {
       case NodeType.ObjectBinding:
       case NodeType.ArrayBinding:
@@ -1808,9 +1755,7 @@ export default class Ecmaify {
     }
   }
 
-  ForInOfBindingEcmaify(
-    node: ForInOfBinding
-  ): ts.ForInitializer {
+  ForInOfBindingEcmaify(node: ForInOfBinding): ts.ForInitializer {
     return ts.createVariableDeclarationList([
       ts.createVariableDeclaration(this.BindingEcmaify(node.binding))
     ])
@@ -1861,9 +1806,7 @@ export default class Ecmaify {
     }
   }
 
-  ForInStatementEcmaify(
-    node: ForInStatement
-  ): ts.ForInStatement {
+  ForInStatementEcmaify(node: ForInStatement): ts.ForInStatement {
     return ts.createForIn(
       this.ForInOfBindingOrAssignmentTargetEcmaify(node.left),
       this.ExpressionEcmaify(node.right),
@@ -1871,9 +1814,7 @@ export default class Ecmaify {
     )
   }
 
-  ForOfStatementEcmaify(
-    node: ForOfStatement
-  ): ts.ForOfStatement {
+  ForOfStatementEcmaify(node: ForOfStatement): ts.ForOfStatement {
     return ts.createForOf(
       undefined,
       this.ForInOfBindingOrAssignmentTargetEcmaify(node.left),
@@ -1895,7 +1836,10 @@ export default class Ecmaify {
 
   ForStatementEcmaify(node: ForStatement): ts.ForStatement {
     return ts.createFor(
-      this.EcmaifyOption(node.init, this.VariableDeclarationOrExpressionEcmaify),
+      this.EcmaifyOption(
+        node.init,
+        this.VariableDeclarationOrExpressionEcmaify
+      ),
       this.EcmaifyOption(node.test, this.ExpressionEcmaify),
       this.EcmaifyOption(node.update, this.ExpressionEcmaify),
       this.StatementEcmaify(node.body)
@@ -1910,36 +1854,32 @@ export default class Ecmaify {
     )
   }
 
-  LabelledStatementEcmaify(
-    node: LabelledStatement
-  ): ts.LabeledStatement {
+  LabelledStatementEcmaify(node: LabelledStatement): ts.LabeledStatement {
     return ts.createLabel(node.label, this.StatementEcmaify(node.body))
   }
 
-  ReturnStatementEcmaify(
-    node: ReturnStatement
-  ): ts.ReturnStatement {
-    return ts.createReturn(this.EcmaifyOption(node.expression, this.ExpressionEcmaify))
+  ReturnStatementEcmaify(node: ReturnStatement): ts.ReturnStatement {
+    return ts.createReturn(
+      this.EcmaifyOption(node.expression, this.ExpressionEcmaify)
+    )
   }
 
   SwitchCaseListEcmaify(
     nodes: FrozenArray<SwitchCase | SwitchDefault>
   ): ts.CaseBlock {
     return ts.createCaseBlock(
-      this.EcmaifyList(nodes,
-        node =>
-          isSwitchCase(node)
-            ? ts.createCaseClause(
+      this.EcmaifyList(nodes, node =>
+        isSwitchCase(node)
+          ? ts.createCaseClause(
               this.ExpressionEcmaify(node.test),
               this.StatementListEcmaify(node.consequent)
             )
-            : ts.createDefaultClause(this.StatementListEcmaify(node.consequent)))
+          : ts.createDefaultClause(this.StatementListEcmaify(node.consequent))
+      )
     )
   }
 
-  SwitchStatementEcmaify(
-    node: SwitchStatement
-  ): ts.SwitchStatement {
+  SwitchStatementEcmaify(node: SwitchStatement): ts.SwitchStatement {
     return ts.createSwitch(
       this.ExpressionEcmaify(node.discriminant),
       this.SwitchCaseListEcmaify(node.cases)
@@ -1959,15 +1899,11 @@ export default class Ecmaify {
     )
   }
 
-  ThrowStatementEcmaify(
-    node: ThrowStatement
-  ): ts.ThrowStatement {
+  ThrowStatementEcmaify(node: ThrowStatement): ts.ThrowStatement {
     return ts.createThrow(this.ExpressionEcmaify(node.expression))
   }
 
-  TryCatchStatementEcmaify(
-    node: TryCatchStatement
-  ): ts.TryStatement {
+  TryCatchStatementEcmaify(node: TryCatchStatement): ts.TryStatement {
     return ts.createTry(
       this.BlockEcmaify(node.body),
       this.CatchClauseEcmaify(node.catchClause),
@@ -1975,9 +1911,7 @@ export default class Ecmaify {
     )
   }
 
-  TryFinallyStatementEcmaify(
-    node: TryFinallyStatement
-  ): ts.TryStatement {
+  TryFinallyStatementEcmaify(node: TryFinallyStatement): ts.TryStatement {
     return ts.createTry(
       this.BlockEcmaify(node.body),
       this.EcmaifyOption(node.catchClause, this.CatchClauseEcmaify),
@@ -1985,9 +1919,7 @@ export default class Ecmaify {
     )
   }
 
-  WhileStatementEcmaify(
-    node: WhileStatement
-  ): ts.WhileStatement {
+  WhileStatementEcmaify(node: WhileStatement): ts.WhileStatement {
     return ts.createWhile(
       this.ExpressionEcmaify(node.test),
       this.StatementEcmaify(node.body)
@@ -2037,9 +1969,7 @@ export default class Ecmaify {
     )
   }
 
-  FormalParametersEcmaify(
-    node: FormalParameters
-  ): ts.ParameterDeclaration[] {
+  FormalParametersEcmaify(node: FormalParameters): ts.ParameterDeclaration[] {
     return this.ParameterListEcmaify(node.items)
   }
 
@@ -2126,9 +2056,7 @@ export default class Ecmaify {
     return ts.createDefaultClause(this.StatementListEcmaify(node.consequent))
   }
 
-  TemplateElementEcmaify(
-    node: TemplateElement
-  ): ts.TemplateSpan {
+  TemplateElementEcmaify(node: TemplateElement): ts.TemplateSpan {
     throw new Error('Not Implemented')
   }
 
@@ -2140,18 +2068,14 @@ export default class Ecmaify {
     )
   }
 
-  VariableDeclarationEcmaify(
-    node: VariableDeclaration
-  ): ts.VariableStatement {
+  VariableDeclarationEcmaify(node: VariableDeclaration): ts.VariableStatement {
     return ts.createVariableStatement(
       undefined,
       this.VariableDeclarationListEcmaify(node)
     )
   }
 
-  VariableDeclaratorEcmaify(
-    node: VariableDeclarator
-  ): ts.VariableDeclaration {
+  VariableDeclaratorEcmaify(node: VariableDeclarator): ts.VariableDeclaration {
     const element = this.BindingEcmaify(node.binding)
     return ts.createVariableDeclaration(
       element,
