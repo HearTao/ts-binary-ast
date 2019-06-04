@@ -22,7 +22,9 @@ function step(buffer: ArrayBuffer) {
   const script = first(arrayify(unecmaify.Unecmaify(sourceFile))) as Program
   const emitter = new Emitter()
   const result = emitter.emit(script)
-  console.log(buffer.byteLength, parseResult.byteLength, result.byteLength)
+  console.log('original buffer:', buffer.byteLength)
+  console.log('parse and emit only buffer:', parseResult.byteLength)
+  console.log('ecmaify and unecmaify buffer:', result.byteLength)
   return result
 }
 
