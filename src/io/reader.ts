@@ -201,7 +201,10 @@ export default class MultipartReader {
       if (this.curr + byteLength > this.view.byteLength) {
         throw new Error('Invalid byte length in strings table2')
       }
-      if (
+      if (!byteLength) { // FIXME: null interface or empty string
+        stringsTable.push('')
+      }
+      else if (
         byteLength === 2 &&
         this.lookAhead(
           () => this.readByte() === 0xff && this.readByte() === 0x00

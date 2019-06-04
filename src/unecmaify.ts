@@ -127,7 +127,8 @@ import {
   isArrowFunctionBodyExpression,
   compose,
   last,
-  isIdentifierExpression
+  isIdentifierExpression,
+  safeCompileRegex
 } from './utils'
 
 type UpdateExpressionOperator =
@@ -196,8 +197,8 @@ export default class Unecmaify {
 
   processContext(context: Context): ContextData {
     return {
-      declarations: Array.from(new Set(context.declarations)).sort((a, b) => a.localeCompare(b)),
-      blockDeclarations: Array.from(new Set(context.blockDeclarations)).sort((a, b) => a.localeCompare(b)),
+      declarations: Array.from(new Set(context.declarations)),
+      blockDeclarations: Array.from(new Set(context.blockDeclarations)),
       captureSet: context.captureSet,
       hasDirectEval: false
     }
@@ -581,7 +582,7 @@ export default class Unecmaify {
   createAssertedVarScope(context: ContextData): AssertedVarScope {
     return {
       type: NodeType.AssertedVarScope,
-      declaredNames: context.declarations.map(name => ({
+      declaredNames: context.declarations.sort((a, b) => a.localeCompare(b)).map(name => ({
         type: NodeType.AssertedDeclaredName,
         name,
         kind: AssertedDeclaredKind.Var,
@@ -594,7 +595,7 @@ export default class Unecmaify {
   createAssertedBoundNamesScope(context: ContextData): AssertedBoundNamesScope {
     return {
       type: NodeType.AssertedBoundNamesScope,
-      boundNames: context.declarations.map(name => ({
+      boundNames: context.declarations.sort((a, b) => a.localeCompare(b)).map(name => ({
         type: NodeType.AssertedBoundName,
         name,
         isCaptured: context.captureSet.has(name)
@@ -646,7 +647,7 @@ export default class Unecmaify {
   createAssertedScriptGlobalScope(context: ContextData): AssertedScriptGlobalScope {
     return {
       type: NodeType.AssertedScriptGlobalScope,
-      declaredNames: context.declarations.map(name => ({
+      declaredNames: context.declarations.sort((a, b) => a.localeCompare(b)).map(name => ({
         type: NodeType.AssertedDeclaredName,
         name,
         kind: AssertedDeclaredKind.Var,
@@ -1073,10 +1074,11 @@ export default class Unecmaify {
   RegularExpressionLiteralUnecmaify(
     node: ts.RegularExpressionLiteral
   ): LiteralRegExpExpression {
+    const [ pattern, flags ] = safeCompileRegex(node.text)
     return {
       type: NodeType.LiteralRegExpExpression,
-      pattern: node.text,
-      flags: ''
+      pattern,
+      flags
     }
   }
 

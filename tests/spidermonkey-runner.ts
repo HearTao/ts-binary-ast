@@ -1,6 +1,5 @@
-/// <reference path="../src/shims/json-diff.d.ts"/>
-
 import * as fs from 'fs'
+import * as path from 'path'
 import * as ts from 'typescript'
 import Parser from "../src/parser";
 import Emitter from '../src/emitter';
@@ -8,7 +7,10 @@ import Ecmaify from '../src/ecmaify';
 import Unecmaify from '../src/unecmaify';
 import { arrayify, first } from '../src/utils';
 import { Program } from '../src/types';
-import { diffString } from 'json-diff'
+import * as glob from 'glob'
+
+
+const TESTS_PATH = "./tests/spidermonkey/**/*.binjs"
 
 function step(buffer: ArrayBuffer) {
   const parser = new Parser(buffer)
@@ -21,19 +23,27 @@ function step(buffer: ArrayBuffer) {
   const script = first(arrayify(unecmaify.Unecmaify(sourceFile))) as Program
   const emitter = new Emitter()
   const result = emitter.emit(script)
-  fs.writeFileSync("./tests/out/1.json", JSON.stringify(program, undefined, 2))
-  fs.writeFileSync("./tests/out/2.json", JSON.stringify(program, undefined, 2))
-  console.log(diffString(program, script))
+  if (buffer.byteLength === parseResult.byteLength && buffer.byteLength === result.byteLength) {
+    console.log(`${''.padStart(10, '-')} succeed ${''.padEnd(10, '-')}`)
+    console.log('buffer:', buffer.byteLength)
+  } else {
+    console.log(`${''.padStart(10, '-')} failed: ${''.padEnd(10, '-')}`)
+    console.log('original buffer:', buffer.byteLength)
+    console.log('parse and emit only buffer:', parseResult.byteLength)
+    console.log('ecmaify and unecmaify buffer:', result.byteLength)
+  }
   return result
 }
 
-function test() {
-  const buffer = fs.readFileSync("./tests/spidermonkey/emca_2/String/match-001.binjs")
+function test(path: string) {
+  const buffer = fs.readFileSync(path)
   let arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
-  for (let i = 0; i < 1; ++i) {
-    console.log(`${''.padStart(10, '-')} step ${i} ${''.padEnd(10, '-')}`)
-    arrayBuffer = step(arrayBuffer)
-  }
+  console.log(`${''.padStart(10, '=')} step ${path} ${''.padEnd(10, '=')}`)
+  step(arrayBuffer)
 }
 
-test()
+function runner () {
+  glob.sync(TESTS_PATH).forEach(test)
+}
+
+runner()

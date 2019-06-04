@@ -133,3 +133,9 @@ export function compose<A, B, C>(
 ): (arg: A) => C {
   return x => g(f(x))
 }
+
+export function safeCompileRegex(reg: string): [string, string] {
+  const func = new Function('', `return ${reg}`)
+  const result = func()
+  return [result.source, result.flags]
+}

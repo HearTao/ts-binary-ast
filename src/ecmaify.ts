@@ -1213,7 +1213,7 @@ export default class Ecmaify {
   LiteralRegExpExpressionEcmaify(
     node: LiteralRegExpExpression
   ): ts.RegularExpressionLiteral {
-    return ts.createRegularExpressionLiteral(node.pattern)
+    return ts.createRegularExpressionLiteral((new RegExp(node.pattern, node.flags)).toString())
   }
 
   LiteralStringExpressionEcmaify(

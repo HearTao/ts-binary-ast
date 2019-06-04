@@ -10,9 +10,12 @@
     "prettier": "prettier --config ./prettier.json --write ./src/* ./src/**/* ./index.ts",
     "test:dev": "ts-node ./tests/index.ts",
     "test:unit": "ts-node ./tests/units-runner.ts",
+    "test:sm": "ts-node ./tests/spidermonkey-runner.ts",
     "test": "jest"
   },
   "dependencies": {
+    "@types/glob": "^7.1.1",
+    "glob": "^7.1.4",
     "json-diff": "^0.5.4"
   },
   "devDependencies": {
