@@ -114,7 +114,8 @@ import {
   AssertedMaybePositionalParameterName,
   AssertedBoundNamesScope,
   AssertedVarScope,
-  AssertedBlockScope
+  AssertedBlockScope,
+  AssertedDeclaredName
 } from './types'
 import {
   mapIfDef,
@@ -146,12 +147,14 @@ export type AssignmentTargetEcmaifyType =
 
 export interface Context {
   declarations: Set<string>
+  blockDeclarations: Set<string>
   captureSet: Set<string>
   hasDirectEval: boolean
 }
 
 export interface ContextData {
   declarations: string[]
+  blockDeclarations: string[]
   captureSet: Set<string>
   hasDirectEval: boolean
 }
@@ -171,6 +174,18 @@ export default class Unecmaify {
     this.context.push({
       declarations: new Set(),
       captureSet: new Set(),
+      blockDeclarations: new Set(),
+      hasDirectEval: false
+    })
+  }
+
+  pushBlockContext() {
+    const currentContext = this.currentContext
+
+    this.context.push({
+      declarations: currentContext.declarations,
+      captureSet: currentContext.captureSet,
+      blockDeclarations: new Set(),
       hasDirectEval: false
     })
   }
@@ -182,6 +197,7 @@ export default class Unecmaify {
   processContext(context: Context): ContextData {
     return {
       declarations: Array.from(new Set(context.declarations)).sort((a, b) => a.localeCompare(b)),
+      blockDeclarations: Array.from(new Set(context.blockDeclarations)).sort((a, b) => a.localeCompare(b)),
       captureSet: context.captureSet,
       hasDirectEval: false
     }
@@ -189,6 +205,13 @@ export default class Unecmaify {
 
   runInContext<T>(cb: () => T): [T, ContextData] {
     this.pushContext()
+    const result = cb()
+    const context = this.processContext(this.popContext())
+    return [result, context]
+  }
+
+  runInBlockContext<T>(cb: () => T): [T, ContextData] {
+    this.pushBlockContext()
     const result = cb()
     const context = this.processContext(this.popContext())
     return [result, context]
@@ -542,11 +565,16 @@ export default class Unecmaify {
     return this.ExpressionUnecmaify(node.expression)
   }
 
-  createAssertedBlockScope(): AssertedBlockScope {
+  createAssertedBlockScope(context: ContextData): AssertedBlockScope {
     return {
       type: NodeType.AssertedBlockScope,
-      declaredNames: [],
-      hasDirectEval: false
+      declaredNames: context.blockDeclarations.map(name => ({
+        type: NodeType.AssertedDeclaredName,
+        name,
+        isCaptured: context.captureSet.has(name) ,
+        kind: AssertedDeclaredKind.Var
+      })),
+      hasDirectEval: context.hasDirectEval
     }
   }
 
@@ -563,11 +591,15 @@ export default class Unecmaify {
     }
   }
 
-  createAssertedBoundNamesScope(): AssertedBoundNamesScope {
+  createAssertedBoundNamesScope(context: ContextData): AssertedBoundNamesScope {
     return {
       type: NodeType.AssertedBoundNamesScope,
-      boundNames: [],
-      hasDirectEval: false
+      boundNames: context.declarations.map(name => ({
+        type: NodeType.AssertedBoundName,
+        name,
+        isCaptured: context.captureSet.has(name)
+      })),
+      hasDirectEval: context.hasDirectEval
     }
   }
 
@@ -836,6 +868,8 @@ export default class Unecmaify {
     const stmts = AssertDef(node.body).statements
     const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
     const [param, paramContext] = this.runInContext(() => this.ParameterDeclarationUnecmaify(first(node.parameters)))
+    const paramSet = new Set(paramContext.declarations)
+    context.declarations = context.declarations.filter(x => !paramSet.has(x))
 
     return {
       type: NodeType.SetterContents,
@@ -950,10 +984,11 @@ export default class Unecmaify {
 
   CatchClauseUnecmaify(node: ts.CatchClause): CatchClause {
     const declaration = AssertDef(node.variableDeclaration)
+    const [ binding, context ] = this.runInContext(() => this.BindingNameUnecmaify(declaration.name))
     return {
       type: NodeType.CatchClause,
-      binding: this.BindingNameUnecmaify(declaration.name),
-      bindingScope: this.createAssertedBoundNamesScope(),
+      binding,
+      bindingScope: this.createAssertedBoundNamesScope(context),
       body: this.BlockUnecmaify(node.block)
     }
   }
@@ -1067,6 +1102,8 @@ export default class Unecmaify {
     const stmts = AssertCast(AssertDef(node.body), ts.isBlock).statements
     const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
     const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
+    const paramsSet = new Set(paramsContext.declarations)
+    context.declarations = context.declarations.filter(x => !paramsSet.has(x))
 
     return {
       type: NodeType.ArrowExpressionContentsWithFunctionBody,
@@ -1084,7 +1121,9 @@ export default class Unecmaify {
       AssertCast(AssertDef(node.body), isArrowFunctionBodyExpression)
     ))
     const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
-    
+    const paramsSet = new Set(paramsContext.declarations)
+    context.declarations = context.declarations.filter(x => !paramsSet.has(x))
+
     return {
       type: NodeType.ArrowExpressionContentsWithExpression,
       params,
@@ -1276,12 +1315,11 @@ export default class Unecmaify {
   }
 
   ClassExpressionUnecmaify(node: ts.ClassExpression): ClassExpression {
+    const [name] = this.runInContext(() => this.UnecmaifyOptional(node.name, this.IdentifierToBindingIdentifierUnecmaify))
+
     return {
       type: NodeType.ClassExpression,
-      name: this.UnecmaifyOptional(
-        node.name,
-        this.IdentifierToBindingIdentifierUnecmaify
-      ),
+      name,
       super: this.UnecmaifyOptional(
         node.heritageClauses,
         this.HeritageClauseSuperUnecmaify
@@ -1296,6 +1334,8 @@ export default class Unecmaify {
     const stmts = AssertDef(node.body).statements
     const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
     const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
+    const paramsSet = new Set(paramsContext.declarations)
+    context.declarations = context.declarations.filter(x => !paramsSet.has(x))
 
     return {
       type: NodeType.FunctionExpressionContents,
@@ -1309,12 +1349,11 @@ export default class Unecmaify {
   }
 
   FunctionExpressionUnecmaify(node: ts.FunctionExpression): FunctionExpression {
+    const [name] = this.runInContext(() => this.UnecmaifyOptional(node.name, this.IdentifierToBindingIdentifierUnecmaify))
+
     return {
       type: NodeType.EagerFunctionExpression,
-      name: this.UnecmaifyOptional(
-        node.name,
-        this.IdentifierToBindingIdentifierUnecmaify
-      ),
+      name,
       isAsync: !!(ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Async),
       isGenerator: !!node.asteriskToken,
       contents: this.FunctionExpressionContentsUnecmaify(node),
@@ -1442,10 +1481,11 @@ export default class Unecmaify {
   }
 
   BlockUnecmaify(node: ts.Block): Block {
+    const [ statements, context ] = this.runInBlockContext(() => this.UnecmaifyList(node.statements, this.StatementUnecmaify))
     return {
       type: NodeType.Block,
-      statements: this.UnecmaifyList(node.statements, this.StatementUnecmaify),
-      scope: this.createAssertedBlockScope()
+      statements,
+      scope: this.createAssertedBlockScope(context)
     }
   }
 
@@ -1544,6 +1584,8 @@ export default class Unecmaify {
     const stmts = AssertDef(node.body).statements
     const [params, paramsContext] = this.runInContext(() => this.FormalParametersUnecmaify(node.parameters))
     const [body, context] = this.runInContext(() => this.StatementListUnecmaify(stmts))
+    const paramsSet = new Set(paramsContext.declarations)
+    context.declarations = context.declarations.filter(x => !paramsSet.has(x))
 
     return {
       type: NodeType.FunctionOrMethodContents,

@@ -1,3 +1,5 @@
+/// <reference path="../src/shims/json-diff.d.ts"/>
+
 import * as fs from 'fs'
 import * as ts from 'typescript'
 import Parser from "../src/parser";
@@ -6,6 +8,7 @@ import Ecmaify from '../src/ecmaify';
 import Unecmaify from '../src/unecmaify';
 import { arrayify, first } from '../src/utils';
 import { Program } from '../src/types';
+import { diffString } from 'json-diff'
 
 function step(buffer: ArrayBuffer) {
   const parser = new Parser(buffer)
@@ -18,14 +21,12 @@ function step(buffer: ArrayBuffer) {
   const script = first(arrayify(unecmaify.Unecmaify(sourceFile))) as Program
   const emitter = new Emitter()
   const result = emitter.emit(script)
-  fs.writeFileSync('./tests/out/1.json', JSON.stringify(program, undefined, 2))
-  fs.writeFileSync('./tests/out/2.json', JSON.stringify(script, undefined, 2))
-  console.log(buffer.byteLength, parseResult.byteLength, result.byteLength)
+  console.log(diffString(program, script))
   return result
 }
 
 function test() {
-  const buffer = fs.readFileSync("./tests/forin-001.binjs")
+  const buffer = fs.readFileSync("./tests/units/argument_and_var.binjs")
   let arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
   for (let i = 0; i < 1; ++i) {
     console.log(`${''.padStart(10, '-')} step ${i} ${''.padEnd(10, '-')}`)
