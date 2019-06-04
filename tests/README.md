@@ -1,0 +1,1 @@
+Follow: https://hg.mozilla.org/mozilla-central/file/tip/js/src/jsapi-tests/binast
