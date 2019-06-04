@@ -569,7 +569,7 @@ export default class Unecmaify {
   createAssertedBlockScope(context: ContextData): AssertedBlockScope {
     return {
       type: NodeType.AssertedBlockScope,
-      declaredNames: context.blockDeclarations.map(name => ({
+      declaredNames: context.blockDeclarations.sort((a, b) => a.localeCompare(b)).map(name => ({
         type: NodeType.AssertedDeclaredName,
         name,
         isCaptured: context.captureSet.has(name) ,

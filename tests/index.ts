@@ -28,7 +28,7 @@ function step(buffer: ArrayBuffer) {
 }
 
 function test() {
-  const buffer = fs.readFileSync("./tests/spidermonkey/emca_2/String/match-001.binjs")
+  const buffer = fs.readFileSync("./tests/spidermonkey/emca_2/String/split-002.binjs")
   let arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
   for (let i = 0; i < 1; ++i) {
     console.log(`${''.padStart(10, '-')} step ${i} ${''.padEnd(10, '-')}`)

@@ -195,7 +195,7 @@ export default class MultipartReader {
       throw new Error('Too many entries in strings table')
     }
 
-    const stringsTable: string[] = []
+    const stringsTable: (string | undefined)[] = []
     for (let i = 0; i < stringsNumberOfEntries; ++i) {
       const byteLength = this.readVarnum()
       if (this.curr + byteLength > this.view.byteLength) {
@@ -211,7 +211,7 @@ export default class MultipartReader {
         )
       ) {
         this.curr += 2
-        stringsTable.push('')
+        stringsTable.push(undefined)
       } else {
         stringsTable.push(this.readString(byteLength))
       }

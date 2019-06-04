@@ -2,6 +2,7 @@ import { WriterContext } from './context'
 import { Variant, NodeType } from '../types'
 import { variantToValueMapper, nodeTypeToNameMapper } from '../mapper'
 import { Magic, Section, Compression } from './constants'
+import { isDef } from '../utils';
 
 export default class MultipartWriter {
   private size: number = 0
@@ -73,6 +74,10 @@ export default class MultipartWriter {
   }
 
   writeEmptyString() {
+    return this.writeVarnum(0)
+  }
+
+  writeNullInterface() {
     let result = this.writeVarnum(2)
     result += this.writeByte(0xff)
     result += this.writeByte(0x00)
@@ -204,7 +209,9 @@ export default class MultipartWriter {
     const [, stringsBuffer] = this.writeInContext(() => {
       this.writeVarnum(this.context.stringsTable.length)
       this.context.stringsTable.forEach(str => {
-        if (!str) {
+        if (!isDef(str)) {
+          this.writeNullInterface()
+        } else if (!str) {
           this.writeEmptyString()
         } else {
           this.writeString(str)

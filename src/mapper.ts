@@ -477,8 +477,8 @@ export function nodeTypeToNameMapper(type: NodeType) {
   return undefined
 }
 
-export function nameToVariantMapper(name: string) {
-  if (name in VariantValueToTypeMap) {
+export function nameToVariantMapper(name?: string) {
+  if (name && name in VariantValueToTypeMap) {
     return Variant[
       VariantValueToTypeMap[name as keyof typeof VariantValueToTypeMap]
     ]
