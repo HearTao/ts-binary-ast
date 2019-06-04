@@ -531,9 +531,15 @@ export default class Unecmaify {
         return this.TypeOfExpressionUnecmaify(node as ts.TypeOfExpression)
       case ts.SyntaxKind.VoidExpression:
         return this.VoidExpressionUnecmaify(node as ts.VoidExpression)
+      case ts.SyntaxKind.ParenthesizedExpression:
+        return this.ParenthesizedExpressionUnecmaify(node as ts.ParenthesizedExpression)
       default:
-        throw new Error('Unexpected expression')
+        throw new Error('Unexpected expression: ' + node.kind)
     }
+  }
+
+  ParenthesizedExpressionUnecmaify(node: ts.ParenthesizedExpression) {
+    return this.ExpressionUnecmaify(node.expression)
   }
 
   createAssertedBlockScope(): AssertedBlockScope {

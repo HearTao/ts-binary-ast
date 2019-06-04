@@ -136,7 +136,8 @@ import {
   CompoundAssignmentOperator,
   BinaryOperator,
   ArrowExpressionContentsWithExpression,
-  ArrowExpressionContentsWithFunctionBody
+  ArrowExpressionContentsWithFunctionBody,
+  FunctionExpressionContents
 } from './types'
 
 export default class Parser {
@@ -790,11 +791,63 @@ export default class Parser {
   }
 
   parseEagerFunctionExpression(): EagerFunctionExpression {
-    throw new Error('Method not implemented.')
+    const type = this.parseType(NodeType.EagerFunctionExpression) 
+
+    const isAsync = this.parseBoolean()
+    const isGenerator = this.parseBoolean()
+    const name = this.parseOptional(() => this.parseBindingIdentifier())
+    const length = this.parseVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseFunctionExpressionContents()
+    return {
+      type,
+      isAsync,
+      isGenerator,
+      name,
+      length,
+      directives,
+      contents
+    }
   }
 
   parseLazyFunctionExpression(): LazyFunctionExpression {
-    throw new Error('Method not implemented.')
+    const type = this.parseType(NodeType.LazyFunctionExpression)
+    const isAsync = this.parseBoolean()
+    const isGenerator = this.parseBoolean()
+    const name = this.parseOptional(() => this.parseBindingIdentifier())
+    const length = this.parseVarnum()
+    const directives = this.parseDirectiveList()
+    const contents = this.parseFunctionExpressionContents()
+
+    return {
+      type,
+      isAsync,
+      isGenerator,
+      name,
+      length,
+      directives,
+      contents
+    }
+  }
+  
+  parseFunctionExpressionContents(): FunctionExpressionContents {
+    const type = this.parseType(NodeType.FunctionExpressionContents)
+
+    const isFunctionNameCaptured = this.parseBoolean()
+    const isThisCaptured = this.parseBoolean()
+    const parameterScope = this.parseAssertedParameterScope()
+    const params = this.parseFormalParameters()
+    const bodyScope = this.parseAssertedVarScope()
+    const body = this.parseFunctionBody()
+    return {
+      type,
+      isFunctionNameCaptured,
+      isThisCaptured,
+      parameterScope,
+      params,
+      bodyScope,
+      body
+    }
   }
 
   parseIdentifierExpression(): IdentifierExpression {

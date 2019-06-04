@@ -9,6 +9,7 @@
     "build": "tsc -b",
     "prettier": "prettier --config ./prettier.json --write ./src/* ./src/**/* ./index.ts",
     "test:dev": "ts-node ./tests/index.ts",
+    "test:unit": "ts-node ./tests/units-runner.ts",
     "test": "jest"
   },
   "dependencies": {
