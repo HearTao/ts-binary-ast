@@ -1,5 +1,4 @@
 /// <reference path="../src/shims/json-diff.d.ts"/>
-
 import * as fs from 'fs'
 import * as ts from 'typescript'
 import Parser from "../src/parser";
@@ -7,7 +6,7 @@ import Emitter from '../src/emitter';
 import Ecmaify from '../src/ecmaify';
 import Unecmaify from '../src/unecmaify';
 import { arrayify, first } from '../src/utils';
-import { Program } from '../src/types';
+import { Program } from '../src/types'
 import { diffString } from 'json-diff'
 
 function step(buffer: ArrayBuffer) {
@@ -23,6 +22,7 @@ function step(buffer: ArrayBuffer) {
   const result = emitter.emit(script)
   fs.writeFileSync("./tests/out/1.json", JSON.stringify(program, undefined, 2))
   fs.writeFileSync("./tests/out/2.json", JSON.stringify(program, undefined, 2))
+  fs.writeFileSync('./tests/out/1.binjs', new Buffer(parseResult))
   console.log(diffString(program, script))
   return result
 }

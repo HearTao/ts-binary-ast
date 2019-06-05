@@ -9,7 +9,6 @@ import { arrayify, first } from '../src/utils';
 import { Program } from '../src/types';
 import * as glob from 'glob'
 
-
 const TESTS_PATH = "./tests/spidermonkey/**/*.binjs"
 
 function step(buffer: ArrayBuffer) {

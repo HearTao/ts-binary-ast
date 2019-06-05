@@ -120,6 +120,13 @@ export function last<T>(items: ReadonlyArray<T>): T {
   return items[items.length - 1]
 }
 
+export function lastOrUndefined<T>(items: ReadonlyArray<T>): T | undefined {
+  if (!items.length) {
+    return undefined
+  }
+  return items[items.length - 1]
+}
+
 export function AssertCast<U, T extends U>(v: U, cb: (v: U) => v is T): T {
   if (!cb(v)) {
     throw new Error('cast failed')

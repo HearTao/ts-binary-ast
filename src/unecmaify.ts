@@ -128,7 +128,8 @@ import {
   compose,
   last,
   isIdentifierExpression,
-  safeCompileRegex
+  safeCompileRegex,
+  lastOrUndefined
 } from './utils'
 
 type UpdateExpressionOperator =
@@ -1573,10 +1574,17 @@ export default class Unecmaify {
   FormalParametersUnecmaify(
     nodes: ReadonlyArray<ts.ParameterDeclaration>
   ): FormalParameters {
-    
+    let rest: Binding | undefined = undefined
+    const lastParam = lastOrUndefined(nodes)
+    if (lastParam && lastParam.dotDotDotToken) {
+      nodes = nodes.slice(0, nodes.length - 1)
+      rest = this.BindingNameUnecmaify(lastParam.name)
+    }
+
     return {
       type: NodeType.FormalParameters,
-      items: this.ParameterDeclarationListUnecmaify(nodes)
+      items: this.ParameterDeclarationListUnecmaify(nodes),
+      rest
     }
   }
 
