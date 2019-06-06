@@ -65,3 +65,5 @@ lib/
 tests/out
 
 .vscode/
+
+.DS_Store
