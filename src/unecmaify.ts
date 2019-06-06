@@ -129,7 +129,8 @@ import {
   last,
   isIdentifierExpression,
   safeCompileRegex,
-  lastOrUndefined
+  lastOrUndefined,
+  compareString
 } from './utils'
 
 type UpdateExpressionOperator =
@@ -148,8 +149,10 @@ export type AssignmentTargetEcmaifyType =
   | SimpleAssignmentTargetEcmaifyType
 
 export interface Context {
-  declarations: Set<string>
-  blockDeclarations: Set<string>
+  declarations: string[]
+  declarationsSet: Set<string>
+  blockDeclarations: string[]
+  blockDeclarationsSet: Set<string>
   captureSet: Set<string>
   hasDirectEval: boolean
 }
@@ -174,9 +177,11 @@ export default class Unecmaify {
 
   pushContext() {
     this.context.push({
-      declarations: new Set(),
+      declarations: [],
+      declarationsSet: new Set(),
       captureSet: new Set(),
-      blockDeclarations: new Set(),
+      blockDeclarations: [],
+      blockDeclarationsSet: new Set(),
       hasDirectEval: false
     })
   }
@@ -186,8 +191,10 @@ export default class Unecmaify {
 
     this.context.push({
       declarations: currentContext.declarations,
+      declarationsSet: currentContext.declarationsSet,
       captureSet: currentContext.captureSet,
-      blockDeclarations: new Set(),
+      blockDeclarations: [],
+      blockDeclarationsSet: new Set(),
       hasDirectEval: false
     })
   }
@@ -201,7 +208,7 @@ export default class Unecmaify {
       declarations: Array.from(new Set(context.declarations)),
       blockDeclarations: Array.from(new Set(context.blockDeclarations)),
       captureSet: context.captureSet,
-      hasDirectEval: false
+      hasDirectEval: context.hasDirectEval
     }
   }
 
@@ -222,7 +229,7 @@ export default class Unecmaify {
   markCapture(id: string) {
     for (let i = this.context.length - 1; i >= 0; --i) {
       const ctx = this.context[i]
-      if (ctx.declarations.has(id)) {
+      if (ctx.declarationsSet.has(id)) {
         if (ctx !== this.currentContext) {
           ctx.captureSet.add(id)
         }
@@ -570,7 +577,7 @@ export default class Unecmaify {
   createAssertedBlockScope(context: ContextData): AssertedBlockScope {
     return {
       type: NodeType.AssertedBlockScope,
-      declaredNames: context.blockDeclarations.sort((a, b) => a.localeCompare(b)).map(name => ({
+      declaredNames: context.blockDeclarations.sort(compareString).map(name => ({
         type: NodeType.AssertedDeclaredName,
         name,
         isCaptured: context.captureSet.has(name) ,
@@ -583,7 +590,7 @@ export default class Unecmaify {
   createAssertedVarScope(context: ContextData): AssertedVarScope {
     return {
       type: NodeType.AssertedVarScope,
-      declaredNames: context.declarations.sort((a, b) => a.localeCompare(b)).map(name => ({
+      declaredNames: context.declarations.sort(compareString).map(name => ({
         type: NodeType.AssertedDeclaredName,
         name,
         kind: AssertedDeclaredKind.Var,
@@ -596,7 +603,7 @@ export default class Unecmaify {
   createAssertedBoundNamesScope(context: ContextData): AssertedBoundNamesScope {
     return {
       type: NodeType.AssertedBoundNamesScope,
-      boundNames: context.declarations.sort((a, b) => a.localeCompare(b)).map(name => ({
+      boundNames: context.declarations.sort(compareString).map(name => ({
         type: NodeType.AssertedBoundName,
         name,
         isCaptured: context.captureSet.has(name)
@@ -648,7 +655,7 @@ export default class Unecmaify {
   createAssertedScriptGlobalScope(context: ContextData): AssertedScriptGlobalScope {
     return {
       type: NodeType.AssertedScriptGlobalScope,
-      declaredNames: context.declarations.sort((a, b) => a.localeCompare(b)).map(name => ({
+      declaredNames: context.declarations.sort(compareString).map(name => ({
         type: NodeType.AssertedDeclaredName,
         name,
         kind: AssertedDeclaredKind.Var,
@@ -1537,11 +1544,15 @@ export default class Unecmaify {
   }
 
   ClassDeclarationUnecmaify(node: ts.ClassDeclaration): ClassDeclaration {
-    this.currentContext.declarations.add(AssertDef(node.name).text)
+    const name = AssertDef(node.name)
+    if (!this.currentContext.declarationsSet.has(name.text)) {
+      this.currentContext.declarationsSet.add(name.text)
+      this.currentContext.declarations.push(name.text)
+    }
 
     return {
       type: NodeType.ClassDeclaration,
-      name: this.IdentifierToBindingIdentifierUnecmaify(AssertDef(node.name)),
+      name: this.IdentifierToBindingIdentifierUnecmaify(name),
       super: this.UnecmaifyOptional(
         node.heritageClauses,
         this.HeritageClauseSuperUnecmaify
@@ -2101,13 +2112,16 @@ export default class Unecmaify {
   }
 
   IdentifierToBindingIdentifierUnecmaify(
-    node: ts.Identifier
+    name: ts.Identifier
   ): BindingIdentifier {
-    this.currentContext.declarations.add(AssertDef(node).text)
+    if (!this.currentContext.declarationsSet.has(name.text)) {
+      this.currentContext.declarationsSet.add(name.text)
+      this.currentContext.declarations.push(name.text)
+    }
 
     return {
       type: NodeType.BindingIdentifier,
-      name: node.text
+      name: name.text
     }
   }
 
@@ -2133,7 +2147,11 @@ export default class Unecmaify {
   VariableDeclarationUnecmaify(
     node: ts.VariableDeclaration
   ): VariableDeclarator {
-    this.currentContext.declarations.add(AssertCast(node.name, ts.isIdentifier).text)
+    const name = AssertCast(node.name, ts.isIdentifier)
+    if (!this.currentContext.declarationsSet.has(name.text)) {
+      this.currentContext.declarationsSet.add(name.text)
+      this.currentContext.declarations.push(name.text)
+    }
 
     return {
       type: NodeType.VariableDeclarator,

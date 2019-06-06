@@ -146,3 +146,13 @@ export function safeCompileRegex(reg: string): [string, string] {
   const result = func()
   return [result.source, result.flags]
 }
+
+export function compareString(a: string, b: string) {
+  if (a === b) {
+    return 0
+  } else if (a < b) {
+    return -1
+  } else {
+    return 1
+  }
+}

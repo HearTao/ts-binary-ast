@@ -21,7 +21,7 @@ function step(buffer: ArrayBuffer) {
   const emitter = new Emitter()
   const result = emitter.emit(script)
   fs.writeFileSync("./tests/out/1.json", JSON.stringify(program, undefined, 2))
-  fs.writeFileSync("./tests/out/2.json", JSON.stringify(program, undefined, 2))
+  fs.writeFileSync("./tests/out/2.json", JSON.stringify(script, undefined, 2))
   fs.writeFileSync('./tests/out/1.binjs', new Buffer(parseResult))
   console.log(diffString(program, script))
   return result

@@ -1,3 +1,5 @@
+/// <reference path="../src/shims/json-diff.d.ts"/>
+
 import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
@@ -8,6 +10,7 @@ import Unecmaify from '../src/unecmaify';
 import { arrayify, first } from '../src/utils';
 import { Program } from '../src/types';
 import * as glob from 'glob'
+import { diffString } from 'json-diff';
 
 const TESTS_PATH = "./tests/spidermonkey/**/*.binjs"
 
@@ -22,15 +25,7 @@ function step(buffer: ArrayBuffer) {
   const script = first(arrayify(unecmaify.Unecmaify(sourceFile))) as Program
   const emitter = new Emitter()
   const result = emitter.emit(script)
-  if (buffer.byteLength === parseResult.byteLength && buffer.byteLength === result.byteLength) {
-    console.log(`${''.padStart(10, '-')} succeed ${''.padEnd(10, '-')}`)
-    console.log('buffer:', buffer.byteLength)
-  } else {
-    console.log(`${''.padStart(10, '-')} failed: ${''.padEnd(10, '-')}`)
-    console.log('original buffer:', buffer.byteLength)
-    console.log('parse and emit only buffer:', parseResult.byteLength)
-    console.log('ecmaify and unecmaify buffer:', result.byteLength)
-  }
+  console.log(diffString(program, script))
   return result
 }
 
